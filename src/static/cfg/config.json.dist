@@ -1,0 +1,9 @@
+{
+    "oauth2": {
+        "config": {
+            "baseUrl": "http://localhost:8000",
+            "clientId": "Foo",
+            "clientSecret": "Bar"
+        }
+    }
+}
