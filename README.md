@@ -6,7 +6,8 @@ Yet Another Timesheet Application... Yet Again. This is a frontend for
 ## Configuration
 
 First, you'll need to create an OAuth2 client for the frontend to use. You
-can do this by visiting `${baseUrl}/oauth/v2/applications/register/`.
+can do this by visiting `${baseUrl}/oauth/v2/applications/register/`. Example
+URL: [http://localhost:8000/oauth/v2/applications/register/](http://localhost:8000/oauth/v2/applications/register/).
 
 You will need to configure your server base URL and OAuth2 client credentials
 before you can use this frontend. You can do this by copying the example
