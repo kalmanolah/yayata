@@ -1,4 +1,4 @@
-# yayata
+# ![yayata](src/assets/img/logo_text.svg)
 
 Yet Another Timesheet Application... Yet Again. This is a frontend for
 [ninetofiver](https://github.com/kalmanolah/925r).
@@ -13,13 +13,13 @@ You will need to configure your server base URL and OAuth2 client credentials
 before you can use this frontend. You can do this by copying the example
 configuration file and editing it:
 
-```
+```bash
 cp src/static/cfg/config.json.dist src/static/cfg/config.json
 ```
 
 ## Build Setup
 
-``` bash
+```bash
 # install dependencies
 npm install
 

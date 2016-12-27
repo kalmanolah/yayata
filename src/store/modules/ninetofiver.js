@@ -3,36 +3,14 @@ import * as types from '../mutation-types'
 
 // initial state
 const state = {
+  user: null,
 }
 
 // mutations
 const mutations = {
-  // [types.OAUTH2_CONFIGURE] (state, { baseUrl, clientId, clientSecret }) {
-  //   state.config.baseUrl = baseUrl
-  //   state.config.clientId = clientId
-  //   state.config.clientSecret = clientSecret
-  // },
-  //
-  // [types.OAUTH2_SET_TOKEN] (state, { accessToken, refreshToken, tokenType, expiresIn }) {
-  //   state.token.accessToken = accessToken
-  //   state.token.refreshToken = refreshToken
-  //   state.token.tokenType = tokenType
-  //
-  //   var expiresAt = new Date()
-  //   expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn)
-  //   state.token.expiresAt = expiresAt
-  //
-  //   state.authenticated = (
-  //     state.token.accessToken &&
-  //     state.token.refreshToken &&
-  //     state.token.tokenType &&
-  //     state.token.expiresAt
-  //   )
-  // },
-  //
-  // [types.OAUTH2_SET_AUTHENTICATED] (state, { authenticated }) {
-  //   state.authenticated = authenticated
-  // }
+  [types.NINETOFIVER_SET_USER] (state, { user }) {
+    state.user = user
+  }
 }
 
 // actions
@@ -104,6 +82,21 @@ const actions = {
         } else {
           reject(response)
         }
+      })
+    })
+  },
+
+  [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/services/my_user/'
+      }).then((res) => {
+        store.commit(types.NINETOFIVER_SET_USER, {
+          user: res.data
+        })
+        resolve(res)
+      }, (res) => {
+        reject(res)
       })
     })
   }

@@ -5,7 +5,7 @@ div(class='container')
       div(class='my-1')
       div(class='card')
         router-link(:to='{ name: "home" }')
-          img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.jpg')
+          img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
         div(class='card-block')
           h4(class='card-title')
             block title
