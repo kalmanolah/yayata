@@ -1,4 +1,6 @@
-# ![yayata](src/assets/img/logo_text.svg)
+# yayata
+
+![yayata](src/assets/img/logo_text.svg)
 
 Yet Another Timesheet Application... Yet Again. This is a frontend for
 [ninetofiver](https://github.com/kalmanolah/925r).
