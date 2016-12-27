@@ -11,6 +11,7 @@ import Auth from './components/Auth.vue'
 import AuthLogin from './components/AuthLogin.vue'
 import AuthLogout from './components/AuthLogout.vue'
 import Dashboard from './components/Dashboard.vue'
+import Calendar from './components/Calendar.vue'
 
 // Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -31,6 +32,16 @@ export const router = new VueRouter({
           path: '/dashboard',
           component: Dashboard,
         },
+        {
+          name: 'calendar',
+          path: '/calendar',
+          redirect: `/calendar/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+        },
+        {
+          name: 'calendar_month',
+          path: '/calendar/:year/:month',
+          component: Calendar,
+        }
       ],
     },
     {
