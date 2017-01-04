@@ -4,6 +4,7 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
   user: null,
+  holidays: null,
 }
 
 // mutations

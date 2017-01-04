@@ -42,6 +42,10 @@ div
 
   hr
 
+  cmpHolidays
+
+  hr
+
   div(
     v-if='loading'
     class='my-1 h1 text-xs-center'
@@ -52,13 +56,13 @@ div
     v-else
   )
     div(
-      v-if='!items.length'
+      v-if='!companies.length'
       class="alert alert-warning"
       role="alert"
     ) No results found.
 
     div(
-      v-if='items.length'
+      v-if='companies.length'
     )
       div(
         class='text-xs-center'
@@ -135,7 +139,7 @@ div
 
       div(
         class='card card-block'
-        v-for='item in items'
+        v-for='item in companies'
       )
         div
           h5
@@ -224,9 +228,14 @@ div
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import Holidays from './Holidays.vue'
 
 export default {
   name: 'dashboard',
+
+  components: {
+    cmpHolidays: Holidays,
+  },
 
   beforeRouteEnter (to, from, next) {
     next(vm => {
@@ -313,7 +322,7 @@ export default {
       },
 
       // data
-      items: [],
+      companies: [],
 
       parseItem: (item) => {
         item._parsed = {
@@ -321,7 +330,7 @@ export default {
       },
 
       parseItems: () => {
-        this.items.forEach((item) => {
+        this.companies.forEach((item) => {
           this.parseItem(item)
         })
       },
@@ -348,7 +357,7 @@ export default {
           this.loading = false
           this.totalItems = response.data.count
           this.pages = Math.ceil(this.totalItems / this.itemsPerPage)
-          this.items = response.data.results
+          this.companies = response.data.results
 
           this.parseItems()
         }, () => {
