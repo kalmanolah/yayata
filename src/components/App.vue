@@ -4,12 +4,15 @@ div(
   class='container-fluid'
 )
   div.row
-    div.col-md-2.sidebar.col-sm-3
+    div.col-md-2.sidebar.col-sm-4
       div.row
         div.col-md-8.offset-md-2
-          img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg').logo
+          router-link(
+            :to='{ name: "home" }'
+          )
+            img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg').logo
       div.row
-        div.col-md-10.offset-md-1
+        div.col-md-10.offset-md-1.col-sm-8
           nav
             h3 My timesheets
             p.small What's going on
