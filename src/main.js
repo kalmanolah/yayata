@@ -5,6 +5,7 @@ import VueResource from 'vue-resource'
 import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
+import VueMoment from 'vue-moment'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -16,6 +17,7 @@ import Calendar from './components/Calendar.vue'
 // Vue.use(Vuex)
 Vue.use(VueRouter)
 Vue.use(VueResource)
+Vue.use(VueMoment)
 
 export const cfg_file_path = '/cfg/config.json'
 

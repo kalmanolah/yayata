@@ -59,12 +59,6 @@ import * as types from '../store/mutation-types'
 export default {
   name: 'navbar',
 
-  created: () => {
-    if (!store.state.ninetofiver.user) {
-      store.dispatch(types.NINETOFIVER_RELOAD_USER)
-    }
-  },
-
   computed: mapState({
     user: state => state.ninetofiver.user
   }),
