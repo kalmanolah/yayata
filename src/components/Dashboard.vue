@@ -4,7 +4,7 @@ div
     v-on:submit.prevent="onFilterSubmit"
     class='row'
   )
-    div(class='col-sm-6')
+    div(class='col-sm-6').hidden-print
       div(class='form-group row')
         label(
           class='col-xs-3 col-form-label'
@@ -26,7 +26,7 @@ div
 
     div(
       class='form-group col-sm-12'
-    )
+    ).hidden-print
       div(class='btn-group')
         button(
           type="submit"
@@ -40,11 +40,11 @@ div
           v-on:click.prevent='clearFilters()'
         ) Clear filters
 
-  hr
+  hr.hidden-print
 
   cmpHolidays
 
-  hr
+  hr.hidden-print
 
   div(
     v-if='loading'
@@ -67,7 +67,7 @@ div
       div(
         class='text-xs-center'
       )
-        div
+        div.hidden-print
           | Showing
           | page
           | {{ page }}
@@ -81,7 +81,7 @@ div
           | {{ totalItems }}
           | items
 
-        ul(class='pagination pagination-sm')
+        ul(class='pagination pagination-sm').hidden-print
           li(
             class='page-item'
             v-bind:class='{ disabled: page == 1 }'

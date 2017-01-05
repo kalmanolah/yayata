@@ -4,7 +4,7 @@ div(
   class='container-fluid'
 )
   div.row
-    div.col-md-2.sidebar.col-sm-4
+    div.col-md-2.sidebar.col-sm-4.hidden-print
       div.row
         div.col-md-8.offset-md-2
           router-link(
@@ -14,12 +14,14 @@ div(
       div.row
         div.col-md-10.offset-md-1.col-sm-8
           nav
-            h3 My timesheets
-            p.small What's going on
+            router-link(:to='{ name: "home" }')
+              h3 My timesheets
+              p.small What's going on
             h3 My projects
             p.small What I'm currently working on
-            h3 My leaves
-            p.small Sickness / Vacation
+            router-link(:to='{ name: "my_leaves" }')
+              h3 My leaves
+              p.small Sickness / Vacation
             h3 My colleagues
             p.small The weirdos I work with
     div.col-md-10.main-app.offset-sm-3.offset-md-2

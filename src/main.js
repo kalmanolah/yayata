@@ -14,6 +14,7 @@ import AuthLogout from './components/AuthLogout.vue'
 import Dashboard from './components/Dashboard.vue'
 import Calendar from './components/Calendar.vue'
 import Week from './components/Week.vue'
+import Leaves from './components/Leaves.vue'
 
 // Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -54,6 +55,11 @@ export const router = new VueRouter({
           name: 'calendar_week',
           path: '/calendar/week/:year/:week',
           component: Week,
+        },
+        {
+          name: 'my_leaves',
+          path: '/leaves',
+          component: Leaves,
         }
       ],
     },
