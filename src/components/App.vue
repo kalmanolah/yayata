@@ -24,9 +24,11 @@ div(
               p.small Sickness / Vacation
             h3 My colleagues
             p.small The weirdos I work with
-    div.col-md-10.main-app.offset-sm-3.offset-md-2
-      div(class='my-1')
-      router-view
+    div.col-md-10.offset-sm-3.offset-md-2
+      div.row
+        navbar
+      div.main-app
+        router-view
 </template>
 
 <script>
@@ -56,12 +58,12 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .container-fluid{
   background: #FAFAFA;
 }
-#app {
-  padding: 3rem 6rem;
+.main-app {
+  padding: 2rem 3rem;
 }
 .sidebar{
   background-color: white;
@@ -78,10 +80,23 @@ export default {
   h3{
     font-weight: 300;
   }
-
-
   margin-top: 30px;
   color: #398BCC;
 }
 
+.card-top-blue{
+  border-top: solid 3px #398bcc;
+}
+
+.card-top-red{
+  border-top: solid 3px #FA5858;
+}
+.card-top-green{
+  border-top: solid 3px #60C200;
+}
+
+.navbar-yayata{
+  border-radius: 0;
+  background: #f3f0f0;
+}
 </style>

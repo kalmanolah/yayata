@@ -11,7 +11,7 @@ div
           for='item-order-input'
         ) Order
 
-        div(class='col-xs-9')
+        div(class='col-sm-6')
           select(
             id='item-order-input'
             class='form-control'
@@ -25,7 +25,7 @@ div
             ) {{ v }}
 
     div(
-      class='form-group col-sm-12'
+      class='form-group col-md-6'
     ).hidden-print
       div(class='btn-group')
         button(
@@ -40,11 +40,7 @@ div
           v-on:click.prevent='clearFilters()'
         ) Clear filters
 
-  hr.hidden-print
 
-  cmpHolidays
-
-  hr.hidden-print
 
   div(
     v-if='loading'
@@ -138,7 +134,7 @@ div
               i(class='fa fa-angle-double-right')
 
       div(
-        class='card card-block'
+        class='card card-top-blue card-block'
         v-for='item in companies'
       )
         div
@@ -228,14 +224,10 @@ div
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
-import Holidays from './Holidays.vue'
+
 
 export default {
   name: 'dashboard',
-
-  components: {
-    cmpHolidays: Holidays,
-  },
 
   beforeRouteEnter (to, from, next) {
     next(vm => {

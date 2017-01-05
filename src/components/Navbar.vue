@@ -1,6 +1,6 @@
 <template lang="pug">
 nav(
-  class='navbar navbar-light navbar-fixed-top bg-faded'
+  class='navbar navbar-yayata'
 )
   button(
     class='navbar-toggler hidden-md-up'
@@ -15,17 +15,6 @@ nav(
     class='collapse navbar-toggleable-sm'
     id='navbarResponsive'
   )
-    router-link(
-      :to='{ name: "home" }'
-      class='navbar-brand'
-    )
-      img(
-        src='../assets/img/logo_text.svg'
-        height='30'
-        class='d-inline-block align-top'
-      )
-      //- | Yayata
-
     ul(
       class='nav navbar-nav float-md-right'
     )
@@ -69,3 +58,9 @@ export default {
   }
 }
 </script>
+
+<style lang="less" scoped>
+
+
+
+</style>
