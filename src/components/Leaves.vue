@@ -9,14 +9,14 @@ div(class='calendar')
         div.card-header(role='tab', v-bind:id='"heading-" + i')
           h5.mb-0
             a(data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
-              | {{ leave.display_label }}
+              | {{ leave.description }}
         div.collapse.in(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
           div.card-block
-            p {{ leave.description }}
             div
               ul.list-group
                 li.list-group-item(v-for='leave_date in leave.leavedate_set')
-                  | {{ leave_date.starts_at | moment('DD MMMM YYYY hh:mm') }} - {{ leave_date.ends_at | moment('DD MMMM YYYY hh:mm') }}
+                  | <strong>From:</strong> {{ leave_date.starts_at | moment('DD MMM YYYY hh:mm') }}<br>
+                  | <strong>To:</strong> {{ leave_date.ends_at | moment('DD MMM YYYY hh:mm') }}
 </template>
 <script>
 import { mapState } from 'vuex'
