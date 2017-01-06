@@ -15,6 +15,8 @@ import Dashboard from './components/Dashboard.vue'
 import Calendar from './components/Calendar.vue'
 import Week from './components/Week.vue'
 import Leaves from './components/Leaves.vue'
+import Timesheets from './components/Timesheets.vue'
+import Companies from './components/Companies.vue'
 
 // Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -60,6 +62,16 @@ export const router = new VueRouter({
           name: 'my_leaves',
           path: '/leaves',
           component: Leaves,
+        },
+        {
+          name: 'my_timesheets',
+          path: '/timesheets',
+          component: Timesheets,
+        },
+        {
+          name: 'companies',
+          path: '/companies',
+          component: Companies,
         }
       ],
     },

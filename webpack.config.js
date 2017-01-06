@@ -17,7 +17,8 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.pug'
+      template: './src/index.pug',
+      title: 'Yayata'
     }),
     new CopyWebpackPlugin([
       {

@@ -14,7 +14,7 @@ div(
       div.row
         div.col-md-10.offset-md-1.col-sm-8
           nav
-            router-link(:to='{ name: "home" }')
+            router-link(:to='{ name: "my_timesheets" }')
               h3 My timesheets
               p.small What's going on
             h3 My projects
@@ -24,6 +24,8 @@ div(
               p.small Sickness / Vacation
             h3 My colleagues
             p.small The weirdos I work with
+            h3 Companies
+            p.small Overview of clients for some reason
     div.col-md-10.offset-sm-3.offset-md-2
       div.row
         navbar
@@ -98,5 +100,14 @@ export default {
 .navbar-yayata{
   border-radius: 0;
   background: #f3f0f0;
+}
+
+.card-shadow{
+  box-shadow: rgba(0,0,0,.29) 0 0 4px 0;
+}
+
+.card-title{
+  font-weight: 300;
+  margin-top: 1rem;
 }
 </style>
