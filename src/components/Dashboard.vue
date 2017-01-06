@@ -26,11 +26,15 @@ div
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>36 hours (4,5 days)<strong>
+  .row
+    .col-md-8
+      LeaveForm
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import LeaveForm from './forms/LeaveForm.vue'
 
 var data = {
     today: new Date(),
@@ -38,6 +42,10 @@ var data = {
 
 export default {
   name: 'dashboard',
+
+  components: {
+    LeaveForm: LeaveForm,
+  },
 
   data () {
     return data;

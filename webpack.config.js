@@ -18,7 +18,8 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './src/index.pug',
-      title: 'Yayata'
+      title: 'Yayata',
+      favicon: './img/favicon.ico'
     }),
     new CopyWebpackPlugin([
       {

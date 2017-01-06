@@ -41,11 +41,9 @@ export default {
     return data;
   },
 
-
   components: {
     cmpHolidays: Holidays,
   },
-
 
   created: () => {
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
