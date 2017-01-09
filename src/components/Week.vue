@@ -38,7 +38,7 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
-import moment from 'moment'
+
 
 export default {
   name: 'week',
@@ -97,8 +97,6 @@ export default {
         daysofweek[i] = DayOfWeek;
         DayOfWeek = moment(DayOfWeek).add(1, ('days'));
       }
-
-      console.log(daysofweek)
 
       return daysofweek
     },

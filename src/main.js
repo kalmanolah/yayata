@@ -6,6 +6,7 @@ import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
+import VueFormGenerator from "vue-form-generator"
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -22,6 +23,7 @@ import Companies from './components/Companies.vue'
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueMoment)
+Vue.use(VueFormGenerator)
 
 export const cfg_file_path = '/cfg/config.json'
 

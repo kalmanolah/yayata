@@ -7,10 +7,10 @@ div(class='calendar')
         div
           #accordion(role='tablist', aria-multiselectable='true')
             .card(v-for='(leave, i) in leaves').card-top-blue
-              div.card-header(role='tab', v-bind:id='"heading-" + i')
+              div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
                 div.row
                   div.col-md-10
-                    a(data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
+                    a
                       | {{ leave.description }}
                   div.col-md-2
                     span.tag.tag-primary.float-md-right {{ leave.status }}
