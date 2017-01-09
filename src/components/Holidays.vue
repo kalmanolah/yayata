@@ -1,4 +1,4 @@
-<template lang="pug">
+  <template lang="pug">
 div
   h3 Upcoming holidays on {{ today | moment('DD MMMM YYYY') }}
   p.subtitle This is a list of all upcoming holidays in the next few months.

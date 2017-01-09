@@ -6,7 +6,7 @@ div
         | You have 1 due timesheet that is still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
     .col-md-8
-      .card.card-shadow
+      .card
         h4.card-title.text-md-center
           | Timesheet for {{ today | moment('MMMM YYYY') }}
         table.table
