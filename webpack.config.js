@@ -19,7 +19,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.pug',
       title: 'Yayata',
-      favicon: './img/favicon.ico'
+      favicon: './src/assets/img/favicon.ico'
     }),
     new CopyWebpackPlugin([
       {
