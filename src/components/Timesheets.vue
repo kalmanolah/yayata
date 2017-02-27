@@ -6,9 +6,10 @@ div
     br
     h3 {{ year }}
     div.btn-toolbar(role="toolbar", aria-label="Wow, such month")
-      div.btn-group(role="group")
-        button.btn.btn-secondary(type="button", v-for='sheet in year_group')
-          | {{ sheet.month }}
+      div.btn-group(role="group", v-for='sheet in year_group')
+        router-link(:to='{ name: "calendar_month", params: {year: sheet.year,month: sheet.month }}')
+          button.btn.btn-secondary(type='button')
+            | {{ sheet.month }}
     ul.list-group
 </template>
 
