@@ -8,7 +8,7 @@ div
     .col-md-8
       .card
         h4.card-title.text-md-center
-          | Timesheet for {{ today | moment('MMMM YYYY') }}
+          | KAKA ENDE OOK DE PIPI
         table.table
           tbody
             tr
@@ -28,23 +28,20 @@ div
               td.text-md-right <strong>36 hours (4,5 days)</strong>
   .row
     .col-md-8
-      LeaveForm
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
-import LeaveForm from './forms/LeaveForm.vue'
 
 var data = {
-    today: new Date(),
 }
 
 export default {
-  name: 'dashboard',
+  name: 'colleagues',
 
   components: {
-    LeaveForm: LeaveForm,
+
   },
 
   data () {

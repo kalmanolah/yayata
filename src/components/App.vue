@@ -17,15 +17,18 @@ div(
             router-link(:to='{ name: "my_timesheets" }')
               h3 My timesheets
               p.small What's going on
-            h3 My projects
-            p.small What I'm currently working on
+            router-link(:to='{ name: "my_projects" }')
+              h3 My projects
+              p.small What I'm currently working on
             router-link(:to='{ name: "my_leaves" }')
               h3 My leaves
               p.small Sickness / Vacation
-            h3 My colleagues
-            p.small The weirdos I work with
-            h3 Companies
-            p.small Overview of clients for some reason
+            router-link(:to='{ name: "my_colleagues" }')
+              h3 My colleagues
+              p.small The weirdos I work with
+            router-link(:to='{ name: "companies" }')
+              h3 Companies
+              p.small Overview of clients for some reason
     div.col-md-10.offset-sm-3.offset-md-2
       div.row
         navbar

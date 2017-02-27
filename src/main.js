@@ -19,6 +19,9 @@ import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 
+import Colleagues from './components/Colleagues.vue'
+import Projects from './components/Projects.vue'
+
 // Vue.use(Vuex)
 Vue.use(VueRouter)
 Vue.use(VueResource)
@@ -61,6 +64,11 @@ export const router = new VueRouter({
           component: Week,
         },
         {
+          name: 'my_colleagues',
+          path: '/colleagues',
+          component: Colleagues,
+        },
+        {
           name: 'my_leaves',
           path: '/leaves',
           component: Leaves,
@@ -74,6 +82,11 @@ export const router = new VueRouter({
           name: 'companies',
           path: '/companies',
           component: Companies,
+        },
+        {
+          name: 'my_projects',
+          path: '/projects',
+          component: Projects,
         }
       ],
     },
