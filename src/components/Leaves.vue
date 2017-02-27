@@ -6,14 +6,16 @@ div(class='calendar')
       p Here, have an overview of all your leaves. Whatever
         div
           #accordion(role='tablist', aria-multiselectable='true')
-            .card(v-for='(leave, i) in leaves').card-top-blue
+            // Ribbon colour based on leave.status -> Red, Green, Blue
+            .card(v-for='(leave, i) in leaves' v-bind:class='[{"card-top-green" : leave.status == leaveStatuses[0]}, {"card-top-red" : leave.status == leaveStatuses[1]}, "card-top-blue" ]')
               div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
                 div.row
                   div.col-md-10
                     a
                       | {{ leave.description }}
-                  div.col-md-2
-                    span.tag.tag-primary.float-md-right {{ leave.status }}
+                  div.col-md-2 
+                    // Text colour based on leave.status -> Red, Green, Blue
+                    span.tag.float-md-right(v-bind:class=' [{"tag-success" : leave.status == leaveStatuses[0]}, {"tag-danger": leave.status == leaveStatuses[1]}, "tag-primary" ] ') {{ leave.status }}
               div.collapse(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
                 div.card-block
                   div
@@ -32,6 +34,7 @@ import Holidays from './Holidays.vue'
 
 var data = {
   leaves: [],
+  leaveStatuses: types.LEAVE_STATUSES,
 }
 
 export default {
@@ -43,6 +46,17 @@ export default {
 
   components: {
     cmpHolidays: Holidays,
+  },
+
+  computed: {
+    //Calculate the correct ribbon class for styling purposes
+    ribbonClass: function(leave) {
+      console.log(leave);
+      return 'card-top-blue';
+    }
+
+    //Calculate the correct tag class for styling purposes
+
   },
 
   created: () => {
