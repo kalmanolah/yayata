@@ -8,7 +8,7 @@ div
     .col-md-8
       .card
         h4.card-title.text-md-center
-          | KAKA ENDE OOK DE PIPI
+          | PROJECTS
         table.table
           tbody
             tr

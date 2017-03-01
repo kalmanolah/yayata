@@ -8,7 +8,7 @@ div
     .col-md-8
       .card
         h4.card-title.text-md-center
-          | KAKA ENDE OOK DE PIPI
+          | COLLEAGUES
         table.table
           tbody
             tr
@@ -46,7 +46,12 @@ export default {
 
   data () {
     return data;
+  },
+
+  created: () => {
+
   }
+
 }
 </script>
 
