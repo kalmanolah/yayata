@@ -35,9 +35,11 @@ div(class='calendar')
               | Hoe graaf is dees
 
 </template>
+
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import moment from 'moment'
 
 
 export default {
@@ -51,6 +53,7 @@ export default {
   },
 
   methods: {
+
     setSelectedWeek: function (year, week) {
       console.log()
       this.$router.push({
@@ -63,6 +66,7 @@ export default {
 
       // this.selectedMonth = new Date(year, month - 1, 1)
     },
+
     selectNextWeek: function () {
       var year = this.selectedYear,
       week = this.selectedWeek;
@@ -75,6 +79,7 @@ export default {
 
       this.setSelectedWeek(year, week)
     },
+
     selectPreviousWeek: function () {
       var year = this.selectedYear,
       week = this.selectedWeek - 1
@@ -86,20 +91,22 @@ export default {
 
       this.setSelectedWeek(year, week)
     },
-    getDaysOfWeek: function () {
-      var week = this.selectedWeek,
-      year = this.selectedYear,
-      DayOfWeek = moment().week(week).year(year).startOf('isoweek'),
-      daysofweek = [];
 
-      var i = 0;
-      for(i = 0; i < 7; i++){
+    getDaysOfWeek: function () {
+
+      var week = this.selectedWeek,
+        year = this.selectedYear,
+        DayOfWeek = moment().week(week).year(year).startOf('isoweek'),
+        daysofweek = [];
+
+      for(var i = 0; i < 7; i++) {
         daysofweek[i] = DayOfWeek;
         DayOfWeek = moment(DayOfWeek).add(1, ('days'));
       }
 
-      return daysofweek
+      return daysofweek;
     },
+
   },
 
   data () {

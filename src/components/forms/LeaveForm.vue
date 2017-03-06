@@ -5,7 +5,7 @@ div
       i.fa.fa-plane
       | &nbsp; Request a Leave
     .card-block
-      vue-form-generator(:schema="schema",:model="model",:options="formOptions")
+      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
 </template>
 
 <script>
@@ -28,14 +28,14 @@ export default {
         start_full_day: true,
         end_full_day: true,
         description: "",
-        attachement: null,
+        attachment: null,
       },
 
       schema: {
         fields: [
         {
           type: "input",
-          inputType: "date",
+          inputType: "dateTime",
           label: "From",
           model: "start_date",
           placeholder: "From",
@@ -60,7 +60,7 @@ export default {
         },
         {
           type: "input",
-          inputType: "date",
+          inputType: "dateTime",
           label: "To",
           model: "end_date",
           placeholder: "To",
@@ -90,8 +90,8 @@ export default {
         {
           type: "input",
           inputType: "file",
-          label: "Attachement",
-          model: "attachement",
+          label: "Attachment",
+          model: "attachment",
         }]
       },
 
