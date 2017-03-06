@@ -34,12 +34,9 @@ import LeaveForm from './forms/LeaveForm.vue'
 import store from '../store'
 
 var data = {
-  timesheets: [],
+  timesheets: false,
   contracts: [],
-  customers: {},
-
   projects: [],
-
 
   today: new Date(),
 }
@@ -55,21 +52,16 @@ export default {
     return data;
   },
 
-  created: () => {
+  created: function () {
 
-    //Get timesheets of current user
+    let self = this;
+
+    //Get whether user has open timesheets
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_timesheets/',
-      params: {}
+      path: '/my_timesheets/'
     }).then((response) => {
-      var timesheets = {};
-
-      response.data.results.forEach(function(sheet) {
-        if(!timesheets[sheet.year]) 
-          timesheets[sheet.year] = {};
-      });
-
-      data.timesheets = timesheets;
+      if(response.body.count > 0)
+        data.timesheets = true;
     }, () => {
       this.loading = false
     });
@@ -78,11 +70,13 @@ export default {
     //Get contracts of current user
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/my_contracts/',
-      params: {}
-    }).then( (response) => {
+      params: {
+        'active': true
+      }
+    }).then((response) => {
       data.contracts = response.data.results;
     }, () => {
-      this.loading = false
+      this.loading = false;
     });
 
   },
@@ -91,6 +85,7 @@ export default {
 
   filters: {
 
+    //Computes amount of days in hours
     hoursToDaysFilter: function(value) {
       return Math.round(value / 24);
     }
@@ -100,41 +95,42 @@ export default {
   methods: {
 
     //Constructs project array to show data
-    makeProjectsArray: function() {
-      if(data.contracts.length > 0) {
-        data.projects = [];
+    makeProjectsArray: function(contracts) {
+      data.projects = [];
 
-        for (var i = 0; i < data.contracts.length; i++)  
-          data.projects.push( { 
-            customerLabel: data.customers[data.contracts[i].customer],
-            projectLabel: data.contracts[i].label
-          });
-      }
+      for (var i = 0; i < contracts.length; i++)  
+        data.projects.push({ 
+          id: contracts[i].customer,
+          projectLabel: contracts[i].label,
+        });
     },
 
-    //Gets the company names from the API, pushes into customers-dict
+    //Gets the company names from the API, pushes into projects.customerLabel
     getCustomersFromID: function(value) {
 
        store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/companies/' + value + '/'
       }).then((response) => {
-        data.customers[value] = response.data.name;
-
-        //Construct the projects-array
-        this.makeProjectsArray();
+        //Finds correct project in arr, then sets correct value for key according to VueJS datachange detection method
+        for(var i = 0; i < data.projects.length; i++)
+          if(data.projects[i].id == value)
+            this.$set(data.projects[i], 'customerLabel', response.data.name)
       });
 
     },
+    
+    //Gets the total hours spent for the user per contract
 
   },
 
   watch: {
 
-    //Watches contracts
-    //On change -> request to getCustomersFromID()
+    //Watches contracts to make correct changes to projectsArr & call getCustomers
     contracts: function(newContracts) {
       for(var i = 0; i < newContracts.length; i++)
-        this.getCustomersFromID(newContracts[i].customer); 
+        this.getCustomersFromID(newContracts[i].customer);
+      
+      this.makeProjectsArray(newContracts); 
     },
 
   }
