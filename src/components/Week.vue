@@ -27,12 +27,13 @@ div(class='calendar')
   div(class='calendar-header')
     div.card-deck-wrapper
       div.card-deck
-        div.card.calendar-day(v-for='weekDay in getDaysOfWeek()')
+        div.card.calendar-day(v-for='weekDay in getDaysOfWeek()') 
           div.card-header
-            | {{ weekDay | moment('dd DD-MM-YYYY') }}
+            | {{ weekDay | moment('dddd') }} 
+            div {{ weekDay | moment('DD') }}
           div.card-block
             p.card-text
-              | Hoe graaf is dees
+              | Hoe graaf is dees {{selectedMonth}}
 
 </template>
 
@@ -46,16 +47,25 @@ export default {
   name: 'week',
 
   watch: {
+
     '$route' (to, from) {
-      this.selectedWeek = to.params.week
-      this.selectedYear = to.params.year
-    }
+      this.selectedWeek = to.params.week;
+      this.selectedYear = to.params.year;
+    },  
+
+  },
+
+  mounted: function() {
+
+    //To be executed when page is loaded
+    console.log(this.$route);
+
   },
 
   methods: {
 
+
     setSelectedWeek: function (year, week) {
-      console.log()
       this.$router.push({
         name: 'calendar_week',
         params: {
@@ -64,17 +74,28 @@ export default {
         },
       })
 
-      // this.selectedMonth = new Date(year, month - 1, 1)
+      console.log('year: ' + year);
+      console.log('week: ' + week);
+
+      this.selectedMonth = moment(year, 'YYYY').isoWeek(week);
     },
 
     selectNextWeek: function () {
-      var year = this.selectedYear,
-      week = this.selectedWeek;
-      week++;
 
-      if (week == 53) {
-        week = 1
-        year += 1
+      console.log('SELECT NEXT WEEK');
+
+      var year = this.selectedYear,
+          week = parseInt(this.selectedWeek) + 1;
+
+      var dat = moment(year, 'YYYY');
+
+
+
+      console.log(week);
+      console.log(dat.isoWeeksInYear());
+      if (week > dat.isoWeeksInYear()) {
+        week = 1;
+        year++;
       }
 
       this.setSelectedWeek(year, week)
@@ -82,11 +103,11 @@ export default {
 
     selectPreviousWeek: function () {
       var year = this.selectedYear,
-      week = this.selectedWeek - 1
+          week = this.selectedWeek - 1;
 
-      if (week == 0) {
-        week = 52
-        year -= 1
+      if (week <= 0) {
+        week = 52;
+        year--;
       }
 
       this.setSelectedWeek(year, week)
@@ -113,12 +134,14 @@ export default {
 
     return {
       selectedYear: this.$route.params.year,
-      selectedWeek: this.$route.params.week
+      selectedWeek: this.$route.params.week,
+      selectedMonth: null
     }
 
   },
 
   computed: {
+
   },
 }
 </script>
