@@ -41,13 +41,15 @@ div(class='calendar')
         "calendar-day-current": isCurrentDay(n), \
       }'
     )
-      div(class='card card-block')
-        h4 {{ n }}
+      router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) }}')
+        div(class='card card-block')
+          h4 {{ n }} 
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
+import { mapState } from 'vuex';
+import * as types from '../store/mutation-types';
+import moment from 'moment';
 
 var daysInMonth = (d) => {
   return  new Date(d.getYear(), d.getMonth() + 1, 0).getDate()
@@ -63,13 +65,16 @@ export default {
   },
 
   methods: {
+
     getDayOfWeek: function (day) {
       return (this.dayOffset + day) % 7
     },
+
     isWeekendDay: function (day) {
       var dow = this.getDayOfWeek(day)
       return dow > 5 || dow < 1
     },
+
     isCurrentDay: function (day) {
       var now = new Date()
 
@@ -83,6 +88,7 @@ export default {
 
       return false
     },
+
     setSelectedMonth: function (year, month) {
       this.$router.push({
         name: 'calendar_month',
@@ -94,6 +100,7 @@ export default {
 
       // this.selectedMonth = new Date(year, month - 1, 1)
     },
+
     selectNextMonth: function () {
       var year = this.selectedMonth.getFullYear(),
       month = this.selectedMonth.getMonth() + 1 + 1
@@ -105,6 +112,7 @@ export default {
 
       this.setSelectedMonth(year, month)
     },
+
     selectPreviousMonth: function () {
       var year = this.selectedMonth.getFullYear(),
       month = this.selectedMonth.getMonth() + 1 - 1
@@ -115,10 +123,20 @@ export default {
       }
 
       this.setSelectedMonth(year, month)
+    },
+
+    getWeekNumber: function(val) {
+      return moment({ 
+        day: val, 
+        month: this.selectedMonth.getMonth(),
+        year: this.selectedMonth.getFullYear()
+      }).isoWeek();
     }
+
   },
 
   data () {
+
     return {
       weekDays: [
         'Monday',
@@ -143,11 +161,13 @@ export default {
         'November',
         'December',
       ],
+
       selectedMonth: new Date(this.$route.params.year, this.$route.params.month - 1, 1),
     }
   },
 
   computed: {
+
     dayOffset: (vm) => {
       var dow = vm.selectedMonth.getDay()
 
@@ -157,10 +177,13 @@ export default {
 
       return dow - 1
     },
+
     dayCount: (vm) => {
       return daysInMonth(vm.selectedMonth)
     }
+
   },
+
 }
 </script>
 

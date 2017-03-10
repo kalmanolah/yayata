@@ -110,10 +110,12 @@ export default {
   },
 
   data () {
+
     return {
-      selectedYear: 2017,
-      selectedWeek: 1
+      selectedYear: this.$route.params.year,
+      selectedWeek: this.$route.params.week
     }
+
   },
 
   computed: {

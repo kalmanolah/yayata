@@ -1,12 +1,14 @@
 import Vue from 'vue'
-// import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
 import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
-import VueFormGenerator from "vue-form-generator"
+import moment from 'moment'
+import VueFormGenerator from 'vue-form-generator'
+
+import { datetimepicker } from 'eonasdan-bootstrap-datetimepicker'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -56,7 +58,7 @@ export const router = new VueRouter({
         {
           name: 'calendar_week_redirect',
           path: '/calendar/week',
-          redirect: `/calendar/week/${(new Date()).getFullYear()}/1`,
+          redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
         },
         {
           name: 'calendar_week',
