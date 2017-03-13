@@ -33,7 +33,7 @@ div(class='calendar')
             div {{ weekDay | moment('DD') }}
           div.card-block
             p.card-text
-              | Hoe graaf is dees {{selectedMonth}}
+              | Hoe graaf is dees
 
 </template>
 
@@ -47,25 +47,16 @@ export default {
   name: 'week',
 
   watch: {
-
     '$route' (to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
-    },  
-
-  },
-
-  mounted: function() {
-
-    //To be executed when page is loaded
-    console.log(this.$route);
-
+    }
   },
 
   methods: {
 
-
     setSelectedWeek: function (year, week) {
+      console.log()
       this.$router.push({
         name: 'calendar_week',
         params: {
@@ -74,26 +65,14 @@ export default {
         },
       })
 
-      console.log('year: ' + year);
-      console.log('week: ' + week);
-
-      this.selectedMonth = moment(year, 'YYYY').isoWeek(week);
+      this.selectedMonth = moment().year(year).isoWeekYear(week);
     },
 
     selectNextWeek: function () {
+      var year = parseInt(this.selectedYear),
+      week = parseInt(this.selectedWeek) + 1;
 
-      console.log('SELECT NEXT WEEK');
-
-      var year = this.selectedYear,
-          week = parseInt(this.selectedWeek) + 1;
-
-      var dat = moment(year, 'YYYY');
-
-
-
-      console.log(week);
-      console.log(dat.isoWeeksInYear());
-      if (week > dat.isoWeeksInYear()) {
+      if (week > moment().isoWeekYear(year).isoWeeksInYear()) {
         week = 1;
         year++;
       }
@@ -102,27 +81,28 @@ export default {
     },
 
     selectPreviousWeek: function () {
-      var year = this.selectedYear,
-          week = this.selectedWeek - 1;
+      var year = parseInt(this.selectedYear),
+      week = parseInt(this.selectedWeek) - 1;
 
-      if (week <= 0) {
-        week = 52;
+      if (week == 0) {
         year--;
+        week = moment().isoWeekYear(year).isoWeeksInYear();
       }
 
       this.setSelectedWeek(year, week)
     },
 
+    //Make the days/week to be drawn
     getDaysOfWeek: function () {
 
       var week = this.selectedWeek,
         year = this.selectedYear,
-        DayOfWeek = moment().week(week).year(year).startOf('isoweek'),
-        daysofweek = [];
+        daysofweek = [],
+        dayOfWeek = moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
 
       for(var i = 0; i < 7; i++) {
-        daysofweek[i] = DayOfWeek;
-        DayOfWeek = moment(DayOfWeek).add(1, ('days'));
+        daysofweek[i] = dayOfWeek;
+        dayOfWeek = moment(dayOfWeek).add(1, ('days'));
       }
 
       return daysofweek;
@@ -135,13 +115,12 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
-      selectedMonth: null
+      selectedMonth: null,
     }
 
   },
 
   computed: {
-
   },
 }
 </script>
