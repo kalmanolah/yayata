@@ -1,8 +1,7 @@
 <template lang="pug">
 div(class='calendar')
   div(class='row')
-    h1(class='col-md-6') Week {{ selectedWeek }} {{ selectedYear}}
-    div(class='col-md-6 text-md-right')
+    div(class='col-md-4 text-md-left')
       div(
         class='btn-group'
         role='group'
@@ -15,6 +14,13 @@ div(class='calendar')
         )
           i(class='fa fa-angle-double-left')
           |  &nbsp;Previous
+    h1(class='col-md-4 text-md-center') {{ selectedYear }} Week {{ selectedWeek }} 
+    div(class='col-md-4 text-md-right')
+      div(
+        class='btn-group'
+        role='group'
+        aria-label='Calendar controls'
+      )
         button(
           class='btn btn-secondary'
           type='button'
@@ -22,7 +28,18 @@ div(class='calendar')
         )
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
-  hr
+
+  //- Getting the months now shown and allowing routing back to where you came from
+  div(class='row')
+    span(class='col-md-6 text-md-center') 
+      router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
+        div(class='col-md-3 text-md-left') {{ periodStartMonth | moment('MMMM')}}
+      div(v-if='periodEndMonth.month() != periodStartMonth.month()')
+        div(class='col-md-1') -
+        router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
+          div(class='col-md-3 text-md-right') {{ periodEndMonth | moment('MMMM')}}
+
+  hr(class='col-md-12')
 
   div(class='calendar-header')
     div.card-deck-wrapper
@@ -64,8 +81,6 @@ export default {
           week: week,
         },
       })
-
-      this.selectedMonth = moment().year(year).isoWeekYear(week);
     },
 
     selectNextWeek: function () {
@@ -115,12 +130,26 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
-      selectedMonth: null,
     }
 
   },
 
   computed: {
+
+    periodStartMonth: function() {
+      var year = this.selectedYear ? this.selectedYear : moment().year();
+      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+
+      return moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
+    },
+
+    periodEndMonth: function() {
+      var year = this.selectedYear ? this.selectedYear : moment().year();
+      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+
+      return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
+    }
+
   },
 }
 </script>
