@@ -28,40 +28,67 @@ div(class='calendar')
         )
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
-
-  //- Getting the months now shown and allowing routing back to where you came from
-  div(class='row')
-    span(class='col-md-6 text-md-center') 
+      
+    //- Getting the months now shown and allowing routing back to where you came from
+    span.col-md-offset-3.col-md-6.text-md-center
       router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-        div(class='col-md-3 text-md-left') {{ periodStartMonth | moment('MMMM')}}
+        h3(class='col-md-3 text-md-left') {{ periodStartMonth | moment('MMMM')}}
       div(v-if='periodEndMonth.month() != periodStartMonth.month()')
-        div(class='col-md-1') -
+        h3(class='col-md-1') -
         router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-          div(class='col-md-3 text-md-right') {{ periodEndMonth | moment('MMMM')}}
+          h3(class='col-md-3 text-md-right') {{ periodEndMonth | moment('MMMM')}}
 
-  hr(class='col-md-12')
+  hr
+  
+  div.calendar-header
+    div.card-group
+      div.card(v-for='weekDay in daysOfWeek')
+          div.card-header.text-md-center.card-info
+            | {{ weekDay | moment('dddd') }} 
+            div.text-md-center {{ weekDay | moment('DD/MM') }}
 
+          div.card-block(v-for='p in getDaysPerformances(weekDay.date())')
+            span.card-title {{ findContractLabel(p.contract) }}
+            .card-text {{ p.duration }}
+
+          div.modal-body
+
+          b-popover(title='Create a new entry' placement='bottom' triggers='click')
+            b-btn.btn-success.col-md-12 +
+            .text-xs-center.col-md-12(slot='content') 
+              strong.text-md-center {{ weekDay | moment('DD/MM/YYYY') }} 
+              vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+
+          div.card-footer.text-md-center
+            small.text-muted
+              | 0/8 hours
+
+//-
   div(class='calendar-header')
     div.card-deck-wrapper
       div.card-deck
-        div.card.calendar-day(v-for='weekDay in getDaysOfWeek()') 
-          div.card-header
+        div.card.calendar-day(v-for='weekDay in daysOfWeek') 
+          div.card-header.text-md-center
             | {{ weekDay | moment('dddd') }} 
-            div {{ weekDay | moment('DD') }}
-          div.card-block
-            p.card-text
-              | Hoe graaf is dees
+            div.text-md-center {{ weekDay | moment('DD/MM') }}
+          div.card-block(v-for='p in getDaysPerformances(weekDay.date())')
+            p.card-text {{ p.id }}
+          div.card-footer.text-muted.text-md-center
+            | 0/8 hours
 
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
-import moment from 'moment'
-
+import { mapState } from 'vuex';
+import * as types from '../store/mutation-types';
+import store from '../store';
+import moment from 'moment';
 
 export default {
   name: 'week',
+
+  components: {
+  },
 
   watch: {
     '$route' (to, from) {
@@ -72,8 +99,27 @@ export default {
 
   methods: {
 
+    hideModal() {
+      this.isOpan = false;
+    },
+
+    showModal() {
+      this.isOpen = true;
+    },
+
+    //Find the label that belongs to the company id
+    findCompanyName: function(id) {
+      return types.COMPANIES.find(x => x.id == id);
+    },
+
+    //Find the contract that belongs to the contract id
+    findContractLabel: function(id) {
+      var cont = types.CONTRACTS.find(x => x.id == id);
+      return cont.label + ': ' + cont.customer;
+    },
+
+    //Go to specified week, get params from URI
     setSelectedWeek: function (year, week) {
-      console.log()
       this.$router.push({
         name: 'calendar_week',
         params: {
@@ -83,6 +129,7 @@ export default {
       })
     },
 
+    //Push params for next week into route
     selectNextWeek: function () {
       var year = parseInt(this.selectedYear),
       week = parseInt(this.selectedWeek) + 1;
@@ -95,6 +142,7 @@ export default {
       this.setSelectedWeek(year, week)
     },
 
+    //Push params for last week into route
     selectPreviousWeek: function () {
       var year = parseInt(this.selectedYear),
       week = parseInt(this.selectedWeek) - 1;
@@ -109,7 +157,6 @@ export default {
 
     //Make the days/week to be drawn
     getDaysOfWeek: function () {
-
       var week = this.selectedWeek,
         year = this.selectedYear,
         daysofweek = [],
@@ -119,10 +166,69 @@ export default {
         daysofweek[i] = dayOfWeek;
         dayOfWeek = moment(dayOfWeek).add(1, ('days'));
       }
-
+      var arr = daysofweek.map(o => { return o.date()  });
+      this.makePerformances(arr);
       return daysofweek;
     },
 
+    //Calls the performance stat and pushes into arr
+    makePerformances: function(arr) {
+      var start, end, month;
+      this.performances = [];
+
+      //If the index of the lowest value in the array is not the first,
+      //the days are transitioning from one month to the other
+      if(arr.indexOf(Math.min.apply(Math, arr)) != 0) {
+
+        var maxIndex = arr.indexOf(Math.max.apply(Math, arr));    //Get index of highest in array (automatically final day of month that)
+
+        start = arr[0],
+        end = arr[ maxIndex ],   
+        month = parseInt(this.periodStartMonth.format('MM'));     //Months are zero-indexed
+
+        this.callPerformance(month, start, end);
+
+        //Reset the vars for use further below
+        start = arr[ maxIndex + 1 ],
+        end = arr[arr.length-1],
+        month = parseInt(this.periodEndMonth.format('MM'));
+
+        this.callPerformance(month, start, end);
+      
+      } else {
+        start = arr[0],
+        end = arr[arr.length-1],
+        month = parseInt(this.periodStartMonth.format('MM'));
+
+        this.callPerformance(month, start, end);
+      }
+    },
+
+    //Make the mu_performances call & push into arr
+    callPerformance: function(month, start, end) {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_performances/',
+        params: {
+          year: this.selectedYear,
+          timesheet__month: month,
+          day__gte: start,
+          day__lte: end,
+        },
+      }).then((response) => {
+        this.performances = this.performances.concat( response.data.results );
+      });
+    },
+
+    //Get the performances linked to a day
+    getDaysPerformances: function(day) {
+      var result = [];
+
+      for(var i = 0; i < this.performances.length; i++)
+        if(this.performances[i].day == day)
+          result.push(this.performances[i]);
+
+      return result;
+    }
   },
 
   data () {
@@ -130,12 +236,105 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
+      performances: [],
+
+      isOpen: false,
+
+      //VUE FORM GENERATOR FIELDS
+      model: {
+        project: null,
+        duration: 0,
+        description: "",
+      },
+
+      schema: {
+        fields: [
+          {
+            //PROJECT
+            type: "select",
+            model: "project",
+
+            values: function() {
+              var arr = [];
+
+              types.CONTRACTS.forEach(x => {
+                arr.push({
+                  id: x.id,
+                  name: x.customer + ': ' + x.label
+                });
+              });
+
+              console.log(arr);
+              
+              return arr;
+            },
+
+            styleClasses: 'col-md-8'
+          },
+          {
+            //DURATION
+            type: "input",
+            inputType: "text",
+            model: "duration",
+
+            styleClasses: 'col-md-4'
+          },
+          {
+            //DESCRIPTION
+            type: "textArea",
+            model: "description",
+
+            styleClasses: 'col-md-12'
+          },
+          {
+            //SUBMIT FIELD
+            type: "submit",
+            validateBeforeSubmit: true,
+            onSubmit: function(model, schema) {
+
+              store.dispatch(
+                types.NINETOFIVER_API_REQUEST, 
+                {
+                  path: '/my_leaves/',
+                  method: 'POST',
+                  data: {
+                    leave_type: 0,
+                    status: 'PENDING',
+                  },
+                  emulateJSON: true,
+                }
+              ).then((response) => {
+                console.log(response);
+              }, () => {
+                this.loading = false
+              });
+
+            },
+            styleClasses: 'col-md-12',
+          }
+        ]
+      },
+
+      formOptions: {
+        validateAfterLoad: true,
+        validateAfterChanged: true
+      }
     }
+
+  },
+
+  filters: {
+
+    //Gets th
+    formatContractName: function(val) {
+      return;
+    },
 
   },
 
   computed: {
 
+    //Get the month corresponding with the start of the week
     periodStartMonth: function() {
       var year = this.selectedYear ? this.selectedYear : moment().year();
       var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
@@ -143,14 +342,22 @@ export default {
       return moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
     },
 
+    //Get the month corresponding with the end of the week
     periodEndMonth: function() {
       var year = this.selectedYear ? this.selectedYear : moment().year();
       var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
 
       return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
-    }
+    },
+
+    daysOfWeek: function() {
+      return this.getDaysOfWeek();
+    },
 
   },
+
+  created: function() {
+  }
 }
 </script>
 

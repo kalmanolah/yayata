@@ -7,8 +7,8 @@ div(class='calendar')
         div
           #accordion(role='tablist', aria-multiselectable='true')
 
-            // Ribbon colour based on leave.status -> Red, Green, Blue
-            .card(v-for='(leave, i) in leaves' v-bind:class='[{"card-top-green" : leave.status == leaveStatuses[0]}, {"card-top-red" : leave.status == leaveStatuses[1]}, "card-top-blue" ]')
+            //- Ribbon colour based on leave.status -> Red, Green, Blue
+            .card(v-for='(leave, i) in leaves' v-bind:class='[{"card-top-green" : leave.status == leaveStatuses[2]}, {"card-top-red" : leave.status == leaveStatuses[1]}, "card-top-blue" ]')
 
               div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
                 div.row
@@ -17,8 +17,8 @@ div(class='calendar')
                       | {{ leave.description }}
                   div.col-md-2 
 
-                    // Text colour based on leave.status -> Red, Green, Blue
-                    span.tag.float-md-right(v-bind:class=' [{"tag-success" : leave.status == leaveStatuses[0]}, {"tag-danger": leave.status == leaveStatuses[1]}, "tag-primary" ] ') {{ leave.status }}
+                    //- Text colour based on leave.status -> Red, Green, Blue
+                    span.tag.float-md-right(v-bind:class=' [{"tag-success" : leave.status == leaveStatuses[2]}, {"tag-danger": leave.status == leaveStatuses[1]}, "tag-primary" ] ') {{ leave.status }}
                     
               div.collapse(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
                 div.card-block
@@ -66,8 +66,6 @@ export default {
   created: () => {
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/my_leaves/',
-      params: {
-      },
     }).then((response) => {
       data.leaves = response.data.results
     }, () => {

@@ -41,7 +41,7 @@ div(class='calendar')
         "calendar-day-current": isCurrentDay(n), \
       }'
     )
-      router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) }}')
+      router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
         div(class='card card-block')
           h4 {{ n }} 
 </template>
