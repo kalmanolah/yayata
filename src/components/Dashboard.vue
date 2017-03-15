@@ -9,11 +9,12 @@ div
     .col-md-10.offset-md-1
       .card
         h4.card-title.text-md-center
-          | Timesheet for {{ today | moment('MMMM YYYY') }} 
+          router-link(:to='{ name: "calendar_month_redirect" }')
+            | Timesheets for {{ today | moment('MMMM YYYY') }}
         table.table
           tbody
             tr(v-for="p in projects")              
-              td {{ p.customerLabel }} ({{ p.projectLabel }})
+              td {{ p.customerLabel }} {{ p.projectLabel }}
               td.text-md-right {{ p.total_duration }} hours ({{p.total_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
