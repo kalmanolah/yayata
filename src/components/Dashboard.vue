@@ -14,7 +14,7 @@ div
         table.table
           tbody
             tr(v-for="p in projects")              
-              td {{ p.customerLabel }} {{ p.projectLabel }}
+              td {{ p.custLabel }}: {{ p.projectLabel }}
               td.text-md-right {{ p.total_duration }} hours ({{p.total_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
@@ -114,6 +114,7 @@ export default {
           contID: contracts[i].id,
           custID: contracts[i].customer,
           projectLabel: contracts[i].label,
+          custLabel: types.COMPANIES.find(x => x.id == contracts[i].customer).label
         });
 
     },
@@ -151,10 +152,8 @@ export default {
 
     //Watches contracts to make correct changes to projectsArr & call getCustomers
     contracts: function(newContracts) {
-      for(var i = 0; i < newContracts.length; i++) {
-        this.getCustomersFromID(newContracts[i].customer);
+      for(var i = 0; i < newContracts.length; i++) 
         this.getHoursPerProject(newContracts[i].id);
-      }
       
       this.makeProjectsArray(newContracts); 
     },
