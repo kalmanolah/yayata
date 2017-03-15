@@ -51,8 +51,6 @@ div(class='calendar')
             span.card-title {{ findContractLabel(p.contract) }}
             .card-text {{ p.duration }}
 
-          div.modal-body
-
           b-popover(title='Create a new entry' placement='bottom' triggers='click')
             b-btn.btn-success.col-md-12 +
             .text-xs-center.col-md-12(slot='content') 
@@ -98,14 +96,6 @@ export default {
   },
 
   methods: {
-
-    hideModal() {
-      this.isOpan = false;
-    },
-
-    showModal() {
-      this.isOpen = true;
-    },
 
     //Find the label that belongs to the company id
     findCompanyName: function(id) {
