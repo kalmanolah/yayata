@@ -16,7 +16,15 @@ const mutations = {
 
 // actions
 const actions = {
-  [types.NINETOFIVER_API_REQUEST] (store, options = {}) {
+  [types.NINETOFIVER_API_REQUEST] (store, options = {}, ) {
+
+    var oauth2State = store.rootState.oauth2
+    var url = `${oauth2State.config.baseUrl}/api/v1${options.path}`
+    var opts = {
+      url: url,
+      headers: {},
+    }
+
     if (!options.method) {
       options.method = 'GET'
     }
@@ -29,12 +37,6 @@ const actions = {
       options.params = {}
     }
 
-    var oauth2State = store.rootState.oauth2
-    var url = `${oauth2State.config.baseUrl}/api/v1${options.path}`
-    var opts = {
-      url: url,
-      headers: {},
-    }
 
     // If we are authenticated, add the correct authorization header
     // if required
@@ -66,14 +68,15 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       Vue.http(opts).then((response) => {
-        resolve(response)
+        resolve(response);
       }, (response) => {
+
         // If we get a 401, assume this is due an expired token which
         // we should refresh before trying again
         if (response.status == 401) {
           store.dispatch(types.OAUTH2_REFRESH_TOKEN, {}).then(() => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
-              resolve(res)
+              resolve(res);
             }, (res) => {
               reject(res)
             })
@@ -83,7 +86,9 @@ const actions = {
         } else {
           reject(response)
         }
+
       })
+
     })
   },
 
@@ -101,6 +106,7 @@ const actions = {
       })
     })
   }
+  
 }
 
 export default {

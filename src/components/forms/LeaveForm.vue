@@ -185,7 +185,7 @@ export default {
                 {
                   path: '/my_leaves/',
                   method: 'POST',
-                  data: {
+                  body: {
                     leave_type: 0,
                     status: 'PENDING',
                   },
