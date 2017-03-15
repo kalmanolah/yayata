@@ -48,18 +48,66 @@ export default {
   },
   created: () => {
     if (!store.state.ninetofiver.user) {
-      store.dispatch(types.NINETOFIVER_RELOAD_USER)
+      store.dispatch(types.NINETOFIVER_RELOAD_USER);
     }
   },
+
+  beforeRouteEnter(to,from,next) {
+
+    //Sets leave_types """"once""""
+    store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/leave_types/'
+    }).then((response) => {
+      for(var i = 0; i < response.body.count; i++)
+        types.LEAVE_TYPES.push(
+          new types.LeaveType(
+            response.data.results[i].id, 
+            response.data.results[i].type
+        ));
+    });
+
+    //Get all companies
+    store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/companies/'
+    }).then((response) => {
+      for(var i = 0; i < response.body.count; i++)
+        types.COMPANIES.push({
+          id: response.data.results[i].id,
+          label: response.data.results[i].name
+        });
+
+      //Get all contracts
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_contracts/'
+      }).then((response) => {
+        for(var i = 0; i < response.body.count; i++) 
+          types.CONTRACTS.push({
+            id: response.data.results[i].id,
+            label: response.data.results[i].label,
+            customer: types.COMPANIES.find(x => x.id == response.data.results[i].customer).label
+          });         
+      }); 
+
+      next(true);
+    });
+
+
+
+  },
+
+  method: {
+
+
+  },
+
   computed: {
-    foo () {
-      return 'bar'
-    }
   },
+
   data () {
     return {
     }
   }
+
 }
 </script>
 
