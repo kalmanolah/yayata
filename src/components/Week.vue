@@ -42,37 +42,26 @@ div(class='calendar')
   
   div.calendar-header
     div.card-group
-      div.card(v-for='weekDay in daysOfWeek')
+      div.card(v-on:refresh='daysOfWeek' v-for='weekDay in daysOfWeek')
           div.card-header.text-md-center.card-info
             | {{ weekDay | moment('dddd') }} 
             div.text-md-center {{ weekDay | moment('DD/MM') }}
 
           div.card-block(v-for='p in getDaysPerformances(weekDay.date())')
-            span.card-title {{ findContractLabel(p.contract) }}
-            .card-text {{ p.duration }}
+            div(v-if='p.duration')
+              span.card-title {{ findContractLabel(p.contract) }}
+              .card-text {{ p.duration }}
+            div(v-else)
+              span.card-text Standby
 
           b-popover(title='Create a new entry' placement='bottom' triggers='click')
             b-btn.btn-success.col-md-12 +
             .text-xs-center.col-md-12(slot='content')
-              strong.fa.fa-calendar-check-o {{ weekDay | moment('DD/MM/YYYY') }} 
-              PerformanceForm(:test='weekDay')
+              PerformanceForm(:selected-date='weekDay')
 
           div.card-footer.text-md-center
             small.text-muted
               | 0/8 hours
-
-//-
-  div(class='calendar-header')
-    div.card-deck-wrapper
-      div.card-deck
-        div.card.calendar-day(v-for='weekDay in daysOfWeek') 
-          div.card-header.text-md-center
-            | {{ weekDay | moment('dddd') }} 
-            div.text-md-center {{ weekDay | moment('DD/MM') }}
-          div.card-block(v-for='p in getDaysPerformances(weekDay.date())')
-            p.card-text {{ p.id }}
-          div.card-footer.text-muted.text-md-center
-            | 0/8 hours
 
 </template>
 
@@ -236,14 +225,7 @@ export default {
 
   },
 
-  filters: {
-
-    //Gets th
-    formatContractName: function(val) {
-      return;
-    },
-
-  },
+  filters: {  },
 
   computed: {
 

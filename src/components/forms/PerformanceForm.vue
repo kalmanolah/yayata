@@ -1,34 +1,42 @@
 <template lang="pug">
-  div {{ test }}
-    vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-    
+  strong.fa.fa-calendar-check-o 
+    | {{ today | moment('DD/MM/YYYY') }} 
+    vue-form-generator(:schema="schema", :model="model", :options="formOptions")    
 </template>
 
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
-import * as types from '../../store/mutation-types'
-import * as constant from '../../store/constants'
-import store from '../../store'
+import * as types from '../../store/mutation-types';
+import * as constant from '../../store/constants';
+import store from '../../store';
 
 export default {
+  props: [ 'selectedDate' ],
 
-  components: {
+  computed: {
+    today: function() { 
+      this._data.model.today = this.selectedDate;
+      return this.selectedDate; 
+    }
   },
 
-  props: [ 'test' ],
-  
+  watch: {},
+
+
+
   data: () => {
     return {
-
       name: 'PerformanceForm',
 
       //VUE FORM GENERATOR FIELDS
       model: {
         project: null,
         duration: 0,
+        performance_type: null,
         description: "",
         standby: false,
+        today: 'Nothing yet',
       },
 
       schema: {
@@ -40,16 +48,12 @@ export default {
 
             values: function() {
               var arr = [];
-
               constant.CONTRACTS.forEach(x => {
                 arr.push({
                   id: x.id,
                   name: x.customer + ': ' + x.label
                 });
-              });
-
-              console.log(arr);
-              
+              });              
               return arr;
             },
 
@@ -72,50 +76,75 @@ export default {
             styleClasses: 'col-md-12'
           },
           {
+            //PERFORMANCE_TYPE
+            type: "select",
+            model: "performance_type",
+            required: true,
+            values: constant.PERFORMANCE_TYPES,
+
+            styleClasses: 'col-md-8',
+          },
+          {
             //STANDY OR PERFORMANCE
             type: "switch",
             label: "Standby",
             model: "standby",
             textOn: "Activity",
-            textOff: "Standby"
+            textOff: "Standby",
+
+            styleClasses: 'col-md-4',
           },
           {
-            //SUBMIT FIELD
             type: "submit",
             validateBeforeSubmit: true,
+
             onSubmit: function(model, schema) {
 
-              console.log(this.test);
+              var timesheet = constant.MY_TIMESHEETS.find(x => 
+                  x.month == (model.today.month() + 1)
+                  &&
+                  x.year == model.today.year()
+                );
 
-              // store.dispatch(types.NINETOFIVER_API_REQUEST, {
-              //   path: '/my_timesheets/',
-              //   params: {
-              //     month: 
-              //   }
-              // })
-
-              // store.dispatch(
-              //   types.NINETOFIVER_API_REQUEST, 
-              //   {
-              //     path: '/my_performances/',
-              //     method: 'POST',
-              //     data: {
-              //       timesheet: ,
-              //       day: ,
-              //       duration: ,
-              //       description: ,
-              //       performance_type: ,
-              //       contract: ,
-              //     },
-              //     emulateJSON: true,
-              //   }
-              // ).then((response) => {
-              //   console.log(response);
-              // }, () => {
-              //   this.loading = false
-              // });
+              if(model.standby) {
+                store.dispatch(
+                  types.NINETOFIVER_API_REQUEST,
+                  {
+                    path: '/my_performances/standby/',
+                    method: 'POST',
+                    body: {
+                      timesheet: timesheet.id,
+                      day: model.today.date()
+                    },
+                    emulateJSON: true,
+                  }
+                ).then((response) => {
+                  console.log(response);
+                });
+              
+              } else {
+                store.dispatch(
+                  types.NINETOFIVER_API_REQUEST, 
+                  {
+                    path: '/my_performances/activity/',
+                    method: 'POST',
+                    body: {
+                      timesheet: timesheet.id,
+                      day: model.today.date(),
+                      duration: model.duration,
+                      description: model.description,
+                      performance_type: model.performance_type,
+                      contract: model.project,
+                    },
+                    emulateJSON: true,
+                  }
+                ).then((response) => {
+                  console.log(response);
+                });
+              }
 
             },
+
             styleClasses: 'col-md-12',
           }
         ]
@@ -125,12 +154,6 @@ export default {
         validateAfterLoad: true,
         validateAfterChanged: true
       }
-    }
-  },
-
-  watch: {
-    test: function(newTest) {
-      console.log(newTest);
     }
   }
 }

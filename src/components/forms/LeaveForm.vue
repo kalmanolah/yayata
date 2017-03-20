@@ -11,9 +11,9 @@ div
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
-import * as types from '../../store/mutation-types'
-import * as constant from '../../store/constants'
-import store from '../../store'
+import * as types from '../../store/mutation-types';
+import * as constant from '../../store/constants';
+import store from '../../store';
 
 export default {
 
@@ -164,8 +164,6 @@ export default {
             validateBeforeSubmit: true,
             onSubmit: function(model, schema) {
 
-
-
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
                 {
@@ -185,7 +183,6 @@ export default {
                 store.dispatch(types.NINETOFIVER_API_REQUEST,
                 {
                   path: '/my_leave_dates/',
-
                 })
 
               }, () => {

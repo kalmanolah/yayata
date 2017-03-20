@@ -65,6 +65,18 @@ export default {
             response.data.results[i].id, 
             response.data.results[i].type
         ));
+
+      //Gets the performance_types
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, {
+          path: '/performance_types/'
+        }).then((response) => {
+          for(var i = 0; i < response.body.count; i++)
+            constant.PERFORMANCE_TYPES.push({
+              id: response.data.results[i].id,
+              name: response.data.results[i].label
+            });
+        });
     });
 
     //Get all companies
@@ -76,6 +88,14 @@ export default {
           id: response.data.results[i].id,
           label: response.data.results[i].name
         });
+
+      //Get user's open timesheets
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_timesheets/'
+      }).then((response) => {
+        for(var i = 0; i < response.body.count; i++)
+          constant.MY_TIMESHEETS.push(response.data.results[i]);
+      });
 
       //Get all contracts
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
