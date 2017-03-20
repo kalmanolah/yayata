@@ -53,9 +53,9 @@ div(class='calendar')
 
           b-popover(title='Create a new entry' placement='bottom' triggers='click')
             b-btn.btn-success.col-md-12 +
-            .text-xs-center.col-md-12(slot='content') 
-              strong.text-md-center {{ weekDay | moment('DD/MM/YYYY') }} 
-              vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+            .text-xs-center.col-md-12(slot='content')
+              strong.fa.fa-calendar-check-o {{ weekDay | moment('DD/MM/YYYY') }} 
+              PerformanceForm(:test='weekDay')
 
           div.card-footer.text-md-center
             small.text-muted
@@ -79,13 +79,16 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
+import * as constant from '../store/constants';
 import store from '../store';
 import moment from 'moment';
+import PerformanceForm from './forms/PerformanceForm.vue';
 
 export default {
   name: 'week',
 
   components: {
+    PerformanceForm: PerformanceForm,
   },
 
   watch: {
@@ -99,12 +102,12 @@ export default {
 
     //Find the label that belongs to the company id
     findCompanyName: function(id) {
-      return types.COMPANIES.find(x => x.id == id);
+      return constant.COMPANIES.find(x => x.id == id);
     },
 
     //Find the contract that belongs to the contract id
     findContractLabel: function(id) {
-      var cont = types.CONTRACTS.find(x => x.id == id);
+      var cont = constant.CONTRACTS.find(x => x.id == id);
       return cont.label + ': ' + cont.customer;
     },
 
@@ -194,7 +197,7 @@ export default {
       }
     },
 
-    //Make the mu_performances call & push into arr
+    //Make the my_performances call & push into arr
     callPerformance: function(month, start, end) {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_performances/',
@@ -228,87 +231,7 @@ export default {
       selectedWeek: this.$route.params.week,
       performances: [],
 
-      isOpen: false,
-
-      //VUE FORM GENERATOR FIELDS
-      model: {
-        project: null,
-        duration: 0,
-        description: "",
-      },
-
-      schema: {
-        fields: [
-          {
-            //PROJECT
-            type: "select",
-            model: "project",
-
-            values: function() {
-              var arr = [];
-
-              types.CONTRACTS.forEach(x => {
-                arr.push({
-                  id: x.id,
-                  name: x.customer + ': ' + x.label
-                });
-              });
-
-              console.log(arr);
-              
-              return arr;
-            },
-
-            styleClasses: 'col-md-8'
-          },
-          {
-            //DURATION
-            type: "input",
-            inputType: "text",
-            model: "duration",
-
-            styleClasses: 'col-md-4'
-          },
-          {
-            //DESCRIPTION
-            type: "textArea",
-            model: "description",
-
-            styleClasses: 'col-md-12'
-          },
-          {
-            //SUBMIT FIELD
-            type: "submit",
-            validateBeforeSubmit: true,
-            onSubmit: function(model, schema) {
-
-              store.dispatch(
-                types.NINETOFIVER_API_REQUEST, 
-                {
-                  path: '/my_leaves/',
-                  method: 'POST',
-                  data: {
-                    leave_type: 0,
-                    status: 'PENDING',
-                  },
-                  emulateJSON: true,
-                }
-              ).then((response) => {
-                console.log(response);
-              }, () => {
-                this.loading = false
-              });
-
-            },
-            styleClasses: 'col-md-12',
-          }
-        ]
-      },
-
-      formOptions: {
-        validateAfterLoad: true,
-        validateAfterChanged: true
-      }
+      
     }
 
   },
