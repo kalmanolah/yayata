@@ -38,6 +38,7 @@ div(
 
 <script>
 import * as types from '../store/mutation-types'
+import * as constant from '../store/constants'
 import Navbar from './Navbar.vue'
 import store from '../store'
 
@@ -59,8 +60,8 @@ export default {
       path: '/leave_types/'
     }).then((response) => {
       for(var i = 0; i < response.body.count; i++)
-        types.LEAVE_TYPES.push(
-          new types.LeaveType(
+        constant.LEAVE_TYPES.push(
+          new constant.LeaveType(
             response.data.results[i].id, 
             response.data.results[i].type
         ));
@@ -71,7 +72,7 @@ export default {
       path: '/companies/'
     }).then((response) => {
       for(var i = 0; i < response.body.count; i++)
-        types.COMPANIES.push({
+        constant.COMPANIES.push({
           id: response.data.results[i].id,
           label: response.data.results[i].name
         });
@@ -81,14 +82,14 @@ export default {
         path: '/my_contracts/'
       }).then((response) => {
         for(var i = 0; i < response.body.count; i++) 
-          types.CONTRACTS.push({
+          constant.CONTRACTS.push({
             id: response.data.results[i].id,
             label: response.data.results[i].label,
-            customer: types.COMPANIES.find(x => x.id == response.data.results[i].customer).label
-          });         
+            customer: constant.COMPANIES.find(x => x.id == response.data.results[i].customer).label
+          });       
+        
+        next(true);  
       }); 
-
-      next(true);
     });
 
 

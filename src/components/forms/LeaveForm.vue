@@ -10,16 +10,12 @@ div
 
 <script>
 import moment from 'moment';
-import { datetimepicker } from 'eonasdan-bootstrap-datetimepicker'
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types'
+import * as constant from '../../store/constants'
 import store from '../../store'
 
 export default {
-
-  components: {
-    dateTimePicker: datetimepicker,
-  },
 
   data: () => {
     return {
@@ -27,10 +23,10 @@ export default {
       name: 'LeaveForm',
 
       model: {
-        start_date: moment().add(1, 'days').toISOString(),
-        end_date: moment().add(2, 'days').toISOString(),
-        start_hour: moment('00:00:00', 'HH:mm:ss').format('YYYY HH:mm:ss'),
-        end_hour: moment('00:00:00', 'HH:mm:ss').format('YYYY HH:mm:ss'),
+        start_date: moment(),
+        end_date: moment().add(1, 'days'),
+        start_hour: moment('09:00', 'HH:mm').format('HH:mm'),
+        end_hour: moment('15:30', 'HH:mm').format('HH:mm'),
         start_full_day: true,
         end_full_day: true,
         description: "",
@@ -42,24 +38,21 @@ export default {
         fields: [
           {
             //FROM DATE
-            type: "dateTimePicker",
+            type: "pikaday",
             model: "start_date",
             label: "From",
             featured: true,
             required: true,
-            validator: VueFormGenerator.validators.date,
 
-            dateTimePickerOptions: {
-              format: 'DD MMMM YYYY',
-              minDate: moment().add(1, 'days'),
-              icons: {
-                date: 'fa fa-calendar',
-                previous: 'fa fa-chevron-left',
-                next: 'fa fa-chevron-right',
-                today: 'fa fa-calendar-check-o ',           
-              },
-              showTodayButton: true,
+            pikadayOptions: {
+              minDate: moment().toDate(),
+              position: "top",
+              format: "DD MMMM YYYY",
+              formatStrict: true,
+              firstDay: 1,
+              showWeekNumber: true,
             },
+
             styleClasses: ['col-md-6', 'clearfix']
           },
           {
@@ -72,21 +65,13 @@ export default {
           },
           {
             //FROM STARTING_TIME
-            type: "dateTimePicker",
+            type: "input",
+            inputType: "Time",
             model: "start_hour",
             label: "Time",
-            placeholder: "HH:mm",
             required: false,
+            step: 60*5,         //Jump by 5 minutes
 
-            dateTimePickerOptions: {
-              format: 'HH:mm',
-              stepping: 30,
-              icons: {
-                time: 'fa fa-clock-o',
-                up: 'fa fa-chevron-up',
-                down: 'fa fa-chevron-down',                
-              }
-            },
             styleClasses: 'col-md-4',
 
             disabled: function(model) {
@@ -96,23 +81,22 @@ export default {
           },
           {
             //TO DATE
-            type: "dateTimePicker",
+            type: "pikaday",
             model: "end_date",
             label: "To",
             featured: true,
             required: true,
             validator: VueFormGenerator.validators.date,
 
-            dateTimePickerOptions: {
-              format: 'DD MMMM YYYY',
-              icons: {
-                date: 'fa fa-calendar',
-                previous: 'fa fa-chevron-left',
-                next: 'fa fa-chevron-right',
-                today: 'fa fa-calendar-check-o ',           
-              },
-              showTodayButton: true,
+            pikadayOptions: {
+              minDate: moment().toDate(),
+              position: "bottom",
+              format: "DD MMMM YYYY",
+              formatStrict: true,
+              firstDay: 1,
+              showWeekNumber: true,
             },
+
             styleClasses: ['col-md-6', 'clearfix', ],
           },
           {
@@ -121,25 +105,22 @@ export default {
             label: "Full day",
             model: "end_full_day",
 
-            styleClasses: 'col-md-2'
+            styleClasses: 'col-md-2',
+
+            disabled: function(model) {
+              //Disabled if end_date == start_date & full_day is selected
+              return model && model.start_date === model.end_date && model.start_full_day;
+            },
           },
           {
-            //TO STARTING_TIME
-            type: "dateTimePicker",
+            //TO ENDING_TIME
+            type: "input",
+            inputType: "Time",
             model: "end_hour",
             label: "Time",
-            placeholder: "HH:mm",
             required: false,
+            step: 60*5,         //Jump by 5 minutes
 
-            dateTimePickerOptions: {
-              format: 'HH:mm',
-              stepping: 30,
-              icons: {
-                time: 'fa fa-clock-o',
-                up: 'fa fa-chevron-up',
-                down: 'fa fa-chevron-down',            
-              },
-            },
             styleClasses: 'col-md-4',
 
             disabled: function(model) {
@@ -152,18 +133,21 @@ export default {
             type: "textArea",
             model: "description",
             label: "Description",
+            required: true,
 
-            styleClasses: 'col-md-12'
+            styleClasses: 'col-md-12',
+            validator: VueFormGenerator.validators.required,
           },
           {
             //LEAVE TYPE
-            type: "checklist",
+            type: "select",
             model: "leave_type",
             label: "Leavetype",
-            listBox: false,
-            values: types.LEAVE_TYPES.map(x => { return x['label'] }),
+            required: true,
+            values: constant.LEAVE_TYPES,
 
-            styleClasses: 'col-md-6'
+            styleClasses: 'col-md-6',
+            validator: VueFormGenerator.validators.required,
           },
           {
             //ATTACHMENT
@@ -172,7 +156,7 @@ export default {
             model: "attachment",
             label: "Attachment",
 
-            styleClasses: 'col-md-6'
+            styleClasses: 'col-md-6',
           },
           {
             //SUBMIT FIELD
@@ -180,24 +164,36 @@ export default {
             validateBeforeSubmit: true,
             onSubmit: function(model, schema) {
 
+
+
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
                 {
                   path: '/my_leaves/',
                   method: 'POST',
                   body: {
-                    leave_type: 0,
-                    status: 'PENDING',
+                    leave_type: model.leave_type,
+                    status: constant.LEAVE_STATUSES[3],      //Get 'DRAFT'
+                    description: model.description,
+                    attachment: model.attachment,
                   },
                   emulateJSON: true,
                 }
               ).then((response) => {
                 console.log(response);
+
+                store.dispatch(types.NINETOFIVER_API_REQUEST,
+                {
+                  path: '/my_leave_dates/',
+
+                })
+
               }, () => {
                 this.loading = false
               });
 
             },
+
             styleClasses: 'col-md-12',
           }
         ]

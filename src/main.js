@@ -5,8 +5,6 @@ import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
-import moment from 'moment'
-import BootstrapDatetimePicker from 'eonasdan-bootstrap-datetimepicker'
 import VueFormGenerator from 'vue-form-generator'
 
 import BootstrapVue from 'bootstrap-vue'
