@@ -1,7 +1,7 @@
 <template lang="pug">
-  strong.fa.fa-calendar-check-o 
-    | {{ today | moment('DD/MM/YYYY') }} 
-    vue-form-generator(:schema="schema", :model="model", :options="formOptions")    
+  div
+    vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+    button.col-md-12.btn-success(v-on:click='submitForm') +
 </template>
 
 <script>
@@ -11,19 +11,75 @@ import * as types from '../../store/mutation-types';
 import * as constant from '../../store/constants';
 import store from '../../store';
 
+var self = this;
+
 export default {
   props: [ 'selectedDate' ],
 
   computed: {
     today: function() { 
-      this._data.model.today = this.selectedDate;
       return this.selectedDate; 
     }
   },
 
   watch: {},
 
+  methods: {
 
+    submitForm: function() {
+
+      var model = this.model;
+      var timesheet = constant.MY_TIMESHEETS.find(x => 
+          x.month == (this.today.month() + 1)
+          &&
+          x.year == this.today.year()
+        );
+
+
+      if(model.standby) {
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_performances/standby/',
+            method: 'POST',
+            body: {
+              timesheet: timesheet.id,
+              day: this.today.date()
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+          console.log(response);
+
+          if(response.status == 201)
+            this.$emit('success', response);
+        });
+      
+      } else {
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST, 
+          {
+            path: '/my_performances/activity/',
+            method: 'POST',
+            body: {
+              timesheet: timesheet.id,
+              day: this.today.date(),
+              duration: model.duration,
+              description: model.description,
+              performance_type: model.performance_type,
+              contract: model.project,
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+          if(response.status == 201)
+            this.$emit('success', response);
+          
+        });
+      }
+    },
+
+  },
 
   data: () => {
     return {
@@ -36,7 +92,6 @@ export default {
         performance_type: null,
         description: "",
         standby: false,
-        today: 'Nothing yet',
       },
 
       schema: {
@@ -93,59 +148,6 @@ export default {
             textOff: "Standby",
 
             styleClasses: 'col-md-4',
-          },
-          {
-            type: "submit",
-            validateBeforeSubmit: true,
-
-            onSubmit: function(model, schema) {
-
-              var timesheet = constant.MY_TIMESHEETS.find(x => 
-                  x.month == (model.today.month() + 1)
-                  &&
-                  x.year == model.today.year()
-                );
-
-              if(model.standby) {
-                store.dispatch(
-                  types.NINETOFIVER_API_REQUEST,
-                  {
-                    path: '/my_performances/standby/',
-                    method: 'POST',
-                    body: {
-                      timesheet: timesheet.id,
-                      day: model.today.date()
-                    },
-                    emulateJSON: true,
-                  }
-                ).then((response) => {
-                  console.log(response);
-                });
-              
-              } else {
-                store.dispatch(
-                  types.NINETOFIVER_API_REQUEST, 
-                  {
-                    path: '/my_performances/activity/',
-                    method: 'POST',
-                    body: {
-                      timesheet: timesheet.id,
-                      day: model.today.date(),
-                      duration: model.duration,
-                      description: model.description,
-                      performance_type: model.performance_type,
-                      contract: model.project,
-                    },
-                    emulateJSON: true,
-                  }
-                ).then((response) => {
-                  console.log(response);
-                });
-              }
-
-            },
-
-            styleClasses: 'col-md-12',
           }
         ]
       },

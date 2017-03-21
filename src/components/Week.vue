@@ -40,9 +40,10 @@ div(class='calendar')
 
   hr
   
+  //- Cards
   div.calendar-header
     div.card-group
-      div.card(v-on:refresh='daysOfWeek' v-for='weekDay in daysOfWeek')
+      div.card(v-for='weekDay in daysOfWeek')
           div.card-header.text-md-center.card-info
             | {{ weekDay | moment('dddd') }} 
             div.text-md-center {{ weekDay | moment('DD/MM') }}
@@ -57,7 +58,9 @@ div(class='calendar')
           b-popover(title='Create a new entry' placement='bottom' triggers='click')
             b-btn.btn-success.col-md-12 +
             .text-xs-center.col-md-12(slot='content')
-              PerformanceForm(:selected-date='weekDay')
+              strong.fa.fa-calendar-check-o 
+                | {{ weekDay | moment('DD/MM/YYYY') }} 
+              PerformanceForm(:selected-date='weekDay' v-on:success='getDaysOfWeek')
 
           div.card-footer.text-md-center
             small.text-muted
@@ -139,6 +142,7 @@ export default {
 
     //Make the days/week to be drawn
     getDaysOfWeek: function () {
+
       var week = this.selectedWeek,
         year = this.selectedYear,
         daysofweek = [],
@@ -148,8 +152,10 @@ export default {
         daysofweek[i] = dayOfWeek;
         dayOfWeek = moment(dayOfWeek).add(1, ('days'));
       }
+
       var arr = daysofweek.map(o => { return o.date()  });
       this.makePerformances(arr);
+
       return daysofweek;
     },
 
