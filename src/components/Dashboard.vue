@@ -3,8 +3,8 @@
 div
   .row
     .col-md-10.offset-md-1
-      .alert.alert-warning.card-top-red(v-if='timesheets > 0')
-        | You have {{timesheets}} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+      .alert.alert-warning.card-top-red(v-if='openTS > 0')
+        | You have {{openTS}} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
     .col-md-10.offset-md-1
       .card
@@ -31,11 +31,12 @@ div
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import * as constant from '../store/constants'
 import LeaveForm from './forms/LeaveForm.vue'
 import store from '../store'
 
 var data = {
-  timesheets: 0,
+  openTS: 0,
   contracts: [],
   projects: [],
 
@@ -56,14 +57,7 @@ export default {
   created: function () {
 
     //Get whether user has open timesheets
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_timesheets/'
-    }).then((response) => {
-      data.timesheets = response.body.count;
-    }, () => {
-      this.loading = false
-    });
-
+    data.openTS = constant.MY_TIMESHEETS.length;
 
     //Get contracts for current user
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
@@ -81,7 +75,7 @@ export default {
 
   computed: {  
 
-    //Calculates total hours of active projects
+    //Calculates total hours of currently active projects
     totalProjectDuration: function() {
       var total = 0;
 
@@ -114,7 +108,7 @@ export default {
           contID: contracts[i].id,
           custID: contracts[i].customer,
           projectLabel: contracts[i].label,
-          custLabel: types.COMPANIES.find(x => x.id == contracts[i].customer).label
+          custLabel: constant.COMPANIES.find(x => x.id == contracts[i].customer).label
         });
 
     },

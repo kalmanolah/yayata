@@ -33,12 +33,13 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import * as constant from '../store/constants'
 import store from '../store'
 import Holidays from './Holidays.vue'
 
 var data = {
   leaves: [],
-  leaveStatuses: types.LEAVE_STATUSES,
+  leaveStatuses: constant.LEAVE_STATUSES,
 }
 
 export default {

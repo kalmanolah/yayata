@@ -42,29 +42,61 @@ div(class='calendar')
   
   //- Cards
   div.calendar-header
+
+    //- IF day is non-weekend
     div.card-group
-      div.card(v-for='weekDay in daysOfWeek')
+      div.card(v-for='weekDay in daysOfWeek' v-if='weekDay.isoWeekday() !== 6 && weekDay.isoWeekday() !== 7')
+        div
           div.card-header.text-md-center.card-info
             | {{ weekDay | moment('dddd') }} 
             div.text-md-center {{ weekDay | moment('DD/MM') }}
-
-          div.card-block(v-for='p in getDaysPerformances(weekDay.date())')
+  
+          div.card-block(v-for='p in getDaysPerformances(weekDay.date())' v-bind:key='p.id')
             div(v-if='p.duration')
               span.card-title {{ findContractLabel(p.contract) }}
-              .card-text {{ p.duration }}
+              .card-text {{ p.duration }} 
             div(v-else)
               span.card-text Standby
-
+  
           b-popover(title='Create a new entry' placement='bottom' triggers='click')
-            b-btn.btn-success.col-md-12 +
-            .text-xs-center.col-md-12(slot='content')
-              strong.fa.fa-calendar-check-o 
+            b-btn.btn-success.col-md-12 + 
+            .text-xs-center.col-md-12(slot='content' )
+              strong.fa.fa-calendar-check-o
                 | {{ weekDay | moment('DD/MM/YYYY') }} 
-              PerformanceForm(:selected-date='weekDay' v-on:success='getDaysOfWeek')
-
+              div
+                PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
+  
           div.card-footer.text-md-center
             small.text-muted
               | 0/8 hours
+
+  //- IF day is weekend
+  div.card-group
+    div.card(v-for='(weekDay, index) in daysOfWeek' v-if='weekDay.isoWeekday() === 6 || weekDay.isoWeekday() === 7')
+      div
+        div.card-header.text-md-center.card-info
+          | {{ weekDay | moment('dddd') }} 
+          div.text-md-center {{ weekDay | moment('DD/MM') }}
+  
+        div.card-block(v-for='p in getDaysPerformances(weekDay.date())' v-bind:key='p.id')
+          div(v-if='p.duration')
+            span.card-title {{ findContractLabel(p.contract) }}
+            .card-text {{ p.duration }} 
+          div(v-else)
+            span.card-text Standby
+  
+        b-popover(title='Create a new entry' placement='bottom' triggers='click')
+          b-btn.btn-success.col-md-12 + 
+          .text-xs-center.col-md-12(slot='content' )
+            strong.fa.fa-calendar-check-o
+              | {{ weekDay | moment('DD/MM/YYYY') }} 
+            div
+              PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
+  
+        div.card-footer.text-md-center
+          small.text-muted
+            | 0/8 hours
+
 
 </template>
 
@@ -91,6 +123,10 @@ export default {
   },
 
   methods: {
+
+    onSubmitSuccess: function() {
+      this.getDaysOfWeek();
+    },
 
     //Find the label that belongs to the company id
     findCompanyName: function(id) {
@@ -225,8 +261,6 @@ export default {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
       performances: [],
-
-      
     }
 
   },
@@ -257,8 +291,7 @@ export default {
 
   },
 
-  created: function() {
-  }
+  created: function() { }
 }
 </script>
 
