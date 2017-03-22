@@ -40,50 +40,28 @@ div(class='calendar')
 
   hr
   
+  //- Buttons to toggle what to display
+  div.btn-group
+    button.btn-secondary(v-on:click='setToWorkWeek') Workweek
+    button.btn-secondary(v-on:click='setToWeekend') Weekend
+    button.btn-secondary(v-on:click='setToFullWeek') Full week
+
   //- Cards
   div.calendar-header
-
-    //- IF day is non-weekend
     div.card-group
-      div.card(v-for='weekDay in daysOfWeek' v-if='weekDay.isoWeekday() !== 6 && weekDay.isoWeekday() !== 7')
-        div
-          div.card-header.text-md-center.card-info
-            | {{ weekDay | moment('dddd') }} 
-            div.text-md-center {{ weekDay | moment('DD/MM') }}
-  
-          div.card-block(v-for='p in getDaysPerformances(weekDay.date())' v-bind:key='p.id')
-            div(v-if='p.duration')
-              span.card-title {{ findContractLabel(p.contract) }}
-              .card-text {{ p.duration }} 
-            div(v-else)
-              span.card-text Standby
-  
-          b-popover(title='Create a new entry' placement='bottom' triggers='click')
-            b-btn.btn-success.col-md-12 + 
-            .text-xs-center.col-md-12(slot='content' )
-              strong.fa.fa-calendar-check-o
-                | {{ weekDay | moment('DD/MM/YYYY') }} 
-              div
-                PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
-  
-          div.card-footer.text-md-center
-            small.text-muted
-              | 0/8 hours
+      div.card(v-for='weekDay in daysOfWeek')
 
-  //- IF day is weekend
-  div.card-group
-    div.card(v-for='(weekDay, index) in daysOfWeek' v-if='weekDay.isoWeekday() === 6 || weekDay.isoWeekday() === 7')
-      div
         div.card-header.text-md-center.card-info
           | {{ weekDay | moment('dddd') }} 
           div.text-md-center {{ weekDay | moment('DD/MM') }}
   
         div.card-block(v-for='p in getDaysPerformances(weekDay.date())' v-bind:key='p.id')
-          div(v-if='p.duration')
-            span.card-title {{ findContractLabel(p.contract) }}
-            .card-text {{ p.duration }} 
-          div(v-else)
-            span.card-text Standby
+          div(v-if='p')
+            div(v-if='p.duration')
+              span.card-title {{ findContractLabel(p.contract) }}
+              .card-text {{ p.duration }} 
+            div(v-else)
+              span.card-text Standby
   
         b-popover(title='Create a new entry' placement='bottom' triggers='click')
           b-btn.btn-success.col-md-12 + 
@@ -124,8 +102,24 @@ export default {
 
   methods: {
 
+    //Switch to workweek
+    setToWorkWeek: function() {
+      this.currentWeekFormat = constant.WEEK_FORMATTING['Workweek'];
+    },
+
+    //Switch to weekend
+    setToWeekend: function() {
+      this.currentWeekFormat = constant.WEEK_FORMATTING['Weekend'];
+    },
+
+    //Switch to fullweek
+    setToFullWeek: function() {
+      this.currentWeekFormat = constant.WEEK_FORMATTING['Fullweek'];
+    },
+
+    //When performance properly submitted
     onSubmitSuccess: function() {
-      this.getDaysOfWeek();
+      this.getDaysOfWeek(this.currentWeekFormat);
     },
 
     //Find the label that belongs to the company id
@@ -177,15 +171,19 @@ export default {
     },
 
     //Make the days/week to be drawn
-    getDaysOfWeek: function () {
+    getDaysOfWeek: function() {
 
       var week = this.selectedWeek,
         year = this.selectedYear,
+        index = 0,
+        period = this.currentWeekFormat,
         daysofweek = [],
         dayOfWeek = moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
 
-      for(var i = 0; i < 7; i++) {
-        daysofweek[i] = dayOfWeek;
+      for(var i = 1; i < 8; i++) {
+        if(i >= period.start && i <= period.end) 
+          daysofweek[index++] = dayOfWeek;
+        
         dayOfWeek = moment(dayOfWeek).add(1, ('days'));
       }
 
@@ -195,7 +193,7 @@ export default {
       return daysofweek;
     },
 
-    //Calls the performance stat and pushes into arr
+    //Calls performance with correct params
     makePerformances: function(arr) {
       var start, end, month;
       this.performances = [];
@@ -203,8 +201,9 @@ export default {
       //If the index of the lowest value in the array is not the first,
       //the days are transitioning from one month to the other
       if(arr.indexOf(Math.min.apply(Math, arr)) != 0) {
-
-        var maxIndex = arr.indexOf(Math.max.apply(Math, arr));    //Get index of highest in array (automatically final day of month that)
+        
+        //Get index of highest in array (automatically final day of month that)
+        var maxIndex = arr.indexOf(Math.max.apply(Math, arr));
 
         start = arr[0],
         end = arr[ maxIndex ],   
@@ -217,19 +216,26 @@ export default {
         end = arr[arr.length-1],
         month = parseInt(this.periodEndMonth.format('MM'));
 
+        console.log(start);
+        console.log(end);
+        console.log(month);
         this.callPerformance(month, start, end);
       
       } else {
         start = arr[0],
         end = arr[arr.length-1],
-        month = parseInt(this.periodStartMonth.format('MM'));
+        month = parseInt(this.periodStartMonth.format('MM')) + 1;
 
+        console.log(start);
+        console.log(end);
+        console.log(month);
         this.callPerformance(month, start, end);
       }
     },
 
     //Make the my_performances call & push into arr
     callPerformance: function(month, start, end) {
+
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_performances/',
         params: {
@@ -261,6 +267,7 @@ export default {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
       performances: [],
+      currentWeekFormat: '',
     }
 
   },
@@ -286,12 +293,14 @@ export default {
     },
 
     daysOfWeek: function() {
-      return this.getDaysOfWeek();
+      return this.getDaysOfWeek(this.currentWeekFormat);
     },
 
   },
 
-  created: function() { }
+  created: function() { 
+    this.setToWorkWeek();
+  }
 }
 </script>
 
