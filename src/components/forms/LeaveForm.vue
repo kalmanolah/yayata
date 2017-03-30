@@ -188,7 +188,7 @@ export default {
                 }
               ).then((lvResponse) => {
                 console.log(lvResponse);
-                
+
                 store.dispatch(
                   types.NINETOFIVER_API_REQUEST,
                   {
@@ -204,6 +204,21 @@ export default {
                   }
                 ).then((lvdResponse) => {
                   console.log(lvdResponse);
+
+                  store.dispatch(
+                    types.NINETOFIVER_API_REQUEST, 
+                    {
+                      path: '/my_leaves/' + lvResponse.body.id + '/',
+                      method: 'PATCH',
+                      body: {
+                        status: constant.LEAVE_STATUSES[0],     //Get 'PENDING'
+                      },
+                      emulateJSON: true,
+                    }
+                  ).then((updateResponse) => {
+                    console.log(updateResponse);
+                  });
+
                 });
 
               }, () => {
