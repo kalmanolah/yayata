@@ -15,7 +15,7 @@ div(
         div.col-md-10.offset-md-1.col-sm-8
           nav
             router-link(:to='{ name: "my_timesheets" }')
-              h3 My timesheets
+              h3 My timesheets 
               p.small I said hey, what's going on
             router-link(:to='{ name: "my_projects" }')
               h3 My projects
@@ -93,8 +93,12 @@ export default {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_timesheets/'
       }).then((response) => {
+        var today = moment();
+        var timesheets = response.data.results;
+
         for(var i = 0; i < response.body.count; i++)
-          constant.MY_TIMESHEETS.push(response.data.results[i]);
+          if((timesheets[i].year == today.year() && timesheets[i].month <= today.month()) || timesheets[i].year < today.year()) 
+            constant.MY_TIMESHEETS.push(response.data.results[i]);
       });
 
       //Get all contracts
