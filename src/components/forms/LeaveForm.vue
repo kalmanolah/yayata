@@ -19,7 +19,6 @@ export default {
 
   data: () => {
     return {
-
       name: 'LeaveForm',
 
       model: {
@@ -119,7 +118,7 @@ export default {
             model: "end_hour",
             label: "Time",
             required: false,
-            step: 60*5,         //Jump by 5 minutes
+            step: 60*5,         //Jump by 5 minutes,
 
             styleClasses: 'col-md-4',
 
@@ -164,9 +163,19 @@ export default {
             validateBeforeSubmit: true,
             onSubmit: function(model, schema) {
 
+              var start_date = moment(model.start_date);
+              var start_hour = moment(model.start_hour, "HH:mm");
+
+              start_date = (model.start_full_day) ? start_date.startOf('date') : start_date.hours(start_hour.hours()).minutes(start_hour.minutes());
+
+              var end_date = moment(model.end_date);
+              var end_hour = moment(model.end_hour, "HH:mm");
+
+              end_date = (model.end_full_day) ? end_date.endOf('date') : end_date.hours(end_hour.hours()).minutes(end_hour.minutes());
+
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
-                {
+                { 
                   path: '/my_leaves/',
                   method: 'POST',
                   body: {
@@ -177,13 +186,25 @@ export default {
                   },
                   emulateJSON: true,
                 }
-              ).then((response) => {
-                console.log(response);
-
-                store.dispatch(types.NINETOFIVER_API_REQUEST,
-                {
-                  path: '/my_leave_dates/',
-                })
+              ).then((lvResponse) => {
+                console.log(lvResponse);
+                
+                store.dispatch(
+                  types.NINETOFIVER_API_REQUEST,
+                  {
+                    path: '/services/my_leave_request/',
+                    method: 'POST',
+                    body: {
+                      leave: lvResponse.body.id,
+                      timesheet: 0,
+                      starts_at: start_date.format('YYYY-MM-DDTHH:mm:ss'),
+                      ends_at: end_date.format('YYYY-MM-DDTHH:mm:ss')
+                    },
+                    emulateJSON: true,
+                  }
+                ).then((lvdResponse) => {
+                  console.log(lvdResponse);
+                });
 
               }, () => {
                 this.loading = false
