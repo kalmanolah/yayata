@@ -27,56 +27,33 @@ export default {
   methods: {
 
     submitForm: function() {
-
       var model = this.model;
-      var timesheet = constant.MY_TIMESHEETS.find(x => 
+      var timesheet = constant.MY_TIMESHEETS.find(x => {
         x.month == (this.today.month() + 1)
         &&
         x.year == this.today.year()
-      );
+      });
 
-
-      if(model.standby) {
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST,
-          {
-            path: '/my_performances/standby/',
-            method: 'POST',
-            body: {
-              timesheet: timesheet.id,
-              day: this.today.date()
-            },
-            emulateJSON: true,
-          }
-        ).then((response) => {
-          console.log(response);
-
-          if(response.status == 201)
-            this.$emit('success', response);
-        });
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        {
+          path: '/my_performances/activity/',
+          method: 'POST',
+          body: {
+            timesheet: timesheet.id,
+            day: this.today.date(),
+            duration: model.duration,
+            description: model.description,
+            performance_type: model.performance_type,
+            contract: model.project,
+          },
+          emulateJSON: true,
+        }
+      ).then((response) => {
+        if(response.status == 201)
+          this.$emit('success', response);
+      });
       
-      } else {
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST, 
-          {
-            path: '/my_performances/activity/',
-            method: 'POST',
-            body: {
-              timesheet: timesheet.id,
-              day: this.today.date(),
-              duration: model.duration,
-              description: model.description,
-              performance_type: model.performance_type,
-              contract: model.project,
-            },
-            emulateJSON: true,
-          }
-        ).then((response) => {
-          if(response.status == 201)
-            this.$emit('success', response);
-          
-        });
-      }
     },
 
   },
@@ -91,7 +68,6 @@ export default {
         duration: 0,
         performance_type: null,
         description: "",
-        standby: false,
       },
 
       schema: {
@@ -119,6 +95,9 @@ export default {
             type: "input",
             inputType: "number",
             model: "duration",
+            required: true,
+            step: 0.5,
+            min: 0,
 
             styleClasses: 'col-md-4',
             validator: VueFormGenerator.validators.number
@@ -137,17 +116,7 @@ export default {
             required: true,
             values: constant.PERFORMANCE_TYPES,
 
-            styleClasses: 'col-md-8',
-          },
-          {
-            //STANDY OR PERFORMANCE
-            type: "switch",
-            label: "Standby",
-            model: "standby",
-            textOn: "Activity",
-            textOff: "Standby",
-
-            styleClasses: 'col-md-4',
+            styleClasses: 'col-md-12',
           }
         ]
       },
