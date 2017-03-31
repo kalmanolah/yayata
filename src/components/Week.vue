@@ -41,29 +41,29 @@ div(class='calendar')
   hr
   
   //- Buttons to toggle what to display
-  div.btn-group
-    button.btn-secondary(v-on:click='setToWorkWeek') Workweek
-    button.btn-secondary(v-on:click='setToWeekend') Weekend
-    button.btn-secondary(v-on:click='setToFullWeek') Full week
+  div.btn-group.centered
+    button.btn.btn-secondary(v-on:click='setWeekFormat("Workweek")') Workweek
+    button.btn.btn-secondary(v-on:click='setWeekFormat("Weekend")') Weekend
+    button.btn.btn-secondary(v-on:click='setWeekFormat("Fullweek")') Full week
 
   //- Cards
   div.calendar-header
     div.card-group
-      div.card(v-for='weekDay in daysOfWeek')
+      div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
 
         div.card-header.text-md-center.card-info
           | {{ weekDay | moment('dddd') }} 
           div.text-md-center {{ weekDay | moment('DD/MM') }}
   
-        div.card-block(v-for='p in getDaysPerformances(weekDay.date())' v-bind:key='p.id')
-          div(v-if='p')
-            div(v-if='p.duration')
-              span.card-title {{ findContractLabel(p.contract) }}
-              .card-text {{ p.duration }} 
+        div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
+          div
+            div(v-if='perf.duration')
+              span.card-title {{ findContractLabel(perf.contract) }}
+              .card-text {{ perf.duration }} 
             div(v-else)
               span.card-text Standby
-  
-        b-popover(title='Create a new entry' placement='bottom' triggers='click')
+
+        b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
           b-btn.btn-success.col-md-12 + 
           .text-xs-center.col-md-12(slot='content' )
             strong.fa.fa-calendar-check-o
@@ -102,19 +102,14 @@ export default {
 
   methods: {
 
-    //Switch to workweek
-    setToWorkWeek: function() {
-      this.currentWeekFormat = constant.WEEK_FORMATTING['Workweek'];
-    },
+    //Sets the popover placement, based on the weekindex and weekformat
+    // setPopoverPlacement: function(val) {
+    //   return (val >= Math.floor((this.currentWeekFormat.end - this.currentWeekFormat.start) / 2) + 1) ? 'left' : 'right';
+    // },
 
-    //Switch to weekend
-    setToWeekend: function() {
-      this.currentWeekFormat = constant.WEEK_FORMATTING['Weekend'];
-    },
-
-    //Switch to fullweek
-    setToFullWeek: function() {
-      this.currentWeekFormat = constant.WEEK_FORMATTING['Fullweek'];
+    //Set Week format
+    setWeekFormat: function(format) {
+      this.currentWeekFormat = constant.WEEK_FORMATTING[format];
     },
 
     //When performance properly submitted
@@ -206,29 +201,23 @@ export default {
         var maxIndex = arr.indexOf(Math.max.apply(Math, arr));
 
         start = arr[0],
-        end = arr[ maxIndex ],   
+        end = arr[maxIndex],   
         month = parseInt(this.periodStartMonth.format('MM'));     //Months are zero-indexed
 
         this.callPerformance(month, start, end);
 
         //Reset the vars for use further below
-        start = arr[ maxIndex + 1 ],
-        end = arr[arr.length-1],
+        start = arr[maxIndex + 1],
+        end = arr[arr.length - 1],
         month = parseInt(this.periodEndMonth.format('MM'));
 
-        console.log(start);
-        console.log(end);
-        console.log(month);
         this.callPerformance(month, start, end);
       
       } else {
         start = arr[0],
-        end = arr[arr.length-1],
+        end = arr[arr.length - 1],
         month = parseInt(this.periodStartMonth.format('MM')) + 1;
 
-        console.log(start);
-        console.log(end);
-        console.log(month);
         this.callPerformance(month, start, end);
       }
     },
@@ -268,6 +257,10 @@ export default {
       selectedWeek: this.$route.params.week,
       performances: [],
       currentWeekFormat: '',
+
+      popoverStyle: {
+        'max-width': '600px'
+      },
     }
 
   },
@@ -299,7 +292,7 @@ export default {
   },
 
   created: function() { 
-    this.setToWorkWeek();
+    this.setWeekFormat("Workweek");
   }
 }
 </script>
