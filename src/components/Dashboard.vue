@@ -8,9 +8,9 @@ div
   .row
     .col-md-10.offset-md-1
       .card
-        h4.card-title.text-md-center
+        h4.card-title.text-md-center Timesheets for 
           router-link(:to='{ name: "calendar_month_redirect" }')
-            | Timesheets for {{ today | moment('MMMM YYYY') }}
+            | {{ today | moment('MMMM YYYY') }}
         table.table
           tbody
             tr(v-for="p in projects")              

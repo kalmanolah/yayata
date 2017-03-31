@@ -20,10 +20,12 @@ div(class='calendar')
               div.collapse(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
                 div.card-block
                   div
-                    ul.list-group
-                      li.list-group-item(v-for='leave_date in leave.leavedate_set')
-                        | <strong>From:</strong> {{ leave_date.starts_at | moment('DD MMM YYYY - HH:mm') }}<br>
-                        | <strong>To:</strong> {{ leave_date.ends_at | moment('DD MMM YYYY - HH:mm') }}
+                    | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                    | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+                    //- ul.list-group
+                    //-   li.list-group-item(v-for='leave_date in leave.leavedate_set')
+                    //-     | <strong>From:</strong> {{ leave_date.starts_at | moment('DD MMM YYYY - HH:mm') }}<br>
+                    //-     | <strong>To:</strong> {{ leave_date.ends_at | moment('DD MMM YYYY - HH:mm') }}
     div.col-md-6
       cmpHolidays
 
@@ -58,17 +60,20 @@ export default {
       path: '/my_leaves/',
     }).then((response) => {
 
-      response.data.results.forEach(x => {
-        x.leavedate_set.forEach(x => {
-          x.starts_at = moment(x.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          x.ends_at = moment(x.ends_at, 'YYYY-MM-DD HH:mm:ss');
+      response.data.results.forEach(lv => {
+        lv.leavedate_set.forEach(ld => {
+          ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+          ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
         });
+        
+        lv['leave_start'] = lv.leavedate_set[0].starts_at;
+        lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
       });
 
       data.leaves = response.data.results
     }, () => {
       this.loading = false
-    })
+    });
   },
 
   computed: { 
@@ -101,7 +106,7 @@ export default {
 
       // for(var i = 0; i < leaveLength; i++) {
 
-      }
+      // }
 
     },
   },

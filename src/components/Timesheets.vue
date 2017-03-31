@@ -42,6 +42,7 @@ export default {
       },
     }).then((response) => {
       var timesheets = {};
+      
       response.data.results.forEach(function(sheet){
         if(!timesheets[sheet.year]){
           timesheets[sheet.year] = {};
