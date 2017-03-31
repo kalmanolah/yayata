@@ -5,16 +5,16 @@ div
   div(v-for="(year_group,year) in timesheets")
     
     br
+
     div.card
 
       h3.card-header {{ year }}
       
-      div.btn-group.card-block(v-for='sheet in year_group')
-        router-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }')
-          button.btn.btn-secondary(type='button')
-            | {{ sheet.month }}
-
-      ul.list-group
+      div.card-block
+        div.btn-group(v-for='sheet in year_group' )
+          router-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }')
+            button.btn.btn-secondary(type='button')
+              | {{ sheet | outputCorrectMonth }}
 
 </template>
 
@@ -56,6 +56,10 @@ export default {
   },
 
   filters: {
+
+    outputCorrectMonth(sheet) {
+      return moment().year(sheet.year).month(sheet.month - 1).format('MMMM');
+    },
 
     //Calculates all timesheets still open, based on a list of timesheets
     calculateOpen(list) {
