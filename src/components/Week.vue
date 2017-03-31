@@ -53,7 +53,7 @@ div(class='calendar')
 
         div.card-header.text-md-center.card-info
           | {{ weekDay | moment('dddd') }} <br> {{ weekDay | moment('DD/MM') }}
-          button.btn.btn-secondary.col-md-12(v-on:click='setStandby(weekDay)') Standby 
+          button.btn.btn-secondary.col-lg-12(v-on:click='setStandby(weekDay)') Standby 
 
         //- Content of performances
         div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
@@ -64,16 +64,16 @@ div(class='calendar')
 
         //- Performance creation
         b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-md-12 + 
-          .text-xs-center.col-md-12(slot='content' )
+          b-btn.btn-success.col-lg-12 + 
+          .text-xs-center.col-lg-12(slot='content' )
             strong.fa.fa-calendar-check-o
               | {{ weekDay | moment('DD/MM/YYYY') }} 
             div
               PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
   
-        div.card-footer.text-md-center
+        div.card-footer.text-lg-center
           small.text-muted
-            | 0/8 hours
+            | 0/{{getTotalDuration(weekDay)}} hours
 
 
 </template>
@@ -101,6 +101,13 @@ export default {
   },
 
   methods: {
+
+    //Get total hours/day from the workschedule per user
+    getTotalDuration: function(day) {
+      for(var x in this.workschedule) 
+        if(x == day.format('dddd').toLowerCase())
+          return this.workschedule[x];
+    },
 
     //Set standbyperformance for specific day
     setStandby: function(day) {
@@ -284,6 +291,7 @@ export default {
       selectedWeek: this.$route.params.week,
       performances: [],
       currentWeekFormat: '',
+      workschedule: [],
 
       popoverStyle: {
         'max-width': '600px'
@@ -320,6 +328,41 @@ export default {
 
   created: function() { 
     this.setWeekFormat("Workweek");
+
+    //Get user ID 
+    store.dispatch(
+      types.NINETOFIVER_API_REQUEST,
+      {
+        path: '/services/my_user/'
+      }
+    ).then((uResponse) => {
+      console.log( uResponse );
+
+      //Get workschedule ID by user ID
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        {
+          path: '/employment_contracts/',
+          params: {
+            'user': uResponse.data.user
+          }
+        }
+      ).then((ecResponse) => {
+        console.log( ecResponse );
+
+        //Get Workschedule object
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/work_schedules/' + ecResponse.data.results[0].work_schedule + '/'
+          }
+        ).then((wsResponse) => {
+          console.log( wsResponse );
+
+          this.workschedule = wsResponse.data
+        })
+      });
+    });
   }
 }
 </script>
