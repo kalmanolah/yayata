@@ -1,51 +1,61 @@
 <template lang="pug">
 div
-  .row
-    .col-md-8
-      .alert.alert-warning.card-top-red
-        | You have 1 due timesheet that is still open. Please fix that ASAP or Johan will haunt your dreams.
-  .row
-    .col-md-8
-      .card
-        h4.card-title.text-md-center
-          | PROJECTS
-        table.table
-          tbody
-            tr
-              td Port of Antwerp (Amaris Consultancy)
-              td.text-md-right 92 hours (11,5 days)
-            tr
-              td Fabricom (LPA Track &amp; trace)
-              td.text-md-right 24 hours (3 days)
-            tr
-              td Google (Search Engine Optimisation)
-              td.text-md-right 16 hours (2 days)
-            tr
-              td <strong>Total</strong>
-              td.text-md-right <strong>132 hours (16,5 days)</strong>
-            tr
-              td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>36 hours (4,5 days)</strong>
-  .row
-    .col-md-8
+  h3 My projects
+  p.subtitle Overview of all my projects
+
+  h4.text-md-center Active
+
+    ul.list-group(v-for='ac in activeContracts')
+      li.list-group-item
+  hr
+
+  h4.text-lg-center Inactive
+
+    ul.list-group(v-for='ic in inactiveContracts')
+      li.list-group-item
+    
+
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import * as constant from '../store/constants'
+import store from '../store';
 
-var data = {
-}
 
 export default {
   name: 'colleagues',
 
-  components: {
+  components: {},
+
+  created: function () {
+
+    this.types = constant.CONTRACT_TYPES;
+    this.contracts = constant.CONTRACTS;
+  },
+
+  computed: {
+
+    //Gets the projects currently still active
+    activeContracts: function() {
+      return this.contracts.filter(x => x.active === true);
+    },
+
+    //Gets the projects currently unactive
+    inactiveContracts: function() {
+      return this.contracts.filter(x => x.active === false);
+    },
 
   },
 
   data () {
-    return data;
+    return {
+
+      contracts: [],
+      types: [],
+
+    }
   }
 }
 </script>
