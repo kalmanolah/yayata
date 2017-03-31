@@ -25,6 +25,7 @@ div(class='calendar')
           i(class='fa fa-angle-double-right')
   hr
 
+  //- Day-names
   div(class='calendar-header' class='hidden-sm-down')
     div(v-for='weekDay in weekDays')
       div(class='calendar-day') {{ weekDay }}
@@ -33,6 +34,8 @@ div(class='calendar')
       v-for='n in dayOffset'
       class='calendar-day calendar-day-dummy hidden-sm-down'
     )
+
+    //- Day-blocks
     div(
       v-for='n in dayCount'
       class='calendar-day'
@@ -42,13 +45,14 @@ div(class='calendar')
       }'
     )
       router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
-        div(class='card card-block')
-          h4 {{ n }} 
+        div(class='card card-block' v-bind:class='determineLeave(n)' )
+          h4 {{ n }}
 </template>
 
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
+import store from '../store';
 import moment from 'moment';
 
 var daysInMonth = (d) => {
@@ -64,7 +68,44 @@ export default {
     }
   },
 
+  created: function () {
+    
+    store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/my_leaves/',
+    }).then((response) => {
+      response.data.results.forEach(x => {
+        x.leavedate_set.forEach(x => {
+          x.starts_at = moment(x.starts_at, 'YYYY-MM-DD HH:mm:ss');
+          x.ends_at = moment(x.ends_at, 'YYYY-MM-DD HH:mm:ss');
+        });
+      });
+
+      this.leaves = response.data.results;
+    }, () => {
+      this.loading = false
+    });
+
+  },
+
   methods: {
+
+    //Check whether user is on leave on that particular day
+    isOnLeave: function(day) {
+      var today = moment(this.selectedMonth).date(day);
+
+      return this.leaves.some(x => {
+
+        var start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
+        var end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
+
+        return (start <= today && end >= today);
+      });
+    },
+
+    //Return style according to leave/no-leave
+    determineLeave: function(day) {
+      return (this.isOnLeave(day)) ? 'bg-info' : 'bg-faded';
+    },
 
     getDayOfWeek: function (day) {
       return (this.dayOffset + day) % 7
@@ -138,6 +179,8 @@ export default {
   data () {
 
     return {
+      leaves: [],
+
       weekDays: [
         'Monday',
         'Tuesday',
