@@ -28,11 +28,11 @@ export default {
 
     submitForm: function() {
       var model = this.model;
-      var timesheet = constant.MY_TIMESHEETS.find(x => {
+      var timesheet = constant.MY_TIMESHEETS.find(x => 
         x.month == (this.today.month() + 1)
         &&
         x.year == this.today.year()
-      });
+      );
 
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
