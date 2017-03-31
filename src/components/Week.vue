@@ -52,17 +52,17 @@ div(class='calendar')
       div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
 
         div.card-header.text-md-center.card-info
-          | {{ weekDay | moment('dddd') }} 
-          div.text-md-center {{ weekDay | moment('DD/MM') }}
-  
-        div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
-          div
-            div(v-if='perf.duration')
-              span.card-title {{ findContractLabel(perf.contract) }}
-              .card-text {{ perf.duration }} 
-            div(v-else)
-              span.card-text Standby
+          | {{ weekDay | moment('dddd') }} <br> {{ weekDay | moment('DD/MM') }}
+          button.btn.btn-secondary.col-md-12(v-on:click='setStandby(weekDay)') Standby 
 
+        //- Content of performances
+        div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
+          ul.list-group
+            li.list-group-item
+              span.card-title {{ findContractLabel(perf.contract) }}
+              .card-text <small>{{ perf.duration }} hours </small> 
+
+        //- Performance creation
         b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
           b-btn.btn-success.col-md-12 + 
           .text-xs-center.col-md-12(slot='content' )
@@ -101,6 +101,33 @@ export default {
   },
 
   methods: {
+
+    //Set standbyperformance for specific day
+    setStandby: function(day) {
+      var timesheet = constant.MY_TIMESHEETS.find(x => 
+        x.month == (day.month() + 1)
+        &&
+        x.year == day.year()
+      );
+
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        {
+          path: '/my_performances/standby/',
+          method: 'POST',
+          body: {
+            timesheet: timesheet.id,
+            day: day.date()
+          },
+          emulateJSON: true,
+        }
+      ).then((response) => {
+        console.log(response);
+
+        if(response.status == 201)
+          this.$emit('success', response);
+      });
+    },
 
     //Sets the popover placement, based on the weekindex and weekformat
     // setPopoverPlacement: function(val) {
@@ -226,7 +253,7 @@ export default {
     callPerformance: function(month, start, end) {
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/',
+        path: '/my_performances/activity',
         params: {
           year: this.selectedYear,
           timesheet__month: month,
