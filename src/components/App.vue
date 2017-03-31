@@ -101,6 +101,13 @@ export default {
             constant.MY_TIMESHEETS.push(response.data.results[i]);
       });
 
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/employment_contract_types/'
+      }).then((response) => {
+        for(var i = 0; i < response.body.count; i++)
+          constant.CONTRACT_TYPES.push(response.data.results[i]); 
+      });
+
       //Get all contracts
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_contracts/'

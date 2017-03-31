@@ -3,6 +3,7 @@ export const LEAVE_TYPES = [];
 export const PERFORMANCE_TYPES = [];
 export const COMPANIES = [];
 export const CONTRACTS = [];
+export const CONTRACT_TYPES = [];
 export const MY_TIMESHEETS = [];
 export const WEEK_FORMATTING = {
 	'Workweek': {
