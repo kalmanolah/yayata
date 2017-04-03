@@ -1,6 +1,6 @@
 export const LEAVE_TYPES = [];
 export const PERFORMANCE_TYPES = [];
-export const CONTRACT_TYPES = [];
+export const EMPLOYMENT_CONTRACT_TYPES = [];
 
 export const CONTRACT_GROUPS = [];
 export const COMPANIES = [];
