@@ -306,7 +306,7 @@ export default {
       workschedule: [],
 
       popoverStyle: {
-        'max-width': '600px'
+        'max-width': '400px'
       },
     }
 
