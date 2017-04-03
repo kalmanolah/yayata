@@ -60,6 +60,7 @@ export default {
       path: '/my_leaves/',
     }).then((response) => {
 
+      //Converts the start / end datetime from strings to actual JS datetimes
       response.data.results.forEach(lv => {
         lv.leavedate_set.forEach(ld => {
           ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
@@ -114,25 +115,23 @@ export default {
   methods: {
 
     getRibbonStyleClass: function(leave) {
-      //Rejected
-      if(leave.status === constant.LEAVE_STATUSES[1])
-        return 'card-top-red'; 
-      //Approved
-      else if(leave.status === constant.LEAVE_STATUSES[2])
-        return 'card-top-green';
-      //Default
-      return 'card-top-blue';                                 
+      var tempObj = {
+        [constant.LEAVE_STATUSES[2]]: 'card-top-green',
+        [constant.LEAVE_STATUSES[1]]: 'card-top-red'
+      }
+
+      return (Object.keys(tempObj).find(x => x === leave.status) != null) 
+        ? tempObj[leave.status] : 'card-top-blue';                           
     },
 
     getTagStyleClass: function(leave) {
-      //Rejected
-      if(leave.status === constant.LEAVE_STATUSES[1])
-        return 'tag-danger';
-      //Approved
-      else if(leave.status === constant.LEAVE_STATUSES[2])
-        return 'tag-success';
-      //Default
-      return 'tag-primary';  
+      var tempObj = {
+        [constant.LEAVE_STATUSES[2]]: 'tag-success',
+        [constant.LEAVE_STATUSES[1]]: 'tag-danger'
+      }
+
+      return (Object.keys(tempObj).find(x => x === leave.status) != null) 
+        ? tempObj[leave.status] : 'tag-primary';
     }
 
   },
