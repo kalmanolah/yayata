@@ -55,7 +55,7 @@ export default {
 
   beforeRouteEnter(to,from,next) {
 
-    //Sets leave_types """"once""""
+    //Gets leave_types
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/leave_types/'
     }).then((response) => {
@@ -77,6 +77,20 @@ export default {
               name: response.data.results[i].label
             });
         });
+
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, {
+          path: '/contract_groups/'
+        }
+      ).then((response) => {
+        for(var i = 0; i < response.body.count; i++)
+          constant.CONTRACT_GROUPS.push({
+            id: response.data.results[i].id,
+            label: response.data.results[i].type,
+            description: response.data.results[i].label
+          });
+      });
+
     });
 
     //Get all companies
@@ -101,6 +115,7 @@ export default {
             constant.MY_TIMESHEETS.push(response.data.results[i]);
       });
 
+      //Get all employment contract types
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/employment_contract_types/'
       }).then((response) => {
@@ -117,10 +132,10 @@ export default {
             id: response.data.results[i].id,
             label: response.data.results[i].label,
             customer: constant.COMPANIES.find(x => x.id == response.data.results[i].customer).label
-          });       
-        
+          });
         next(true);  
       }); 
+
     });
 
 
