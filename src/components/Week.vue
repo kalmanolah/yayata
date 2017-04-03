@@ -59,8 +59,10 @@ div(class='calendar')
         div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
           ul.list-group
             li.list-group-item
-              span.card-title {{ findContractLabel(perf.contract) }}
-              .card-text <small>{{ perf.duration }} hours </small> 
+              span.card-title 
+                | {{ findContractLabel(perf.contract) }}
+              div.card-text 
+                | <small>{{ perf.duration }} hours </small> 
 
         //- Performance creation
         b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
@@ -73,7 +75,7 @@ div(class='calendar')
   
         div.card-footer.text-lg-center
           small.text-muted
-            | 0/{{getTotalDuration(weekDay)}} hours
+            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} hours</strong>
 
 
 </template>
@@ -102,8 +104,18 @@ export default {
 
   methods: {
 
+    //Get the amount of hours spent 
+    getDurationTotal: function(day) {
+      var total = 0;
+
+      for(var val of this.performances.filter(x => x.day == day.format('D'))) 
+        total += parseFloat(val.duration);
+
+      return total;
+    },
+
     //Get total hours/day from the workschedule per user
-    getTotalDuration: function(day) {
+    getHoursTotal: function(day) {
       for(var x in this.workschedule) 
         if(x == day.format('dddd').toLowerCase())
           return this.workschedule[x];
