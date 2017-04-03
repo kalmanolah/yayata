@@ -114,6 +114,7 @@ export default {
 
   methods: {
 
+    //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
       var tempObj = {
         [constant.LEAVE_STATUSES[2]]: 'card-top-green',
@@ -123,6 +124,7 @@ export default {
       return (tempObj[leave.status]) ? tempObj[leave.status] : 'card-top-blue';                           
     },
 
+    //Get the style class of the tag based on the leave_status
     getTagStyleClass: function(leave) {
       var tempObj = {
         [constant.LEAVE_STATUSES[2]]: 'tag-success',

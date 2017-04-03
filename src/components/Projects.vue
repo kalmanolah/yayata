@@ -10,11 +10,14 @@ div
     div.col-md-6.card-block(v-for='ac in activeContracts')
       div.card-title {{ ac.display_label }} <br>
         small.text-muted {{ ac.company | getCompanyLabelFromID }} → {{ ac.customer | getCompanyLabelFromID }}
-      div
-        div.col-md-6 Total hours: {{ ac.total_duration }}
-        div.col-md-6 Month hours
-      small <strong>Groups: </strong>{{ ac.contract_groups | getContractGroupAsString }}
-
+      div.card-text {{ac.description}}
+      div.card-footer
+        div.row
+          small.col-md-6 <strong>Total:</strong> {{ ac.total_duration }} hours
+          small.col-md-6 <strong>This month:</strong> {{ ac.monthly_duration }} hours
+        div.row
+          small.col-md-8 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
+          small.col-md-4 <strong>Users:</strong> {{ac.total_users}}
   hr
 
   //- div.col-md-12.card
@@ -42,17 +45,69 @@ export default {
 
   components: {},
 
+  data () {
+    return {
+
+      contracts: [],
+      contract_durations: [],
+
+    }
+  },
+
   created: function () {
 
     store.dispatch(
       types.NINETOFIVER_API_REQUEST, {
         path: '/my_contracts/',
-    }).then((response) => {
-      this.contracts = response.data.results;
+    }).then((mcResponse) => {
+
+      //Get total hours spent for all contracts
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/contract_durations/'
+      }).then((cdResponse) => {
+
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_performances/activity/',
+            params: {
+              timesheet__month: new Date().getMonth(),
+              timesheet__year: new Date().getYear()
+            }
+          }
+        ).then((apResponse) => {
+
+          //Get users per project 
+          store.dispatch(
+            types.NINETOFIVER_API_REQUEST, {
+              path: '/contract_users/'
+            }
+          ).then((cuResponse) => {
+            var contracts = mcResponse.data.results;
+            var durations = cdResponse.data.results;
+            var performances = apResponse.data.results;
+            var users = cuResponse.data.results
+
+            for(var cont of contracts) {
+              var totalHours = 0;
+              var totalUsers = 0;
+
+              for(var p of performances.filter(x => x.contract === cont.id))
+                totalHours += parseFloat(p.duration);
+
+              for(var u of users.filter(x => x.contract === cont.id))
+                totalUsers++;
+
+              cont.monthly_duration = totalHours;
+              cont.total_duration = durations.find(x => x.id === cont.id).total_duration;
+              cont.total_users = totalUsers;
+            }
+
+            this.contracts = contracts;
+          });
+        });
+      });
     });
-
-
-
   },
 
   filters: {
@@ -66,26 +121,17 @@ export default {
     getContractGroupAsString: function(arr) {
       //If we're provided a value
       if(arr.length) {
-        var output = '', i = 0;
+        var output = '';
 
-        do {
+        for(var i = 0; i < arr.length; i++) {
           if(i > 0) 
             output += ', ';
-
           output += constant.CONTRACT_GROUPS.find(x => x.id == arr[i]).label;
-          i++;
-        } while(i < arr.length)
-
+        }
         return output 
       }
-
       return 'None';
     },
-
-    //Get total hours spent per contract
-    getTotalHoursPerProject: function(val) {
-
-    }
 
   },
 
@@ -101,14 +147,6 @@ export default {
       return this.contracts.filter(x => x.active === false);
     },
 
-  },
-
-  data () {
-    return {
-
-      contracts: [],
-
-    }
   },
 
   methods: {  }
