@@ -110,21 +110,6 @@ export default {
           projectLabel: contracts[i].label,
           custLabel: constant.COMPANIES.find(x => x.id == contracts[i].customer).label
         });
-
-    },
-
-    //Gets the company names from the API, pushes into projects.customerLabel
-    getCustomersFromID: function(value) {
-
-       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/companies/' + value + '/'
-      }).then((response) => {
-        //Finds correct project in arr, then sets correct value for key according to VueJS datachange detection method
-        for(var i = 0; i < data.projects.length; i++)
-          if(data.projects[i].custID == value)
-            this.$set(data.projects[i], 'customerLabel', response.data.name)
-      });
-
     },
 
     //Get hours per project for current user
