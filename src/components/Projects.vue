@@ -3,16 +3,29 @@ div
   h3 My projects
   p.subtitle Overview of all my projects
 
-  h4.text-md-center Active
+  div.col-md-12.card
+    h5.text-md-center.card-header 
+      | ACTIVE
 
-    ul.list-group(v-for='ac in activeContracts')
-      li.list-group-item
+    div.col-md-6.card-block(v-for='ac in activeContracts')
+      div.card-title {{ ac.display_label }} <br>
+        small.text-muted {{ ac.company | getCompanyLabelFromID }} → {{ ac.customer | getCompanyLabelFromID }}
+      div
+        div.col-md-6 Total hours: {{ ac.total_duration }}
+        div.col-md-6 Month hours
+      small <strong>Groups: </strong>{{ ac.contract_groups | getContractGroupAsString }}
+
   hr
 
-  h4.text-lg-center Inactive
+  //- div.col-md-12.card
+  //-   h5.text-md-center.card-header INACTIVE
 
-    ul.list-group(v-for='ic in inactiveContracts')
-      li.list-group-item
+  //-   div.col-md-6.card-block(v-for='ic in inactiveContracts')
+  //-     div.card-title {{ ic.display_label }} <br>
+  //-       small.text-muted {{ ic.company | getCompanyLabelFromID }} → {{ ic.customer | getCompanyLabelFromID }}
+  //-     div.card-text
+  //-       | {{ ic.description }}
+  //-     small <strong>Groups: </strong>{{ ic.contract_groups | getContractGroupAsString }}
     
 
 </template>
@@ -25,14 +38,55 @@ import store from '../store';
 
 
 export default {
-  name: 'colleagues',
+  name: 'projects',
 
   components: {},
 
   created: function () {
 
-    this.types = constant.CONTRACT_TYPES;
-    this.contracts = constant.CONTRACTS;
+    store.dispatch(
+      types.NINETOFIVER_API_REQUEST, {
+        path: '/my_contracts/',
+    }).then((response) => {
+      this.contracts = response.data.results;
+    });
+
+
+
+  },
+
+  filters: {
+
+    //Returns the label of the company, based on the ID
+    getCompanyLabelFromID: function(val) {
+      return constant.COMPANIES.find(x => x.id == val).label;
+    },
+
+    //Return array as joined strings
+    getContractGroupAsString: function(arr) {
+      //If we're provided a value
+      if(arr.length) {
+        var output = '', i = 0;
+
+        do {
+          if(i > 0) 
+            output += ', ';
+
+          output += constant.CONTRACT_GROUPS.find(x => x.id == arr[i]).label;
+          i++;
+        } while(i < arr.length)
+
+        return output 
+      }
+
+      return 'None';
+    },
+
+    //Get total hours spent per contract
+    getTotalHoursPerProject: function(val) {
+
+    }
+
   },
 
   computed: {
@@ -53,10 +107,11 @@ export default {
     return {
 
       contracts: [],
-      types: [],
 
     }
-  }
+  },
+
+  methods: {  }
 }
 </script>
 
