@@ -17,18 +17,25 @@ div
           small.col-md-6 <strong>This month:</strong> {{ ac.monthly_duration }} hours
         div.row
           small.col-md-8 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
-          small.col-md-4 <strong>Users:</strong> {{ac.total_users}}
+          small.col-md-4 <strong>Users:</strong> {{ ac.total_users }}
+
   hr
 
-  //- div.col-md-12.card
-  //-   h5.text-md-center.card-header INACTIVE
+  div.col-md-12.card
+    h5.text-md-center.card-header 
+      | INACTIVE
 
-  //-   div.col-md-6.card-block(v-for='ic in inactiveContracts')
-  //-     div.card-title {{ ic.display_label }} <br>
-  //-       small.text-muted {{ ic.company | getCompanyLabelFromID }} → {{ ic.customer | getCompanyLabelFromID }}
-  //-     div.card-text
-  //-       | {{ ic.description }}
-  //-     small <strong>Groups: </strong>{{ ic.contract_groups | getContractGroupAsString }}
+    div.col-md-6.card-block(v-for='ic in inactiveContracts')
+      div.card-title {{ ic.display_label }} <br>
+        small.text-muted {{ ic.company | getCompanyLabelFromID }} → {{ ic.customer | getCompanyLabelFromID }}
+      div.card-text {{ic.description}}
+      div.card-footer
+        div.row
+          small.col-md-6 <strong>Total:</strong> {{ ic.total_duration }} hours
+          small.col-md-6 <strong>This month:</strong> {{ ic.monthly_duration }} hours
+        div.row
+          small.col-md-8 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
+          small.col-md-4 <strong>Users:</strong> {{ ic.total_users }}
     
 
 </template>
@@ -95,6 +102,7 @@ export default {
               for(var p of performances.filter(x => x.contract === cont.id))
                 totalHours += parseFloat(p.duration);
 
+              //Counts per contractrole, so users can be counted multiple times
               for(var u of users.filter(x => x.contract === cont.id))
                 totalUsers++;
 
