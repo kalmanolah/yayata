@@ -117,21 +117,19 @@ export default {
     getRibbonStyleClass: function(leave) {
       var tempObj = {
         [constant.LEAVE_STATUSES[2]]: 'card-top-green',
-        [constant.LEAVE_STATUSES[1]]: 'card-top-red'
+        [constant.LEAVE_STATUSES[1]]: 'card-top-red',
       }
 
-      return (Object.keys(tempObj).find(x => x === leave.status) != null) 
-        ? tempObj[leave.status] : 'card-top-blue';                           
+      return (tempObj[leave.status]) ? tempObj[leave.status] : 'card-top-blue';                           
     },
 
     getTagStyleClass: function(leave) {
       var tempObj = {
         [constant.LEAVE_STATUSES[2]]: 'tag-success',
-        [constant.LEAVE_STATUSES[1]]: 'tag-danger'
+        [constant.LEAVE_STATUSES[1]]: 'tag-danger',
       }
 
-      return (Object.keys(tempObj).find(x => x === leave.status) != null) 
-        ? tempObj[leave.status] : 'tag-primary';
+      return (tempObj[leave.status]) ? tempObj[leave.status] : 'tag-primary';
     }
 
   },
