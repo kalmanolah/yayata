@@ -86,8 +86,7 @@ export default {
         for(var i = 0; i < response.body.count; i++)
           constant.CONTRACT_GROUPS.push({
             id: response.data.results[i].id,
-            label: response.data.results[i].type,
-            description: response.data.results[i].label
+            label: response.data.results[i].label
           });
       });
 
