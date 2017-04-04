@@ -1,15 +1,21 @@
 <template lang="pug">
 div
   h3 My timesheets
-  p.subtitle Hurr durr durr timesheets
+  p.subtitle Overview of all open timesheets
   div(v-for="(year_group,year) in timesheets")
+    
     br
-    h3 {{ year }}
-    div.btn-toolbar(role="toolbar", aria-label="Wow, such month")
-      div.btn-group(role="group")
-        button.btn.btn-secondary(type="button", v-for='sheet in year_group')
-          | {{ sheet.month }}
-    ul.list-group
+
+    div.card
+
+      h3.card-header {{ year }}
+      
+      div.card-block
+        div.btn-group(v-for='sheet in year_group' )
+          router-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }')
+            button.btn.btn-secondary(type='button')
+              | {{ sheet | outputCorrectMonth }}
+
 </template>
 
 <script>
@@ -36,6 +42,7 @@ export default {
       },
     }).then((response) => {
       var timesheets = {};
+      
       response.data.results.forEach(function(sheet){
         if(!timesheets[sheet.year]){
           timesheets[sheet.year] = {};
@@ -47,5 +54,25 @@ export default {
       this.loading = false
     })
   },
+
+  filters: {
+
+    outputCorrectMonth(sheet) {
+      return moment().year(sheet.year).month(sheet.month - 1).format('MMMM');
+    },
+
+    //Calculates all timesheets still open, based on a list of timesheets
+    calculateOpen(list) {
+      var total = 0;
+
+      for(var l in list) 
+        if(!list[l]["closed"])
+          total++;
+
+      return total;
+    },
+
+  }
+
 }
 </script>

@@ -1,12 +1,13 @@
 import Vue from 'vue'
-// import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource'
 import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
-import VueFormGenerator from "vue-form-generator"
+import VueFormGenerator from 'vue-form-generator'
+
+import BootstrapVue from 'bootstrap-vue'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -19,7 +20,11 @@ import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 
+import Colleagues from './components/Colleagues.vue'
+import Projects from './components/Projects.vue'
+
 // Vue.use(Vuex)
+Vue.use(BootstrapVue)
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueMoment)
@@ -53,12 +58,17 @@ export const router = new VueRouter({
         {
           name: 'calendar_week_redirect',
           path: '/calendar/week',
-          redirect: `/calendar/week/${(new Date()).getFullYear()}/1`,
+          redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
         },
         {
           name: 'calendar_week',
           path: '/calendar/week/:year/:week',
           component: Week,
+        },
+        {
+          name: 'my_colleagues',
+          path: '/colleagues',
+          component: Colleagues,
         },
         {
           name: 'my_leaves',
@@ -74,6 +84,11 @@ export const router = new VueRouter({
           name: 'companies',
           path: '/companies',
           component: Companies,
+        },
+        {
+          name: 'my_projects',
+          path: '/projects',
+          component: Projects,
         }
       ],
     },
