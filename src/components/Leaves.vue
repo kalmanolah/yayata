@@ -6,12 +6,12 @@ div(class='calendar')
       p Here, have an overview of all your leaves. Whatever
         div
           #accordion(v-for='(leave, i) in sortedLeaves' role='tablist', aria-multiselectable='true')
-            hr(v-if='leave.leavedate_set')
+            hr(v-if='leave.leave_start < new Date()')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
                 div.row
                   div.col-md-10
-                    a
+                    a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
                       | {{ leave.description }}
                   div.col-md-2 
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
@@ -80,25 +80,18 @@ export default {
   computed: { 
 
     sortedLeaves: function() {
-      return this.leaves;
-      // .sort(function(a,b) {
+      console.log(this.leaves.sort(function(a, b) {
+        a = a.leave_start.toDate();
+        b = b.leave_start.toDate();
 
-      //   var thing1 = a.leavedate_set.find(Math.min.apply(Math, function(o) {
-      //     return o.starts_at
-      //     }));
-      //   var thing2 = b.leavedate_set.find(Math.min.apply(Math, function(o) {
-      //       return o.starts_at
-      //     }));
+        return a > b ? -1 : (a < b ? 1 : 0);
+      }));
+      return this.leaves.sort(function(a, b) {
+        a = a.leave_start.toDate();
+        b = b.leave_start.toDate();
 
-        
-      //   if(thing1 < thing2)
-      //     return -1;
-      //   else if(thing1 == thing2)
-      //     return 0;
-      //   else
-      //     return 1;
-
-      // });
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });
     },
 
     nearestLeave: function() {
