@@ -1,5 +1,6 @@
-import Vue from 'vue'
-import * as types from '../mutation-types'
+import Vue from 'vue';
+import moment from 'moment';
+import * as types from '../mutation-types';
 
 // initial state
 const state = {
@@ -68,8 +69,29 @@ const mutations = {
   }
 }
 
+// getters
+const getters = {
+  user: state => state.user,
+  holidays: state => state.holidays,
+
+  leave_types: state => state.leave_types,
+  performance_types: state => state.performance_types,
+  employment_contract_types: state => state.employment_contract_types,
+  contract_groups: state => state.contract_groups,
+  companies: state => state.companies,
+
+  //User specific
+  timesheets: state => state.timesheets,
+  contracts: state => state.contracts,
+
+  //Predefined
+  leave_statuses: state => state.leave_statuses,
+  week_formatting: state => state.week_formatting
+}
+
 // actions
 const actions = {
+ 
   [types.NINETOFIVER_API_REQUEST] (store, options = {}, ) {
 
     var oauth2State = store.rootState.oauth2
@@ -120,7 +142,7 @@ const actions = {
       opts[key] = options[key];
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise  ((resolve, reject) => {
       Vue.http(opts).then((response) => {
         resolve(response);
       }, (response) => {
@@ -284,7 +306,7 @@ const actions = {
             return { 
               id: x.id, 
               name: x.label, 
-              customer: state.companies.find(x => x.id === x.customer).name
+              customer: x.customer
             }
           })
         });
@@ -305,11 +327,11 @@ const actions = {
         path: '/my_timesheets/'
       }).then((res) => {
 
-        var today = new Date();
+        var today = moment();
         var timesheets = res.data.results.filter(x => {
           return ( 
-            x.year < today.getYear() 
-            || (x.year == today.getYear() && x.month <= today.getMonth())
+            x.year < today.year() 
+            || (x.year == today.year() && x.month <= today.month())
           )
         });
 
@@ -324,11 +346,13 @@ const actions = {
         reject(res);
       })
     });
-
-  },
+  }
+  
+}
 
 export default {
   state,
+  getters,
   mutations,
   actions,
 }
