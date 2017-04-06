@@ -12,7 +12,6 @@ div
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
-import * as constant from '../../store/constants';
 import store from '../../store';
 
 export default {
@@ -143,7 +142,7 @@ export default {
             model: "leave_type",
             label: "Leavetype",
             required: true,
-            values: constant.LEAVE_TYPES,
+            values: store.state.ninetofiver.leave_types,
 
             styleClasses: 'col-md-6',
             validator: VueFormGenerator.validators.required,
@@ -163,15 +162,17 @@ export default {
             validateBeforeSubmit: true,
             onSubmit: function(model, schema) {
 
-              var start_date = moment(model.start_date);
-              var start_hour = moment(model.start_hour, "HH:mm");
+              var s_time = moment(model.start_hour, "HH:mm");
+              var s_date = moment(model.start_date).startOf('date');
 
-              start_date = (model.start_full_day) ? start_date.startOf('date') : start_date.hours(start_hour.hours()).minutes(start_hour.minutes());
+              if(!model.start_full_day)
+                s_date.hours(s_time.hours()).minutes(s_time.minutes());
 
-              var end_date = moment(model.end_date);
-              var end_hour = moment(model.end_hour, "HH:mm");
+              var e_time = moment(model.end_hour, "HH:mm");
+              var e_date = moment(model.end_date).startOf('date');
 
-              end_date = (model.end_full_day) ? end_date.endOf('date') : end_date.hours(end_hour.hours()).minutes(end_hour.minutes());
+              if(!model.end_full_day)
+                e_date.hours(e_time.hours()).minutes(e_time.minutes());
 
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
@@ -180,7 +181,7 @@ export default {
                   method: 'POST',
                   body: {
                     leave_type: model.leave_type,
-                    status: constant.LEAVE_STATUSES[3],      //Get 'DRAFT'
+                    status: store.state.ninetofiver.leave_statuses[3],      //Get 'DRAFT'
                     description: model.description,
                     attachment: model.attachment,
                   },
@@ -197,30 +198,27 @@ export default {
                     body: {
                       leave: lvResponse.body.id,
                       timesheet: 0,
-                      starts_at: start_date.format('YYYY-MM-DDTHH:mm:ss'),
-                      ends_at: end_date.format('YYYY-MM-DDTHH:mm:ss')
+                      starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
+                      ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
                     },
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
-                  console.log(lvdResponse);
-
                   store.dispatch(
                     types.NINETOFIVER_API_REQUEST, 
                     {
                       path: '/my_leaves/' + lvResponse.body.id + '/',
                       method: 'PATCH',
                       body: {
-                        status: constant.LEAVE_STATUSES[0],     //Get 'PENDING'
+                        status: store.state.ninetofiver.leave_statuses[0],     //Get 'PENDING'
                       },
                       emulateJSON: true,
                     }
                   ).then((updateResponse) => {
                     console.log(updateResponse);
+                    //INSERT CONFIRMATION
                   });
-
                 });
-
               }, () => {
                 this.loading = false
               });
