@@ -7,7 +7,7 @@ const state = {
   user: null,
   holidays: null,
 
-  //Global props, CAN change, not likely
+  //Global props, unlikely
   leave_types: null,
   performance_types: null,
   employment_contract_types: null,
@@ -16,9 +16,13 @@ const state = {
   contract_groups: null,
   companies: null,
 
-  //User specific
+  //User specific & prone to frequent change outside of this session
   timesheets: null,
   contracts: null,
+  contract_durations: null,
+  contract_users: null,
+  monthly_activity_performances: null,
+  work_schedule: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
@@ -61,11 +65,23 @@ const mutations = {
     state.companies = companies;
   },
 
+  [types.NINETOFIVER_SET_TIMESHEETS] (state, { timesheets }) {
+    state.timesheets = timesheets;
+  },
   [types.NINETOFIVER_SET_CONTRACTS] (state, { contracts }) {
     state.contracts = contracts;
   },
-  [types.NINETOFIVER_SET_TIMESHEETS] (state, { timesheets }) {
-    state.timesheets = timesheets;
+  [types.NINETOFIVER_SET_CONTRACT_DURATIONS] (state, { contract_durations }) {
+    state.contract_durations = contract_durations;
+  },
+  [types.NINETOFIVER_SET_CONTRACT_USERS] (state, { contract_users }) {
+    state.contract_users = contract_users;
+  },
+  [types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES] (state, { monthly_activity_performances }) {
+    state.monthly_activity_performances = monthly_activity_performances;
+  },
+  [types.NINETOFIVER_SET_WORK_SCHEDULE] (state, { work_schedule }) {
+    state.work_schedule = work_schedule;
   }
 }
 
@@ -82,11 +98,64 @@ const getters = {
 
   //User specific
   timesheets: state => state.timesheets,
-  contracts: state => state.contracts,
+  contracts: state => {
+    if(!state.contracts || !state.companies || !state.contract_durations)
+      return null;
+    else {
+      return state.contracts.map(x => {
+        return {
+          id: x.id, 
+          name: x.label, 
+          type: x.type,
+          display_label: x.display_label,
+          description: x.description,
+          performance_types: x.performance_types,
+          contract_groups: x.contract_groups,
+          active: x.active,
+          customer: x.customer,
+          company: x.company,
+          projectName: x.name,
+          customerName: state.companies.find(com => com.id == x.customer).name,
+          companyName: state.companies.find(com => com.id == x.company).name,
+          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration        
+        };
+      });
+    }
+      
+  },
+  contract_durations: state => state.contract_durations,
+  contract_users: state => state.contract_durations,
+  monthly_activity_performances: state => state.monthly_activity_performances,
+  work_schedule: state => state.work_schedule,
 
   //Predefined
   leave_statuses: state => state.leave_statuses,
-  week_formatting: state => state.week_formatting
+  week_formatting: state => state.week_formatting,
+
+  //Calculated
+  open_timesheet_count: state => { 
+    if(state.timesheets) 
+      return state.timesheets.length; 
+  },
+  contract_users_count: state => {
+    if(state.contract_users)
+      return state.contract_users.length;
+  },
+  projects: state => {
+    if(state.contracts && state.companies && state.total_duration) {
+      return state.contracts.map(x => {
+        return {
+          id: x.id,
+          customerID: x.customer,
+          companyID: x.company,
+          projectName: x.name,
+          customerName: state.companies.find(com => com.id == x.customer).name,
+          companyName: state.companies.find(com => com.id == x.company).name,
+          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration
+        };
+      });
+    }
+  }
 }
 
 // actions
@@ -280,35 +349,7 @@ const actions = {
       }).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_COMPANIES, {
-          companies: res.data.results.map(x => {
-            return { id: x.id, name: x.name }
-          })
-        });
-        resolve(res);
-
-      }, (res) => {
-        reject(res);
-      })
-    });
-
-  },
-
-
-  [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
-
-    return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_contracts/'
-      }).then((res) => {
-
-        store.commit(types.NINETOFIVER_SET_CONTRACTS, {
-          contracts: res.data.results.map(x => {
-            return { 
-              id: x.id, 
-              name: x.label, 
-              customer: x.customer
-            }
-          })
+          companies: res.data.results
         });
         resolve(res);
 
@@ -336,15 +377,115 @@ const actions = {
         });
 
         store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
-          timesheets: timesheets.map(x => {
-              return { id: x.id, month: x.month, year: x.year, closed: x.closed }
-          })
+          timesheets: timesheets
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+
+
+  [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_contracts/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_CONTRACTS, {
+          contracts: res.data.results
         });
         resolve(res);
 
       }, (res) => {
         reject(res);
       })
+    });
+
+  },
+
+
+  [types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path:'/my_contract_durations/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_CONTRACT_DURATIONS, {
+          contract_durations: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+
+  },
+
+
+  [types.NINETOFIVER_RELOAD_CONTRACT_USERS] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path:'/contract_users/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_CONTRACT_USERS, {
+          contract_users: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+
+  },
+
+
+  [types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path:'/my_performances/activity/',
+        params: {
+          timesheet__month: new Date().getMonth(),
+          timesheet__year: new Date().getFullYear()
+        }
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES, {
+          monthly_activity_performances: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+
+  },
+
+
+  [types.NINETOFIVER_RELOAD_WORK_SCHEDULE] (store, options = {}) {
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path:'/my_workschedules/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
+          work_schedule: res.data
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
     });
   }
   
