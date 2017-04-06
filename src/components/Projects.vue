@@ -9,15 +9,15 @@ div
 
     div.col-md-6.card-block(v-for='ac in activeContracts')
       div.card-title {{ ac.display_label }} <br>
-        small.text-muted {{ ac.company | getCompanyLabelFromID }} → {{ ac.customer | getCompanyLabelFromID }}
+        small.text-muted {{ ac.companyName }} → {{ ac.customerName }}
       div.card-text {{ac.description}}
       div.card-footer
         div.row
-          small.col-md-6 <strong>Total:</strong> {{ ac.total_duration }} hours
-          small.col-md-6 <strong>This month:</strong> {{ ac.monthly_duration }} hours
+          small.col-md-7 <strong>Total:</strong> {{ ac.total_duration }} hours
+          small.col-md-5 <strong>This month:</strong> {{ ac.monthly_duration }} hours
         div.row
-          small.col-md-8 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
-          small.col-md-4 <strong>Users:</strong> {{ ac.total_users }}
+          small.col-md-7 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
+          small.col-md-5 <strong>Users:</strong> {{ ac.total_users }}
 
   hr
 
@@ -27,23 +27,22 @@ div
 
     div.col-md-6.card-block(v-for='ic in inactiveContracts')
       div.card-title {{ ic.display_label }} <br>
-        small.text-muted {{ ic.company | getCompanyLabelFromID }} → {{ ic.customer | getCompanyLabelFromID }}
+        small.text-muted {{ ic.companyName }} → {{ ic.customerName }}
       div.card-text {{ic.description}}
       div.card-footer
         div.row
-          small.col-md-6 <strong>Total:</strong> {{ ic.total_duration }} hours
-          small.col-md-6 <strong>This month:</strong> {{ ic.monthly_duration }} hours
+          small.col-md-7 <strong>Total:</strong> {{ ic.total_duration }} hours
+          small.col-md-5 <strong>This month:</strong> {{ ic.monthly_duration }} hours
         div.row
-          small.col-md-8 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
-          small.col-md-4 <strong>Users:</strong> {{ ic.total_users }}
+          small.col-md-7 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
+          small.col-md-5 <strong>Users:</strong> {{ ic.total_users }}
     
 
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
-import * as constant from '../store/constants'
+import { mapState } from 'vuex';
+import * as types from '../store/mutation-types';
 import store from '../store';
 
 
@@ -53,91 +52,27 @@ export default {
   components: {},
 
   data () {
-    return {
-
-      contracts: [],
-      contract_durations: [],
-
-    }
+    return {}
   },
 
-  created: function () {
-
-    store.dispatch(
-      types.NINETOFIVER_API_REQUEST, {
-        path: '/my_contracts/',
-    }).then((mcResponse) => {
-
-      //Get total hours spent for all contracts
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/contract_durations/'
-      }).then((cdResponse) => {
-
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST,
-          {
-            path: '/my_performances/activity/',
-            params: {
-              timesheet__month: new Date().getMonth(),
-              timesheet__year: new Date().getYear()
-            }
-          }
-        ).then((apResponse) => {
-
-          //Get users per project 
-          store.dispatch(
-            types.NINETOFIVER_API_REQUEST, {
-              path: '/contract_users/'
-            }
-          ).then((cuResponse) => {
-            var contracts = mcResponse.data.results;
-            var durations = cdResponse.data.results;
-            var performances = apResponse.data.results;
-            var users = cuResponse.data.results
-
-            for(var cont of contracts) {
-              var totalHours = 0;
-              var totalUsers = 0;
-
-              for(var p of performances.filter(x => x.contract === cont.id))
-                totalHours += parseFloat(p.duration);
-
-              //Counts per contractrole, so users can be counted multiple times
-              for(var u of users.filter(x => x.contract === cont.id))
-                totalUsers++;
-
-              cont.monthly_duration = totalHours;
-              cont.total_duration = durations.find(x => x.id === cont.id).total_duration;
-              cont.total_users = totalUsers;
-            }
-
-            this.contracts = contracts;
-          });
-        });
-      });
-    });
-  },
+  created: function () {},
 
   filters: {
-
-    //Returns the label of the company, based on the ID
-    getCompanyLabelFromID: function(val) {
-      return constant.COMPANIES.find(x => x.id == val).label;
-    },
 
     //Return array as joined strings
     getContractGroupAsString: function(arr) {
       //If we're provided a value
-      if(arr.length) {
+      if(arr && arr.length > 0 && store.getters.contract_groups) {
         var output = '';
 
         for(var i = 0; i < arr.length; i++) {
           if(i > 0) 
             output += ', ';
-          output += constant.CONTRACT_GROUPS.find(x => x.id == arr[i]).label;
+          output += store.getters.contract_groups.find(x => x.id == arr[i]).name;
         }
-        return output 
+        return output;
       }
+
       return 'None';
     },
 
@@ -145,19 +80,52 @@ export default {
 
   computed: {
 
+    //Gets the contracts from the store
+    contracts: function() {
+      if(store.getters.contracts) 
+        return store.getters.contracts;
+    },
+
     //Gets the projects currently still active
     activeContracts: function() {
-      return this.contracts.filter(x => x.active === true);
+      if(this.contracts && this.contract_detail)
+        return this.contracts.filter(x => x.active === true).map(c => {
+            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
+          });
     },
 
     //Gets the projects currently unactive
     inactiveContracts: function() {
-      return this.contracts.filter(x => x.active === false);
+      if(this.contracts && this.contract_detail)
+        return this.contracts.filter(x => x.active === false).map(c => {
+            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
+          });
     },
+
+    //Stores extra information about the contracts
+    contract_detail: function() {
+      if(this.contracts && store.getters.monthly_activity_performances && store.getters.contract_users) {
+          var contract_detail = this.contracts.map(x => { return {id: x.id}});
+
+          for(var cd of contract_detail) {
+            var totalHours = 0;
+
+            store.getters.monthly_activity_performances.forEach(x => {
+              if(x.contract === cd.id)
+                totalHours += parseFloat(x.duration);
+            });
+
+            cd.monthly_duration = totalHours;
+            cd.total_users = store.getters.contract_users_count;
+          }
+
+          return contract_detail;
+      }
+    }
 
   },
 
-  methods: {  }
+  methods: {}
 }
 </script>
 
