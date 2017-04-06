@@ -73,10 +73,11 @@ export default {
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/my_leaves/',
     }).then((response) => {
-      response.data.results.forEach(x => {
-        x.leavedate_set.forEach(x => {
-          x.starts_at = moment(x.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          x.ends_at = moment(x.ends_at, 'YYYY-MM-DD HH:mm:ss');
+
+      response.data.results.forEach(lv => {
+        lv.leavedate_set.forEach(lvd => {
+          lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
+          lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
         });
       });
 
@@ -94,10 +95,9 @@ export default {
       var today = moment(this.selectedMonth).date(day);
 
       return this.leaves.some(x => {
-
         var start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
         var end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
-
+        
         return (start <= today && end >= today);
       });
     },

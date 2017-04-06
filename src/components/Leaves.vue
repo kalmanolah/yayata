@@ -22,10 +22,6 @@ div(class='calendar')
                   div
                     | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                     | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-                    //- ul.list-group
-                    //-   li.list-group-item(v-for='leave_date in leave.leavedate_set')
-                    //-     | <strong>From:</strong> {{ leave_date.starts_at | moment('DD MMM YYYY - HH:mm') }}<br>
-                    //-     | <strong>To:</strong> {{ leave_date.ends_at | moment('DD MMM YYYY - HH:mm') }}
     div.col-md-6
       cmpHolidays
 
@@ -34,7 +30,6 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
-import * as constant from '../store/constants';
 import store from '../store';
 import Holidays from './Holidays.vue';
 import LeaveForm from './forms/LeaveForm.vue';
@@ -80,12 +75,6 @@ export default {
   computed: { 
 
     sortedLeaves: function() {
-      console.log(this.leaves.sort(function(a, b) {
-        a = a.leave_start.toDate();
-        b = b.leave_start.toDate();
-
-        return a > b ? -1 : (a < b ? 1 : 0);
-      }));
       return this.leaves.sort(function(a, b) {
         a = a.leave_start.toDate();
         b = b.leave_start.toDate();
@@ -95,13 +84,8 @@ export default {
     },
 
     nearestLeave: function() {
-      // var today = new Date();
-      // var leaveLength = this.leaves.length;
-
-      // for(var i = 0; i < leaveLength; i++) {
-
-      // }
-
+      //Start nearest to today
+      //Start < today < end
     },
   },
 
@@ -110,8 +94,8 @@ export default {
     //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
       var tempObj = {
-        [constant.LEAVE_STATUSES[2]]: 'card-top-green',
-        [constant.LEAVE_STATUSES[1]]: 'card-top-red',
+        [store.getters.leave_statuses[2]]: 'card-top-green',
+        [store.getters.leave_statuses[1]]: 'card-top-red',
       }
 
       return (tempObj[leave.status]) ? tempObj[leave.status] : 'card-top-blue';                           
@@ -120,8 +104,8 @@ export default {
     //Get the style class of the tag based on the leave_status
     getTagStyleClass: function(leave) {
       var tempObj = {
-        [constant.LEAVE_STATUSES[2]]: 'tag-success',
-        [constant.LEAVE_STATUSES[1]]: 'tag-danger',
+        [store.getters.leave_statuses[2]]: 'tag-success',
+        [store.getters.leave_statuses[1]]: 'tag-danger',
       }
 
       return (tempObj[leave.status]) ? tempObj[leave.status] : 'tag-primary';

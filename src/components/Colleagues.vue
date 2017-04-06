@@ -34,23 +34,18 @@ div
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
 
-var data = {
-}
+var data = {}
 
 export default {
   name: 'colleagues',
 
-  components: {
-
-  },
+  components: {},
 
   data () {
     return data;
   },
 
-  created: () => {
-
-  }
+  created: () => {}
 
 }
 </script>
