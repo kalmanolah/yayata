@@ -94,7 +94,7 @@ export default {
               if(store.getters.contracts) {
                 console.log( store.getters.contracts );
                 return store.getters.contracts.map(x => {
-                  return { id: x.id, name: x.customer + ':' + x.name }
+                  return { id: x.id, name: x.customerName + ':' + x.name }
                 });                
               }
             },

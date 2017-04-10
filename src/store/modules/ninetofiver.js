@@ -479,7 +479,7 @@ const actions = {
       }).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
-          work_schedule: res.data
+          work_schedule: res.data.results
         });
         resolve(res);
 

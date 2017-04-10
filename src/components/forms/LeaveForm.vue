@@ -29,7 +29,7 @@ export default {
         end_full_day: true,
         description: "",
         leave_type: null,
-        attachment: null,
+        attachment: "",
       },
 
       schema: {
@@ -142,7 +142,10 @@ export default {
             model: "leave_type",
             label: "Leavetype",
             required: true,
-            values: store.state.ninetofiver.leave_types,
+            values: function() {
+              if(store.getters.leave_types)
+                return store.getters.leave_types;
+            },
 
             styleClasses: 'col-md-6',
             validator: VueFormGenerator.validators.required,
@@ -153,6 +156,8 @@ export default {
             inputType: "file",
             model: "attachment",
             label: "Attachment",
+            files: true,
+            multiple: true,
 
             styleClasses: 'col-md-6',
           },
@@ -181,9 +186,9 @@ export default {
                   method: 'POST',
                   body: {
                     leave_type: model.leave_type,
-                    status: store.state.ninetofiver.leave_statuses[3],      //Get 'DRAFT'
+                    status: store.getters.leave_statuses[3],      //Get 'DRAFT'
                     description: model.description,
-                    attachment: model.attachment,
+                    attachments: model.attachment,
                   },
                   emulateJSON: true,
                 }
@@ -210,7 +215,7 @@ export default {
                       path: '/my_leaves/' + lvResponse.body.id + '/',
                       method: 'PATCH',
                       body: {
-                        status: store.state.ninetofiver.leave_statuses[0],     //Get 'PENDING'
+                        status: store.getters.leave_statuses[0],     //Get 'PENDING'
                       },
                       emulateJSON: true,
                     }

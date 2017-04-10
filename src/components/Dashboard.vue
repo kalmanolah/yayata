@@ -18,7 +18,7 @@ div
               td.text-md-right {{ p.total_duration }} hours ({{p.total_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalProjectDuration }} hours ({{totalProjectDuration | hoursToDaysFilter}} days)</strong>
+              td.text-md-right <strong>{{ totalContractDuration | roundHoursFilter }} hours ({{totalContractDuration | hoursToDaysFilter}} days)</strong>
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>36 hours (4,5 days)</strong>
@@ -53,11 +53,11 @@ export default {
   computed: {  
 
     //Calculates total hours of currently active projects
-    totalProjectDuration: function() {
+    totalContractDuration: function() {
       var total = 0;
 
-      if(this.projects)
-        this.projects.forEach(x => { 
+      if(this.contracts)
+        this.contracts.forEach(x => { 
           total += x.total_duration 
         });
 
@@ -74,12 +74,6 @@ export default {
         return store.getters.contracts;
     },
 
-    projects: function() {
-      if(store.getters.projects)
-        return store.getters.projects;
-    },
-
-
   },
 
   filters: {
@@ -88,6 +82,10 @@ export default {
     //Divides by 8 & sets precision to 1 decimal
     hoursToDaysFilter: function(val) {
       return Math.round(val / 8 * 2) / 2;
+    },
+
+    roundHoursFilter: function(val) {
+      return Math.round(val * 2) / 2;
     },
 
   },

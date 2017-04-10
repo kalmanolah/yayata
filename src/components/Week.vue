@@ -146,9 +146,7 @@ export default {
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      for(var x in this.work_schedule) 
-        if(x == day.format('dddd').toLowerCase())
-          return this.work_schedule[x];
+      return this.work_schedule[0][day.format('dddd').toLowerCase()];
     },
 
     //Set standbyperformance for specific day
