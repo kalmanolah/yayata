@@ -6,7 +6,7 @@ div
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
         | You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
-    .col-md-10.offset-md-1
+    .col-md-5.offset-md-1
       .card
         h4.card-title.text-md-center Timesheets for 
           router-link(:to='{ name: "calendar_month_redirect" }')
@@ -22,6 +22,21 @@ div
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>36 hours (4,5 days)</strong>
+    .col-md-5
+      .card
+        h4.card-title.text-md-center Absent collegues
+        div.text-md-center
+          a(href='')
+            i.fa.fa-chevron-left 
+          | today
+          a(href='')
+            i.fa.fa-chevron-right
+        .cardblock
+          table.table
+            tbody
+              tr(v-for="(leave, index) in leaves" v-bind:key="leave.id")
+                td {{ leave.display_label }}
+        
   .row
     .col-md-10.offset-md-1
       LeaveForm
@@ -32,9 +47,12 @@ div
 import { mapState } from 'vuex';
 import LeaveForm from './forms/LeaveForm.vue';
 import store from '../store';
+import * as types from '../store/mutation-types';
+import moment from 'moment';
 
 var data = {
   today: new Date(),
+  leaves: []
 }
 
 export default {
@@ -48,7 +66,29 @@ export default {
     return data;
   },
 
-  created: function () {},
+  created: function () {
+    store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/leaves/',
+    }).then((response) => {
+      this.today = moment()
+      response.body.results.forEach((leave) => {
+          leave.leavedate_set.forEach(ld => {
+            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+          });
+          if(leave.leavedate_set.length > 1){
+            //Check if today is between the start of the first leavedate and the last leavedate
+            if(this.today.isBetween(leave.leavedate_set[0].starts_at, leave.leavedate_set[leave.leavedate_set.length - 1].starts_at)){
+              this.leaves.push(leave);
+            }
+          } else {
+            if(leave.leavedate_set[0].starts_at.isSame(new Date(), 'day')){
+              this.leaves.push(leave);              
+            }
+          }
+      });
+    });
+  },
 
   computed: {  
 
