@@ -140,22 +140,8 @@ const getters = {
   contract_users_count: state => {
     if(state.contract_users)
       return state.contract_users.length;
-  },
-  projects: state => {
-    if(state.contracts && state.companies && state.total_duration) {
-      return state.contracts.map(x => {
-        return {
-          id: x.id,
-          customerID: x.customer,
-          companyID: x.company,
-          projectName: x.name,
-          customerName: state.companies.find(com => com.id == x.customer).name,
-          companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration
-        };
-      });
-    }
   }
+  
 }
 
 // actions
@@ -368,11 +354,12 @@ const actions = {
         path: '/my_timesheets/'
       }).then((res) => {
 
+        //Filter out all future timesheets after today's month
         var today = moment();
         var timesheets = res.data.results.filter(x => {
           return ( 
             x.year < today.year() 
-            || (x.year == today.year() && x.month <= today.month())
+            || (x.year == today.year() && x.month <= today.month() + 1)
           )
         });
 
