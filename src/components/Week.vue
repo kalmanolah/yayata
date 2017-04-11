@@ -42,9 +42,9 @@ div(class='calendar')
   
   //- Buttons to toggle what to display
   div.btn-group.centered
-    button.btn.btn-secondary(v-on:click='setWeekFormat("Workweek")') Workweek
-    button.btn.btn-secondary(v-on:click='setWeekFormat("Weekend")') Weekend
-    button.btn.btn-secondary(v-on:click='setWeekFormat("Fullweek")') Full week
+    button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
+    button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
+    button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
 
   //- Cards
   div.calendar-header
@@ -59,8 +59,10 @@ div(class='calendar')
         div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
           ul.list-group
             li.list-group-item
-              span.card-title {{ findContractLabel(perf.contract) }}
-              .card-text <small>{{ perf.duration }} hours </small> 
+              span.card-title 
+                | {{ findContractName(perf.contract) }}
+              div.card-text 
+                | <small>{{ perf.duration }} hours </small> 
 
         //- Performance creation
         b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
@@ -73,7 +75,7 @@ div(class='calendar')
   
         div.card-footer.text-lg-center
           small.text-muted
-            | 0/{{getTotalDuration(weekDay)}} hours
+            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} hours</strong>
 
 
 </template>
@@ -81,7 +83,6 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
-import * as constant from '../store/constants';
 import store from '../store';
 import moment from 'moment';
 import PerformanceForm from './forms/PerformanceForm.vue';
@@ -100,18 +101,57 @@ export default {
     }
   },
 
+  computed: {
+
+    work_schedule: function() {
+      if(store.getters.work_schedule)
+        return store.getters.work_schedule;
+    },
+
+    //Get the month corresponding with the start of the week
+    periodStartMonth: function() {
+      var year = this.selectedYear ? this.selectedYear : moment().year();
+      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+
+      return moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
+    },
+
+    //Get the month corresponding with the end of the week
+    periodEndMonth: function() {
+      var year = this.selectedYear ? this.selectedYear : moment().year();
+      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+
+      return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
+    },
+
+    daysOfWeek: function() {
+      return this.getDaysOfWeek(this.currentWeekFormat);
+    },
+
+  },
+
+  created: function() { },
+
   methods: {
 
-    //Get total hours/day from the workschedule per user
-    getTotalDuration: function(day) {
-      for(var x in this.workschedule) 
-        if(x == day.format('dddd').toLowerCase())
-          return this.workschedule[x];
+    //Get the amount of hours spent 
+    getDurationTotal: function(day) {
+      var total = 0;
+
+      for(var val of this.performances.filter(x => x.day == day.format('D'))) 
+        total += parseFloat(val.duration);
+
+      return total;
+    },
+
+    //Get total hours/day from the work_schedule per user
+    getHoursTotal: function(day) {
+      return this.work_schedule[0][day.format('dddd').toLowerCase()];
     },
 
     //Set standbyperformance for specific day
     setStandby: function(day) {
-      var timesheet = constant.MY_TIMESHEETS.find(x => 
+      var timesheet = store.state.ninetofiver.timesheets.find(x => 
         x.month == (day.month() + 1)
         &&
         x.year == day.year()
@@ -129,8 +169,6 @@ export default {
           emulateJSON: true,
         }
       ).then((response) => {
-        console.log(response);
-
         if(response.status == 201)
           this.$emit('success', response);
       });
@@ -143,7 +181,7 @@ export default {
 
     //Set Week format
     setWeekFormat: function(format) {
-      this.currentWeekFormat = constant.WEEK_FORMATTING[format];
+      this.currentWeekFormat = store.getters.week_formatting[format];
     },
 
     //When performance properly submitted
@@ -151,15 +189,12 @@ export default {
       this.getDaysOfWeek(this.currentWeekFormat);
     },
 
-    //Find the label that belongs to the company id
-    findCompanyName: function(id) {
-      return constant.COMPANIES.find(x => x.id == id);
-    },
-
     //Find the contract that belongs to the contract id
-    findContractLabel: function(id) {
-      var cont = constant.CONTRACTS.find(x => x.id == id);
-      return cont.label + ': ' + cont.customer;
+    findContractName: function(id) {
+      if(store.getters.contracts) {
+        var cont = store.getters.contracts.find(x => x.id == id);
+        return cont.name + ': ' + cont.customerName;
+      }
     },
 
     //Go to specified week, get params from URI
@@ -175,8 +210,8 @@ export default {
 
     //Push params for next week into route
     selectNextWeek: function () {
-      var year = parseInt(this.selectedYear),
-      week = parseInt(this.selectedWeek) + 1;
+      var year = parseInt(this.selectedYear);
+      var week = parseInt(this.selectedWeek) + 1;
 
       if (week > moment().isoWeekYear(year).isoWeeksInYear()) {
         week = 1;
@@ -188,8 +223,8 @@ export default {
 
     //Push params for last week into route
     selectPreviousWeek: function () {
-      var year = parseInt(this.selectedYear),
-      week = parseInt(this.selectedWeek) - 1;
+      var year = parseInt(this.selectedYear);
+      var week = parseInt(this.selectedWeek) - 1;
 
       if (week == 0) {
         year--;
@@ -201,13 +236,12 @@ export default {
 
     //Make the days/week to be drawn
     getDaysOfWeek: function() {
-
-      var week = this.selectedWeek,
-        year = this.selectedYear,
-        index = 0,
-        period = this.currentWeekFormat,
-        daysofweek = [],
-        dayOfWeek = moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
+      var week = this.selectedWeek;
+      var year = this.selectedYear;
+      var index = 0;
+      var period = this.currentWeekFormat;
+      var daysofweek = [];
+      var dayOfWeek = moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
 
       for(var i = 1; i < 8; i++) {
         if(i >= period.start && i <= period.end) 
@@ -290,80 +324,16 @@ export default {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
       performances: [],
-      currentWeekFormat: '',
-      workschedule: [],
+      currentWeekFormat: store.getters.week_formatting["workweek"],
 
       popoverStyle: {
-        'max-width': '600px'
+        'max-width': '400px'
       },
     }
 
   },
 
   filters: {  },
-
-  computed: {
-
-    //Get the month corresponding with the start of the week
-    periodStartMonth: function() {
-      var year = this.selectedYear ? this.selectedYear : moment().year();
-      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
-
-      return moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
-    },
-
-    //Get the month corresponding with the end of the week
-    periodEndMonth: function() {
-      var year = this.selectedYear ? this.selectedYear : moment().year();
-      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
-
-      return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
-    },
-
-    daysOfWeek: function() {
-      return this.getDaysOfWeek(this.currentWeekFormat);
-    },
-
-  },
-
-  created: function() { 
-    this.setWeekFormat("Workweek");
-
-    //Get user ID 
-    store.dispatch(
-      types.NINETOFIVER_API_REQUEST,
-      {
-        path: '/services/my_user/'
-      }
-    ).then((uResponse) => {
-      console.log( uResponse );
-
-      //Get workschedule ID by user ID
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST,
-        {
-          path: '/employment_contracts/',
-          params: {
-            'user': uResponse.data.user
-          }
-        }
-      ).then((ecResponse) => {
-        console.log( ecResponse );
-
-        //Get Workschedule object
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST,
-          {
-            path: '/work_schedules/' + ecResponse.data.results[0].work_schedule + '/'
-          }
-        ).then((wsResponse) => {
-          console.log( wsResponse );
-
-          this.workschedule = wsResponse.data
-        })
-      });
-    });
-  }
 }
 </script>
 

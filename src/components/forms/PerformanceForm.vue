@@ -8,10 +8,7 @@
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
-import * as constant from '../../store/constants';
 import store from '../../store';
-
-var self = this;
 
 export default {
   props: [ 'selectedDate' ],
@@ -19,7 +16,23 @@ export default {
   computed: {
     today: function() { 
       return this.selectedDate; 
+    },
+
+    timesheets: function() {
+      if(store.getters.timesheets)
+        return store.getters.timesheets;
+    },
+
+    contracts: function() {
+      if(store.getters.contracts)
+        return store.getters.contracts;
+    },
+
+    leave_types: function() {
+      if(store.getters.leave_types)
+        return store.getters.leave_types;
     }
+
   },
 
   watch: {},
@@ -28,7 +41,7 @@ export default {
 
     submitForm: function() {
       var model = this.model;
-      var timesheet = constant.MY_TIMESHEETS.find(x => 
+      var timesheet = this.timesheets.find(x => 
         x.month == (this.today.month() + 1)
         &&
         x.year == this.today.year()
@@ -78,14 +91,12 @@ export default {
             model: "project",
 
             values: function() {
-              var arr = [];
-              constant.CONTRACTS.forEach(x => {
-                arr.push({
-                  id: x.id,
-                  name: x.customer + ': ' + x.label
-                });
-              });              
-              return arr;
+              if(store.getters.contracts) {
+                console.log( store.getters.contracts );
+                return store.getters.contracts.map(x => {
+                  return { id: x.id, name: x.customerName + ':' + x.name }
+                });                
+              }
             },
 
             styleClasses: 'col-md-8'
@@ -114,7 +125,10 @@ export default {
             type: "select",
             model: "performance_type",
             required: true,
-            values: constant.PERFORMANCE_TYPES,
+            values: function() {
+              if(store.getters.performance_types)
+                return store.getters.performance_types;
+            },
 
             styleClasses: 'col-md-12',
           }

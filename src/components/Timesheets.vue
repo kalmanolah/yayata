@@ -1,4 +1,4 @@
-<template lang="pug">
+  <template lang="pug">
 div
   h3 My timesheets
   p.subtitle Overview of all open timesheets
@@ -24,7 +24,6 @@ import store from '../store'
 import * as types from '../store/mutation-types'
 
 var data = {
-    timesheets: [],
     today: new Date(),
 }
 
@@ -35,25 +34,24 @@ export default {
     return data;
   },
 
-  created: () => {
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_timesheets/',
-      params: {
-      },
-    }).then((response) => {
-      var timesheets = {};
-      
-      response.data.results.forEach(function(sheet){
-        if(!timesheets[sheet.year]){
-          timesheets[sheet.year] = {};
-        }
-        timesheets[sheet.year][sheet.month] = sheet;
-      });
-      data.timesheets = timesheets;
-    }, () => {
-      this.loading = false
-    })
+  computed: {
+    timesheets: function() {
+
+      if(store.getters.timesheets) {
+        var ts = {};
+        store.getters.timesheets.forEach(x => {
+          if(!ts[x.year])
+            ts[x.year] = {};
+
+          ts[x.year][x.month] = x;
+        });
+
+        return ts;
+      }
+    }
   },
+
+  created: () => { },
 
   filters: {
 

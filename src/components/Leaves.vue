@@ -6,12 +6,12 @@ div(class='calendar')
       p Here, have an overview of all your leaves. Whatever
         div
           #accordion(v-for='(leave, i) in sortedLeaves' role='tablist', aria-multiselectable='true')
-            hr(v-if='leave.leavedate_set')
+            hr(v-if='leave.leave_start < new Date()')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
                 div.row
                   div.col-md-10
-                    a
+                    a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
                       | {{ leave.description }}
                   div.col-md-2 
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
@@ -22,10 +22,6 @@ div(class='calendar')
                   div
                     | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                     | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-                    //- ul.list-group
-                    //-   li.list-group-item(v-for='leave_date in leave.leavedate_set')
-                    //-     | <strong>From:</strong> {{ leave_date.starts_at | moment('DD MMM YYYY - HH:mm') }}<br>
-                    //-     | <strong>To:</strong> {{ leave_date.ends_at | moment('DD MMM YYYY - HH:mm') }}
     div.col-md-6
       cmpHolidays
 
@@ -34,7 +30,6 @@ div(class='calendar')
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
-import * as constant from '../store/constants';
 import store from '../store';
 import Holidays from './Holidays.vue';
 import LeaveForm from './forms/LeaveForm.vue';
@@ -60,6 +55,7 @@ export default {
       path: '/my_leaves/',
     }).then((response) => {
 
+      //Converts the start / end datetime from strings to actual JS datetimes
       response.data.results.forEach(lv => {
         lv.leavedate_set.forEach(ld => {
           ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
@@ -79,60 +75,40 @@ export default {
   computed: { 
 
     sortedLeaves: function() {
-      return this.leaves;
-      // .sort(function(a,b) {
+      return this.leaves.sort(function(a, b) {
+        a = a.leave_start.toDate();
+        b = b.leave_start.toDate();
 
-      //   var thing1 = a.leavedate_set.find(Math.min.apply(Math, function(o) {
-      //     return o.starts_at
-      //     }));
-      //   var thing2 = b.leavedate_set.find(Math.min.apply(Math, function(o) {
-      //       return o.starts_at
-      //     }));
-
-        
-      //   if(thing1 < thing2)
-      //     return -1;
-      //   else if(thing1 == thing2)
-      //     return 0;
-      //   else
-      //     return 1;
-
-      // });
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });
     },
 
     nearestLeave: function() {
-      // var today = new Date();
-      // var leaveLength = this.leaves.length;
-
-      // for(var i = 0; i < leaveLength; i++) {
-
-      // }
-
+      //Start nearest to today
+      //Start < today < end
     },
   },
 
   methods: {
 
+    //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
-      //Rejected
-      if(leave.status === constant.LEAVE_STATUSES[1])
-        return 'card-top-red'; 
-      //Approved
-      else if(leave.status === constant.LEAVE_STATUSES[2])
-        return 'card-top-green';
-      //Default
-      return 'card-top-blue';                                 
+      var tempObj = {
+        [store.getters.leave_statuses[2]]: 'card-top-green',
+        [store.getters.leave_statuses[1]]: 'card-top-red',
+      }
+
+      return (tempObj[leave.status]) ? tempObj[leave.status] : 'card-top-blue';                           
     },
 
+    //Get the style class of the tag based on the leave_status
     getTagStyleClass: function(leave) {
-      //Rejected
-      if(leave.status === constant.LEAVE_STATUSES[1])
-        return 'tag-danger';
-      //Approved
-      else if(leave.status === constant.LEAVE_STATUSES[2])
-        return 'tag-success';
-      //Default
-      return 'tag-primary';  
+      var tempObj = {
+        [store.getters.leave_statuses[2]]: 'tag-success',
+        [store.getters.leave_statuses[1]]: 'tag-danger',
+      }
+
+      return (tempObj[leave.status]) ? tempObj[leave.status] : 'tag-primary';
     }
 
   },

@@ -3,8 +3,8 @@
 div
   .row
     .col-md-10.offset-md-1
-      .alert.alert-warning.card-top-red(v-if='openTS > 0')
-        | You have {{openTS}} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+      .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
+        | You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
     .col-md-10.offset-md-1
       .card
@@ -13,12 +13,12 @@ div
             | {{ today | moment('MMMM YYYY') }}
         table.table
           tbody
-            tr(v-for="p in projects")              
-              td {{ p.custLabel }}: {{ p.projectLabel }}
+            tr(v-for="(p, index) in contracts" v-bind:key="p.id")              
+              td {{ p.customerName }}: {{ p.name }}
               td.text-md-right {{ p.total_duration }} hours ({{p.total_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalProjectDuration }} hours ({{totalProjectDuration | hoursToDaysFilter}} days)</strong>
+              td.text-md-right <strong>{{ totalContractDuration | roundHoursFilter }} hours ({{totalContractDuration | hoursToDaysFilter}} days)</strong>
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>36 hours (4,5 days)</strong>
@@ -29,17 +29,11 @@ div
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
-import * as constant from '../store/constants'
-import LeaveForm from './forms/LeaveForm.vue'
-import store from '../store'
+import { mapState } from 'vuex';
+import LeaveForm from './forms/LeaveForm.vue';
+import store from '../store';
 
 var data = {
-  openTS: 0,
-  contracts: [],
-  projects: [],
-
   today: new Date(),
 }
 
@@ -54,105 +48,53 @@ export default {
     return data;
   },
 
-  created: function () {
-
-    //Get whether user has open timesheets
-    data.openTS = constant.MY_TIMESHEETS.length;
-
-    //Get contracts for current user
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_contracts/',
-      params: {
-        'active': true
-      }
-    }).then((response) => {
-      data.contracts = response.data.results;
-    }, () => {
-      this.loading = false;
-    });
-
-  },
+  created: function () {},
 
   computed: {  
 
     //Calculates total hours of currently active projects
-    totalProjectDuration: function() {
+    totalContractDuration: function() {
       var total = 0;
 
-      for(var i = 0; i < data.projects.length; i++)
-        total += data.projects[i].total_duration;
+      if(this.contracts)
+        this.contracts.forEach(x => { 
+          total += x.total_duration 
+        });
 
       return total;
-    }
+    },
+
+    open_timesheet_count: function() {
+      if(store.getters.open_timesheet_count)
+        return store.getters.open_timesheet_count;
+    },
+
+    contracts: function() {
+      if(store.getters.contracts)
+        return store.getters.contracts;
+    },
 
   },
 
   filters: {
 
     //Calculates amount of days in hours
-    //Divides by 8 & sets precision on 1 decimal
+    //Divides by 8 & sets precision to 1 decimal
     hoursToDaysFilter: function(val) {
       return Math.round(val / 8 * 2) / 2;
+    },
+
+    roundHoursFilter: function(val) {
+      return Math.round(val * 2) / 2;
     },
 
   },
 
   methods: {
 
-    //Constructs project array to show data
-    makeProjectsArray: function(contracts) {
-      data.projects = [];
-
-      for (var i = 0; i < contracts.length; i++)  
-        data.projects.push({ 
-          contID: contracts[i].id,
-          custID: contracts[i].customer,
-          projectLabel: contracts[i].label,
-          custLabel: constant.COMPANIES.find(x => x.id == contracts[i].customer).label
-        });
-
-    },
-
-    //Gets the company names from the API, pushes into projects.customerLabel
-    getCustomersFromID: function(value) {
-
-       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/companies/' + value + '/'
-      }).then((response) => {
-        //Finds correct project in arr, then sets correct value for key according to VueJS datachange detection method
-        for(var i = 0; i < data.projects.length; i++)
-          if(data.projects[i].custID == value)
-            this.$set(data.projects[i], 'customerLabel', response.data.name)
-      });
-
-    },
-
-    //Get hours per project for current user
-    getHoursPerProject: function(value) {
-
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_contract_durations/' + value + '/'
-      }).then( (response) => {
-        for(var i = 0; i < data.projects.length; i++) 
-          if(data.projects[i].contID == value)
-            this.$set(data.projects[i], 'total_duration', response.data.total_duration)
-      });
-
-    },
-
   },
 
-  watch: {
-
-    //Watches contracts to make correct changes to projectsArr & call getCustomers
-    contracts: function(newContracts) {
-      for(var i = 0; i < newContracts.length; i++) 
-        this.getHoursPerProject(newContracts[i].id);
-      
-      this.makeProjectsArray(newContracts); 
-    },
-
-  }
+  watch: { }
 
 }
 </script>

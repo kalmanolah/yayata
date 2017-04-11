@@ -15,19 +15,19 @@ div(
         div.col-md-10.offset-md-1.col-sm-8
           nav
             router-link(:to='{ name: "my_timesheets" }')
-              h3 My timesheets 
+              h3 Timesheets 
               p.small I said hey, what's going on
             router-link(:to='{ name: "my_projects" }')
-              h3 My projects
+              h3 Projects
               p.small What am I working on
             router-link(:to='{ name: "my_leaves" }')
-              h3 My leaves
+              h3 Leaves
               p.small Sickness / Vacation
             router-link(:to='{ name: "my_colleagues" }')
-              h3 My colleagues
+              h3 Colleagues
               p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')
-              h3 My companies
+              h3 Companies
               p.small Overview of clients
     div.col-md-10.offset-sm-3.offset-md-2
       div.row
@@ -38,7 +38,6 @@ div(
 
 <script>
 import * as types from '../store/mutation-types'
-import * as constant from '../store/constants'
 import Navbar from './Navbar.vue'
 import store from '../store'
 
@@ -48,96 +47,40 @@ export default {
     navbar: Navbar
   },
   created: () => {
-    if (!store.state.ninetofiver.user) {
+
+    //Initialize constants
+    if (!store.getters.user) 
       store.dispatch(types.NINETOFIVER_RELOAD_USER);
-    }
+    if (!store.getters.leave_types)
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
+    if (!store.getters.performance_types)
+      store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES);
+    if (!store.getters.employment_contract_types)
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
+    if (!store.getters.contract_groups)
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
+    if (!store.getters.companies)
+      store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
+    if (!store.getters.timesheets)
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    if (!store.getters.contract_durations)
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS);
+    if (!store.getters.contracts)
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    if(!store.getters.contract_users)
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+    if(!store.getters.monthly_activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+    if(!store.getters.work_schedule)
+      store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
   },
 
-  beforeRouteEnter(to,from,next) {
+  method: {},
 
-    //Sets leave_types """"once""""
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/leave_types/'
-    }).then((response) => {
-      for(var i = 0; i < response.body.count; i++)
-        constant.LEAVE_TYPES.push(
-          new constant.LeaveType(
-            response.data.results[i].id, 
-            response.data.results[i].type
-        ));
-
-      //Gets the performance_types
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST, {
-          path: '/performance_types/'
-        }).then((response) => {
-          for(var i = 0; i < response.body.count; i++)
-            constant.PERFORMANCE_TYPES.push({
-              id: response.data.results[i].id,
-              name: response.data.results[i].label
-            });
-        });
-    });
-
-    //Get all companies
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/companies/'
-    }).then((response) => {
-      for(var i = 0; i < response.body.count; i++)
-        constant.COMPANIES.push({
-          id: response.data.results[i].id,
-          label: response.data.results[i].name
-        });
-
-      //Get user's open timesheets
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_timesheets/'
-      }).then((response) => {
-        var today = moment();
-        var timesheets = response.data.results;
-
-        for(var i = 0; i < response.body.count; i++)
-          if((timesheets[i].year == today.year() && timesheets[i].month <= today.month()) || timesheets[i].year < today.year()) 
-            constant.MY_TIMESHEETS.push(response.data.results[i]);
-      });
-
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/employment_contract_types/'
-      }).then((response) => {
-        for(var i = 0; i < response.body.count; i++)
-          constant.CONTRACT_TYPES.push(response.data.results[i]); 
-      });
-
-      //Get all contracts
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_contracts/'
-      }).then((response) => {
-        for(var i = 0; i < response.body.count; i++) 
-          constant.CONTRACTS.push({
-            id: response.data.results[i].id,
-            label: response.data.results[i].label,
-            customer: constant.COMPANIES.find(x => x.id == response.data.results[i].customer).label
-          });       
-        
-        next(true);  
-      }); 
-    });
-
-
-
-  },
-
-  method: {
-
-
-  },
-
-  computed: {
-  },
+  computed: {},
 
   data () {
-    return {
-    }
+    return {}
   }
 
 }
