@@ -86,22 +86,6 @@ export default {
         return store.getters.contracts;
     },
 
-    //Gets the projects currently still active
-    activeContracts: function() {
-      if(this.contracts && this.contract_detail)
-        return this.contracts.filter(x => x.active === true).map(c => {
-            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
-          });
-    },
-
-    //Gets the projects currently unactive
-    inactiveContracts: function() {
-      if(this.contracts && this.contract_detail)
-        return this.contracts.filter(x => x.active === false).map(c => {
-            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
-          });
-    },
-
     //Stores extra information about the contracts
     contract_detail: function() {
       if(this.contracts && store.getters.monthly_activity_performances && store.getters.contract_users) {
@@ -121,7 +105,25 @@ export default {
 
           return contract_detail;
       }
-    }
+    },
+
+    //Gets the projects currently still active
+    activeContracts: function() {
+      if(this.contracts && this.contract_detail)
+        //First filter for active contracts
+        //Then find the corresponding contract_detail
+        return this.contracts.filter(x => x.active === true).map(c => {
+            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
+          });
+    },
+
+    //Gets the projects currently unactive
+    inactiveContracts: function() {
+      if(this.contracts && this.contract_detail)
+        return this.contracts.filter(x => x.active === false).map(c => {
+            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
+          });
+    },
 
   },
 
