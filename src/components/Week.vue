@@ -64,9 +64,9 @@ div(class='calendar')
               div.card-text 
                 | <small>{{ perf.duration }} hours </small> 
 
-        //- Performance creation
-        b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-lg-12 + 
+        //- Performance creation    -   disabled for future performances
+        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
+          b-btn.btn-success.col-sm-12 + 
           .text-xs-center.col-lg-12(slot='content' )
             strong.fa.fa-calendar-check-o
               | {{ weekDay | moment('DD/MM/YYYY') }} 
@@ -146,32 +146,74 @@ export default {
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      return this.work_schedule[0][day.format('dddd').toLowerCase()];
+      if(this.work_schedule)
+        return this.work_schedule[0][day.format('dddd').toLowerCase()];
     },
 
     //Set standbyperformance for specific day
     setStandby: function(day) {
-      var timesheet = store.state.ninetofiver.timesheets.find(x => 
+
+      //Get the timesheet corresponding to the date of the day
+      var timesheet = store.getters.timesheets.find(x => 
         x.month == (day.month() + 1)
         &&
         x.year == day.year()
       );
 
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST,
-        {
-          path: '/my_performances/standby/',
-          method: 'POST',
-          body: {
-            timesheet: timesheet.id,
-            day: day.date()
-          },
-          emulateJSON: true,
-        }
-      ).then((response) => {
-        if(response.status == 201)
-          this.$emit('success', response);
-      });
+      if(timesheet) {
+
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_performances/standby/',
+            method: 'POST',
+            body: {
+              timesheet: timesheet.id,
+              day: day.date()
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+          if(response.status == 201)
+            this.$emit('success', response);
+        });
+
+      } else {
+        
+        //Timesheet was not found, so a new one is made for that date
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_timesheets/',
+            method: 'POST',
+            body: {
+              month: day.month() + 1,
+              year: day.year(),
+              closed: false
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+
+          store.dispatch(
+            types.NINETOFIVER_API_REQUEST,
+            {
+              path: '/my_performances/standby/',
+              method: 'POST',
+              body: {
+                timesheet: response.data.id,
+                day: day.date()
+              },
+              emulateJSON: true,
+            }
+          ).then((response) => {
+            if(response.status == 201)
+              this.$emit('success', response);
+          });
+
+        });
+      }
+
     },
 
     //Sets the popover placement, based on the weekindex and weekformat
@@ -269,22 +311,23 @@ export default {
         var maxIndex = arr.indexOf(Math.max.apply(Math, arr));
 
         start = arr[0],
-        end = arr[maxIndex],   
-        month = parseInt(this.periodStartMonth.format('MM'));     //Months are zero-indexed
+        end = arr[maxIndex],
+        //Months are zeroindexed in MomentJS, not in our DB
+        month = this.periodStartMonth.month() + 1;
 
         this.callPerformance(month, start, end);
 
         //Reset the vars for use further below
         start = arr[maxIndex + 1],
         end = arr[arr.length - 1],
-        month = parseInt(this.periodEndMonth.format('MM'));
+        month = this.periodEndMonth.month() + 1;
 
         this.callPerformance(month, start, end);
       
       } else {
         start = arr[0],
         end = arr[arr.length - 1],
-        month = parseInt(this.periodStartMonth.format('MM')) + 1;
+        month = this.periodStartMonth.month() + 1;
 
         this.callPerformance(month, start, end);
       }
