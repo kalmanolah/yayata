@@ -29,7 +29,7 @@ export default {
         end_full_day: true,
         description: "",
         leave_type: null,
-        attachment: "",
+        attachments: "",
       },
 
       schema: {
@@ -68,7 +68,7 @@ export default {
             model: "start_hour",
             label: "Time",
             required: false,
-            step: 60*5,         //Jump by 5 minutes
+            step: 60 * 5,         //Jump by 5 minutes
 
             styleClasses: 'col-md-4',
 
@@ -117,7 +117,7 @@ export default {
             model: "end_hour",
             label: "Time",
             required: false,
-            step: 60*5,         //Jump by 5 minutes,
+            step: 60 * 5,         //Jump by 5 minutes,
 
             styleClasses: 'col-md-4',
 
@@ -154,7 +154,7 @@ export default {
             //ATTACHMENT
             type: "input",
             inputType: "file",
-            model: "attachment",
+            model: "attachments",
             label: "Attachment",
             files: true,
             multiple: true,
@@ -174,11 +174,12 @@ export default {
                 s_date.hours(s_time.hours()).minutes(s_time.minutes());
 
               var e_time = moment(model.end_hour, "HH:mm");
-              var e_date = moment(model.end_date).startOf('date');
+              var e_date = moment(model.end_date).endOf('date');
 
               if(!model.end_full_day)
                 e_date.hours(e_time.hours()).minutes(e_time.minutes());
 
+              //Make leave object
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
                 { 
@@ -188,13 +189,14 @@ export default {
                     leave_type: model.leave_type,
                     status: store.getters.leave_statuses[3],      //Get 'DRAFT'
                     description: model.description,
-                    attachments: model.attachment,
+                    attachments: model.attachments[0],
                   },
                   emulateJSON: true,
                 }
               ).then((lvResponse) => {
                 console.log(lvResponse);
 
+                //Make leavedates and bind them to the leave
                 store.dispatch(
                   types.NINETOFIVER_API_REQUEST,
                   {
@@ -209,6 +211,8 @@ export default {
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
+
+                  //Update the leave object's status
                   store.dispatch(
                     types.NINETOFIVER_API_REQUEST, 
                     {
@@ -224,6 +228,45 @@ export default {
                     //INSERT CONFIRMATION
                   });
                 });
+
+                //If attachments were added to the leaverequest
+                if(model.attachments) {
+                  var attachIDs = [];
+
+                  for(var i = 0; i < model.attachments.length; i++) {
+                    var formData = new FormData();
+                    formData.append('label', model.attachments[i].name)
+                    formData.append('file', model.attachments[i]);
+
+                    //Make attachment
+                    store.dispatch(
+                      types.NINETOFIVER_API_REQUEST,
+                      {
+                        path: '/my_attachments/',
+                        method: 'POST',
+                        body: formData
+                      }
+                    ).then((attResponse) => {
+                      console.log(attResponse);
+
+                      attachIDs.push(attResponse.data.id);
+
+                      //Make patchcall to my_leaves to link attachment_id
+                      store.dispatch(
+                        types.NINETOFIVER_API_REQUEST,
+                        {
+                          path: '/my_leaves/' + lvResponse.body.id + '/',
+                          method: 'PATCH',
+                          body: {
+                            attachments: attachIDs 
+                          }
+                        }
+                      ).then((attUpdateResponse) => {
+                        console.log(attUpdateResponse);
+                      });
+                    });
+                  }
+                }
               }, () => {
                 this.loading = false
               });
