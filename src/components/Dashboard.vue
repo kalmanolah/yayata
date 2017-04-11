@@ -71,28 +71,25 @@ export default {
   created: function () {
     this.earliestLeave = moment();
     this.latestLeave = moment();
+    this.selectedDay = moment()
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/leaves/',
+      params: {
+        status: 'APPROVED',
+        leavedate__ends_at__lte: this.selectedDay.add(7, 'days'),
+        leavedate__starts_at__gte: this.selectedDay.subtract(7, 'days')
+        // Between (today - 7 days) and (today + 7 days)
+      }
     }).then((response) => {
-      this.selectedDay = moment()
       response.body.results.forEach((leave) => {
         this.leaves.push(leave);
         leave.leavedate_set.forEach(ld => {
           ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          this.earliestLeave = ld.starts_at.isBefore(this.earliestLeave, 'day') ? ld.starts_at : this.earliestLeave;
           ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+          this.earliestLeave = ld.starts_at.isBefore(this.earliestLeave, 'day') ? ld.starts_at : this.earliestLeave;
           this.latestLeave = ld.ends_at.isAfter(this.latestLeave, 'day') ? ld.ends_at : this.latestLeave;          
         });
-        if(leave.leavedate_set.length > 1){
-          //Check if today is between the start of the first leavedate and the last leavedate
-          if(this.selectedDay.isBetween(leave.leavedate_set[0].starts_at, leave.leavedate_set[leave.leavedate_set.length - 1].starts_at)){
-            this.leavesSelectedDay.push(leave);
-          }
-        } else {
-          if(leave.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
-            this.leavesSelectedDay.push(leave);              
-          }
-        }
+        this.filterLeaves();
       });         
     });
   },
@@ -138,9 +135,18 @@ export default {
 
   methods: {
     dayEarlier: function() {
-      this.leavesSelectedDay.splice(0);
       this.selectedDay.subtract(1, 'days');      
-      // Check if selected day is between the start of the firs and last leave of the leaves
+      this.filterLeaves();      
+    },
+
+    dayLater: function() {
+      this.selectedDay.add(1, 'days');      
+      this.filterLeaves();
+    },
+
+    filterLeaves: function() {
+      this.leavesSelectedDay.splice(0);
+      // Check if selected day is between the start of the first and last leave of the leaves
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
         // Selected day is between leaves
         this.leaves.filter((leave) => {
@@ -158,23 +164,6 @@ export default {
         // Selected day is not between leaves
         // Get next set of leaves
       }
-    },
-
-    dayLater: function() {
-      this.leavesSelectedDay.splice(0);
-      this.selectedDay.add(1, 'days');      
-      // Check if selected day is between the start of the firs and last leave of the leaves
-      // Selected day is not between leaves
-      // Selected day is between leaves
-      this.leaves.filter((leave) => {
-        if(this.selectedDay.isBetween(leave.leavedate_set[0].starts_at, leave.leavedate_set[leave.leavedate_set.length - 1].starts_at)){
-          this.leavesSelectedDay.push(leave);
-        } else {
-          if(leave.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
-            this.leavesSelectedDay.push(leave);              
-          }
-        }
-      });
     }
   },
 
