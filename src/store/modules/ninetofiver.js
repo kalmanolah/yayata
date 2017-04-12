@@ -15,6 +15,7 @@ const state = {
   //Global props, more likely to change
   contract_groups: null,
   companies: null,
+  users: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -64,6 +65,9 @@ const mutations = {
   [types.NINETOFIVER_SET_COMPANIES] (state, { companies }) {
     state.companies = companies;
   },
+  [types.NINETOFIVER_SET_USERS] (state, { users }) {
+    state.users = users;
+  },
 
   [types.NINETOFIVER_SET_TIMESHEETS] (state, { timesheets }) {
     state.timesheets = timesheets;
@@ -95,6 +99,7 @@ const getters = {
   employment_contract_types: state => state.employment_contract_types,
   contract_groups: state => state.contract_groups,
   companies: state => state.companies,
+  users: state => state.users,
 
   //User specific
   timesheets: state => state.timesheets,
@@ -259,10 +264,10 @@ const actions = {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/leave_types/'
       }).then((res) => {
-
+        
         store.commit(types.NINETOFIVER_SET_LEAVE_TYPES, {
           leave_types: res.data.results.map(x => {
-            return { id: x.id, name: x.type }
+            return { id: x.id, name: x.type, display_label: x.display_label }
           })
         });
         resolve(res);
@@ -360,6 +365,24 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_USERS] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/users/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_USERS, {
+          users: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
 
   [types.NINETOFIVER_RELOAD_TIMESHEETS] (store, options = {}) {
 
