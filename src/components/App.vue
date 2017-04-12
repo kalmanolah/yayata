@@ -51,6 +51,8 @@ export default {
     //Initialize constants
     if (!store.getters.user) 
       store.dispatch(types.NINETOFIVER_RELOAD_USER);
+    if (!store.getters.users)
+      store.dispatch(types.NINETOFIVER_RELOAD_USERS);
     if (!store.getters.leave_types)
       store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
     if (!store.getters.performance_types)
