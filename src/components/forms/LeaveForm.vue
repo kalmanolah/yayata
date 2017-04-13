@@ -16,22 +16,22 @@ import store from '../../store';
 
 export default {
 
+  created: function() {
+    this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
+
+    this.model.start_date = moment();
+    this.model.start_full_day = true;
+    this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
+    this.model.end_date = moment().add(1, 'days');
+    this.model.end_full_day = true;
+    this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
+    this.model.attachments = '';
+  },
+
   data: () => {
     return {
       name: 'LeaveForm',
-
-      model: {
-        start_date: moment(),
-        end_date: moment().add(1, 'days'),
-        start_hour: moment('09:00', 'HH:mm').format('HH:mm'),
-        end_hour: moment('15:30', 'HH:mm').format('HH:mm'),
-        start_full_day: true,
-        end_full_day: true,
-        description: "",
-        leave_type: null,
-        attachments: "",
-      },
-
+      
       schema: {
         fields: [
           {
