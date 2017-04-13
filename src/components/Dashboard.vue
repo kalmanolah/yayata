@@ -32,9 +32,11 @@ div
         .cardblock
           table.table
             tbody
-              tr(v-for="(leave, index) in leavesSelectedDay" v-bind:key="leave.id")
-                td {{ leave.display_label }}
-        
+              tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
+                td {{ leave.user.first_name }} {{ leave.user.last_name }}
+                td.text-md-right {{ leave.leave_type }}
+              tr(v-if='sortedLeaves.length == 0')
+                td.text-md-center <strong>No absent collegues!</strong>
   .row
     .col-md-10.offset-md-1
       LeaveForm
@@ -63,7 +65,7 @@ export default {
   components: {
     LeaveForm: LeaveForm,
   },
-
+  
   data () {
     return data;
   },
@@ -71,27 +73,8 @@ export default {
   created: function () {
     this.earliestLeave = moment();
     this.latestLeave = moment();
-    this.selectedDay = moment()
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/leaves/',
-      params: {
-        status: 'APPROVED',
-        leavedate__ends_at__lte: this.selectedDay.add(7, 'days'),
-        leavedate__starts_at__gte: this.selectedDay.subtract(7, 'days')
-        // Between (today - 7 days) and (today + 7 days)
-      }
-    }).then((response) => {
-      response.body.results.forEach((leave) => {
-        this.leaves.push(leave);
-        leave.leavedate_set.forEach(ld => {
-          ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
-          this.earliestLeave = ld.starts_at.isBefore(this.earliestLeave, 'day') ? ld.starts_at : this.earliestLeave;
-          this.latestLeave = ld.ends_at.isAfter(this.latestLeave, 'day') ? ld.ends_at : this.latestLeave;          
-        });
-        this.filterLeaves();
-      });         
-    });
+    this.selectedDay = moment();
+    this.getLeaves();
   },
 
   computed: {  
@@ -108,6 +91,18 @@ export default {
       return total;
     },
 
+    // Alphabetical sort.
+    sortedLeaves: function() {
+      if(this.leavesSelectedDay){
+        return this.leavesSelectedDay.sort(function(a, b) {
+        a = a.user.first_name;
+        b = b.user.first_name;
+
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });
+      }
+    },
+
     open_timesheet_count: function() {
       if(store.getters.open_timesheet_count)
         return store.getters.open_timesheet_count;
@@ -116,6 +111,16 @@ export default {
     contracts: function() {
       if(store.getters.contracts)
         return store.getters.contracts;
+    },
+
+    users: function() {
+      if(store.getters.users)
+        return store.getters.users;
+    },
+
+    leave_types: function() {
+      if(store.getters.leave_types)
+        return store.getters.leave_types;
     }
 
   },
@@ -145,25 +150,61 @@ export default {
     },
 
     filterLeaves: function() {
-      this.leavesSelectedDay.splice(0);
-      // Check if selected day is between the start of the first and last leave of the leaves
+      // Empty leaveSelectedDay array.
+      this.leavesSelectedDay = [];    
+      // Check if selected day is between the start of the first and last leave of the leaves.
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
-        // Selected day is between leaves
-        this.leaves.filter((leave) => {
-          if(leave.leavedate_set.length > 1){
-            if(this.selectedDay.isBetween(leave.leavedate_set[0].starts_at, leave.leavedate_set[leave.leavedate_set.length - 1].starts_at)){
-              this.leavesSelectedDay.push(leave);
-            }
-          } else {
-            if(leave.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
-              this.leavesSelectedDay.push(leave);              
-            }
+        // Selected day is between leaves.
+        this.leaves.filter((lv) => {
+          if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, lv.leavedate_set[lv.leavedate_set.length - 1].starts_at)
+            || lv.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
+            this.leavesSelectedDay.push(lv);
+          }
+          if(this.users){
+            this.users.forEach(u => {
+              if(u.id == lv.user)
+                lv.user = u
+            });
+          }
+          if(this.leave_types){
+            this.leave_types.forEach(lt => {
+              if(lt.id == lv.leave_type)
+                lv.leave_type = lt.display_label
+            });
           }
         });
       } else {
-        // Selected day is not between leaves
-        // Get next set of leaves
+        // Selected day is not between leaves.
+        this.getLeaves();
       }
+    },
+
+    getLeaves: function() {
+      var range = this.earliestLeave.subtract(7, 'days').format('YYYY-MM-DDTHH:mm:ss')
+                  + ','
+                  + this.latestLeave.add(7, 'days').format('YYYY-MM-DDTHH:mm:ss')
+      this.tempDate = moment(this.selectedDay);
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/leaves/',
+      params: {
+        status: 'APPROVED',
+        // Between (today - 7 days) and (today + 7 days).
+        leavedate__range: range
+      }
+      }).then((response) => {
+        this.leaves = [];
+        response.body.results.forEach((leave) => {
+          this.leaves.push(leave);
+          leave.leavedate_set.forEach(ld => {
+            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+            // Keep track of the earliest and latest leave in this set.
+            this.earliestLeave = ld.starts_at.isBefore(this.earliestLeave, 'day') ? ld.starts_at : this.earliestLeave;
+            this.latestLeave = ld.ends_at.isAfter(this.latestLeave, 'day') ? ld.ends_at : this.latestLeave;          
+          });
+          this.filterLeaves();
+        });         
+      });
     }
   },
 
