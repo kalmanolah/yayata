@@ -37,9 +37,9 @@ export default {
           leavedate__gte: moment().format('YYYY-MM-DDTHH:mm:ss')
         }
       }).then((response) => {
-
         var leavedate_arr = [];
 
+        // For each leave object in the response, push the date for each leavedate object into a global array.
         response.data.results.forEach(lv => {
           lv.leavedate_set.forEach(ld => {
             leavedate_arr.push(moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss').toDate());
@@ -72,10 +72,10 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
-              
+
               disableDayFn: val => {
                 return upcoming_leaves.find(x => {
-                  return x.getTime() === val.getTime()
+                  return x.setHours(0,0,0,0) === val.setHours(0,0,0,0)
                 });
               }
             },
