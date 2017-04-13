@@ -14,6 +14,8 @@ import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
 
+var upcoming_leaves;
+
 export default {
 
   created: function() {
@@ -26,6 +28,27 @@ export default {
     this.model.end_full_day = true;
     this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
     this.model.attachments = '';
+
+    store.dispatch(
+      types.NINETOFIVER_API_REQUEST, {
+        path: '/my_leaves/',
+        params: {
+          status: store.getters.leave_statuses[2],
+          leavedate__gte: moment().format('YYYY-MM-DDTHH:mm:ss')
+        }
+      }).then((response) => {
+
+        var leavedate_arr = [];
+
+        response.data.results.forEach(lv => {
+          lv.leavedate_set.forEach(ld => {
+            leavedate_arr.push(moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss').toDate());
+          });
+        });
+
+        upcoming_leaves = leavedate_arr;
+      });
+
   },
 
   data: () => {
@@ -49,6 +72,12 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+              
+              disableDayFn: val => {
+                return upcoming_leaves.find(x => {
+                  return x.getTime() === val.getTime()
+                });
+              }
             },
 
             styleClasses: ['col-md-6', 'clearfix']
@@ -93,6 +122,12 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+
+              disableDayFn: val => {
+                return upcoming_leaves.find(x => {
+                  return x.getTime() === val.getTime()
+                });
+              }
             },
 
             styleClasses: ['col-md-6', 'clearfix', ],
