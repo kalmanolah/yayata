@@ -246,6 +246,7 @@ export default {
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
+                  console.log( lvdResponse );
 
                   //Update the leave object's status
                   store.dispatch(
@@ -286,19 +287,22 @@ export default {
 
                       attachIDs.push(attResponse.data.id);
 
-                      //Make patchcall to my_leaves to link attachment_id
-                      store.dispatch(
-                        types.NINETOFIVER_API_REQUEST,
-                        {
-                          path: '/my_leaves/' + lvResponse.body.id + '/',
-                          method: 'PATCH',
-                          body: {
-                            attachments: attachIDs 
+                      if(attachIDs.length === model.attachments.length) {
+                        //Make patchcall to my_leaves to link attachment_id
+                        store.dispatch(
+                          types.NINETOFIVER_API_REQUEST,
+                          {
+                            path: '/my_leaves/' + lvResponse.body.id + '/',
+                            method: 'PATCH',
+                            body: {
+                              attachments: attachIDs 
+                            }
                           }
-                        }
-                      ).then((attUpdateResponse) => {
-                        console.log(attUpdateResponse);
-                      });
+                        ).then((attUpdateResponse) => {
+                          console.log(attUpdateResponse);
+                        });
+                      }
+                      
                     });
                   }
                 }
