@@ -41,7 +41,7 @@ div(class='calendar')
   hr
   
   //- Buttons to toggle what to display
-  div.btn-group.centered
+  div.btn-group
     button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
     button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
     button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
@@ -51,11 +51,12 @@ div(class='calendar')
     div.card-group
       div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
 
-        div.card-header.text-md-center.card-info
-          | {{ weekDay | moment('dddd') }} <br> {{ weekDay | moment('DD/MM') }}
-          button.btn.btn-secondary.col-lg-12(v-on:click='setStandby(weekDay)') Standby 
+        div.card-header.card-info
+          span.pull-left {{ weekDay | moment('ddd') }}  {{ weekDay | moment('DD/MM') }}
+          //- Standby toggle
+          toggle-button.pull-right(@change='setStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
 
-        //- Content of performances
+        //- Content of activityPerformances
         div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
           ul.list-group
             li.list-group-item
@@ -64,9 +65,9 @@ div(class='calendar')
               div.card-text 
                 | <small>{{ perf.duration }} hours </small> 
 
-        //- Performance creation    -   disabled for future performances
+        //- Performance creation    -   disabled for future activityPerformances
         b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-sm-12 + 
+          b-btn.btn-success.col-sm-12.fa.fa-plus
           .text-xs-center.col-lg-12(slot='content' )
             strong.fa.fa-calendar-check-o
               | {{ weekDay | moment('DD/MM/YYYY') }} 
@@ -134,11 +135,18 @@ export default {
 
   methods: {
 
+    //Get whether user is on standby
+    getStandbyStatus: function(day) {
+      console.log( day.format('DD/MM/YYYY') );
+      console.log( this.standbyPerformances );
+      return (this.standbyPerformances.findIndex(x => x.day == day.format('D')) !== -1)
+    },
+
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
       var total = 0;
 
-      for(var val of this.performances.filter(x => x.day == day.format('D'))) 
+      for(var val of this.activityPerformances.filter(x => x.day == day.format('D'))) 
         total += parseFloat(val.duration);
 
       return total;
@@ -254,6 +262,8 @@ export default {
     selectNextWeek: function () {
       var year = parseInt(this.selectedYear);
       var week = parseInt(this.selectedWeek) + 1;
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       if (week > moment().isoWeekYear(year).isoWeeksInYear()) {
         week = 1;
@@ -267,6 +277,8 @@ export default {
     selectPreviousWeek: function () {
       var year = parseInt(this.selectedYear);
       var week = parseInt(this.selectedWeek) - 1;
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       if (week == 0) {
         year--;
@@ -301,7 +313,8 @@ export default {
     //Calls performance with correct params
     makePerformances: function(arr) {
       var start, end, month;
-      this.performances = [];
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       //If the index of the lowest value in the array is not the first,
       //the days are transitioning from one month to the other
@@ -337,7 +350,7 @@ export default {
     callPerformance: function(month, start, end) {
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/activity',
+        path: '/my_performances/',
         params: {
           year: this.selectedYear,
           timesheet__month: month,
@@ -345,17 +358,25 @@ export default {
           day__lte: end,
         },
       }).then((response) => {
-        this.performances = this.performances.concat( response.data.results );
+        // this.activityPerformances = this.activityPerformances.concat( response.data.results );
+        response.data.results.forEach(p => {
+          if(p.type === 'StandbyPerformance')
+            this.standbyPerformances = this.standbyPerformances.concat(p);
+          else if(p.type === 'ActivityPerformance')
+            this.activityPerformances = this.activityPerformances.concat(p);
+          else
+            console.log( p );
+        });
       });
     },
 
-    //Get the performances linked to a day
+    //Get the activityPerformances linked to a day
     getDaysPerformances: function(day) {
       var result = [];
 
-      for(var i = 0; i < this.performances.length; i++)
-        if(this.performances[i].day == day)
-          result.push(this.performances[i]);
+      for(var i = 0; i < this.activityPerformances.length; i++)
+        if(this.activityPerformances[i].day == day)
+          result.push(this.activityPerformances[i]);
 
       return result;
     }
@@ -366,12 +387,17 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
-      performances: [],
+      activityPerformances: [],
+      standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
       popoverStyle: {
         'max-width': '400px'
       },
+      toggleButtonLabels: {
+        checked: 'On call',
+        unchecked: 'Off call'
+      }
     }
 
   },
