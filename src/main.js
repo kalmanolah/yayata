@@ -8,6 +8,7 @@ import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 
 import BootstrapVue from 'bootstrap-vue'
+import ToggleButton from 'vue-js-toggle-button'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -24,6 +25,7 @@ import Colleagues from './components/Colleagues.vue'
 import Projects from './components/Projects.vue'
 
 // Vue.use(Vuex)
+Vue.use(ToggleButton)
 Vue.use(BootstrapVue)
 Vue.use(VueRouter)
 Vue.use(VueResource)
