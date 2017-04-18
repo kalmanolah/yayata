@@ -46,7 +46,28 @@ export default {
   },
 
   created: () => {}
+  computed: {
+    users: function(){
+      if(store.getters.users)
+        return store.getters.users
+    },
 
+    groups: function() {
+      if(store.getters.user_groups)
+        return store.getters.user_groups
+    },
+
+    filteredUsers: function(){
+      if(store.getters.users){
+        var query = this.query;
+        return this.sortedUsers.filter( user => {
+          user.fullname = user.first_name + ' ' + user.last_name;
+          return user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1
+                || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+        });
+      }
+    }
+  },
 }
 </script>
 
