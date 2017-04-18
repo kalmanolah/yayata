@@ -1,7 +1,7 @@
 <template lang="pug">
 div(class='calendar')
   div(class='row')
-    div(class='col-md-4 text-md-left')
+    div(class='col-sm-4 text-sm-left')
       div(
         class='btn-group'
         role='group'
@@ -14,8 +14,8 @@ div(class='calendar')
         )
           i(class='fa fa-angle-double-left')
           |  &nbsp;Previous
-    h1(class='col-md-4 text-md-center') {{ selectedYear }} Week {{ selectedWeek }} 
-    div(class='col-md-4 text-md-right')
+    h1(class='col-sm-4 text-sm-center') {{ selectedYear }} Week {{ selectedWeek }} 
+    div(class='col-sm-4 text-sm-right')
       div(
         class='btn-group'
         role='group'
@@ -30,13 +30,12 @@ div(class='calendar')
           i(class='fa fa-angle-double-right')
       
     //- Getting the months now shown and allowing routing back to where you came from
-    span.col-md-offset-3.col-md-6.text-md-center
+    span.col-sm-12.text-sm-center
       router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-        h3(class='col-md-3 text-md-left') {{ periodStartMonth | moment('MMMM')}}
+        h3 {{ periodStartMonth | moment('MMMM')}}
       div(v-if='periodEndMonth.month() != periodStartMonth.month()')
-        h3(class='col-md-1') -
         router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-          h3(class='col-md-3 text-md-right') {{ periodEndMonth | moment('MMMM')}}
+          h3 {{ periodEndMonth | moment('MMMM')}}
 
   hr
   
@@ -54,16 +53,15 @@ div(class='calendar')
         div.card-header.card-info
           span.pull-left {{ weekDay | moment('ddd') }}  {{ weekDay | moment('DD/MM') }}
           //- Standby toggle
-          toggle-button.pull-right(@change='setStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
+          toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
 
         //- Content of activityPerformances
-        div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
-          ul.list-group
-            li.list-group-item
-              span.card-title 
-                | {{ findContractName(perf.contract) }}
-              div.card-text 
-                | <small>{{ perf.duration }} hours </small> 
+        div.card-block.list-group.performance-entry(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
+          li.list-group-item
+            div.list-group-item-heading
+              | {{ findContractName(perf.contract) }}
+            div.list-group-item-text
+              | <small>{{ perf.duration }} h </small> 
 
         //- Performance creation    -   disabled for future activityPerformances
         b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
@@ -76,7 +74,7 @@ div(class='calendar')
   
         div.card-footer.text-lg-center
           small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} hours</strong>
+            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
 
 
 </template>
@@ -137,8 +135,6 @@ export default {
 
     //Get whether user is on standby
     getStandbyStatus: function(day) {
-      console.log( day.format('DD/MM/YYYY') );
-      console.log( this.standbyPerformances );
       return (this.standbyPerformances.findIndex(x => x.day == day.format('D')) !== -1)
     },
 
@@ -158,6 +154,30 @@ export default {
         return this.work_schedule[0][day.format('dddd').toLowerCase()];
     },
 
+    //Make the call to standby
+    toggleStandby: function(day) {
+      if(this.getStandbyStatus(day))
+        this.deleteStandby(this.standbyPerformances.find(x => x.day == day.format('D')));
+      else
+        this.setStandby(day);
+    },
+
+    //Delete standbyperformance for specific day
+    deleteStandby: function(standby) {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        {
+          path: '/my_performances/standby/' + standby.id + '/',
+          method: 'DELETE',
+          params: {
+            id: standby.id
+          }
+        }).then((delRes) => {
+          if(delRes.status == 204)
+            this.onSubmitSuccess();
+        });
+    },
+
     //Set standbyperformance for specific day
     setStandby: function(day) {
 
@@ -169,7 +189,6 @@ export default {
       );
 
       if(timesheet) {
-
         store.dispatch(
           types.NINETOFIVER_API_REQUEST,
           {
@@ -183,11 +202,9 @@ export default {
           }
         ).then((response) => {
           if(response.status == 201)
-            this.$emit('success', response);
+            this.onSubmitSuccess();
         });
-
       } else {
-        
         //Timesheet was not found, so a new one is made for that date
         store.dispatch(
           types.NINETOFIVER_API_REQUEST,
@@ -201,24 +218,22 @@ export default {
             },
             emulateJSON: true,
           }
-        ).then((response) => {
-
+        ).then((tsRes) => {
           store.dispatch(
             types.NINETOFIVER_API_REQUEST,
             {
               path: '/my_performances/standby/',
               method: 'POST',
               body: {
-                timesheet: response.data.id,
+                timesheet: tsRes.data.id,
                 day: day.date()
               },
               emulateJSON: true,
             }
-          ).then((response) => {
+          ).then((spRes) => {
             if(response.status == 201)
-              this.$emit('success', response);
+            this.onSubmitSuccess();
           });
-
         });
       }
 
@@ -422,6 +437,18 @@ export default {
   .card {
     background: rgba(0, 255, 0, 0.2);
   }
+}
+
+.performance-entry {
+  padding: 3px 3px;
+  margin: 5px;
+  font-size: 95%;
+
+  li {
+    padding: 3px;
+    margin: 2px;
+  }
+
 }
 
 </style>
