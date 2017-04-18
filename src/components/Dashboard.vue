@@ -24,11 +24,11 @@ div
               td.text-md-right <strong>36 hours (4,5 days)</strong>
     .col-md-5
       .card
-        h4.card-title.text-md-center Absent collegues
+        h4.card-title.text-md-center Absent colleagues
         div.text-md-center
-          i.fa.fa-chevron-left(@click='dayEarlier')
-          | {{ selectedDay | moment('DD-MM') }}
-          i.fa.fa-chevron-right(@click='dayLater') 
+          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
+          | {{ selectedDay | moment('DD MMMM') }}
+          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
         .cardblock
           table.table
             tbody
@@ -36,9 +36,9 @@ div
                 td {{ leave.user.first_name }} {{ leave.user.last_name }}
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length == 0')
-                td.text-md-center <strong>No absent collegues!</strong>
+                td.text-md-center <strong>No absent colleagues!</strong>
   .row
-    .col-md-10.offset-md-1
+    .col-md-5.offset-md-1
       LeaveForm
 
 </template>
@@ -65,7 +65,7 @@ export default {
   components: {
     LeaveForm: LeaveForm,
   },
-  
+
   data () {
     return data;
   },
@@ -159,18 +159,18 @@ export default {
           if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, lv.leavedate_set[lv.leavedate_set.length - 1].starts_at)
             || lv.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
             this.leavesSelectedDay.push(lv);
-          }
-          if(this.users){
-            this.users.forEach(u => {
-              if(u.id == lv.user)
-                lv.user = u
-            });
-          }
-          if(this.leave_types){
-            this.leave_types.forEach(lt => {
-              if(lt.id == lv.leave_type)
-                lv.leave_type = lt.display_label
-            });
+            if(this.users){
+              this.users.forEach(u => {
+                if(u.id == lv.user)
+                  lv.user = u
+              });
+            }
+            if(this.leave_types){
+              this.leave_types.forEach(lt => {
+                if(lt.id == lv.leave_type)
+                  lv.leave_type = lt.display_label
+              });
+            }
           }
         });
       } else {
@@ -214,4 +214,18 @@ export default {
 </script>
 
 <style>
+.chevron-l {
+  margin-right: 4rem;
+}
+
+.chevron-r {
+  margin-left: 4rem;
+}
+.chevron {
+  color: #0275d8;
+}
+
+.chevron:hover {
+  cursor: pointer;
+}
 </style>
