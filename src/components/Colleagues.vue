@@ -111,14 +111,14 @@ export default {
 
   methods: {
     toggleUserInfo: function(user) {
-      var index = this.filteredUsers.indexOf(user);
-      this.filteredUsers.forEach(u => {
+      var index = this.sortedUsers.indexOf(user);
+      this.sortedUsers.forEach(u => {
         if(u != user){
           u.toggleInfo = false;
-          Vue.set(this.filteredUsers, this.filteredUsers.indexOf(u), u);
+          Vue.set(this.sortedUsers, this.sortedUsers.indexOf(u), u);
         }
         user.toggleInfo = !user.toggleInfo;
-        Vue.set(this.filteredUsers, index, user)
+        Vue.set(this.sortedUsers, index, user)
       })
     },
 
