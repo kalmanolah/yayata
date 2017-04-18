@@ -39,14 +39,15 @@ div(class='calendar')
     div(
       v-for='n in dayCount'
       class='calendar-day'
-      v-bind:class='{ \
+      v-bind:class='[{ \
         "calendar-day-weekend": isWeekendDay(n), \
         "calendar-day-current": isCurrentDay(n), \
-      }'
+      }, determineLeave(n)]'
     )
       router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
-        div(class='card card-block' v-bind:class='determineLeave(n)' )
+        div(class='card card-block' v-bind:class='{ "calendar-day-on-leave": determineLeave(n)}')
           h4 {{ n }}
+
 </template>
 
 <script>
@@ -94,7 +95,7 @@ export default {
     isOnLeave: function(day) {
       var today = moment(this.selectedMonth).date(day);
 
-      return this.leaves.some(x => {
+      return this.acceptedLeaves.some(x => {
         var start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
         var end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
         
@@ -104,7 +105,12 @@ export default {
 
     //Return style according to leave/no-leave
     determineLeave: function(day) {
-      return (this.isOnLeave(day)) ? 'bg-info' : 'bg-faded';
+      if(this.isOnLeave(day))
+        return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' : 
+                this.isWeekendDay(day) ? 'calendar-day-weekend-on-leave' :
+                'calendar-day-on-leave';
+
+      return '';
     },
 
     getDayOfWeek: function (day) {
@@ -211,6 +217,27 @@ export default {
 
   computed: {
 
+    acceptedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[2])
+          return x;
+      });
+    },
+
+    pendingLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[0])
+          return x;
+      });
+    },
+
+    rejectedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[1])
+          return x;
+      });
+    },
+
     dayOffset: (vm) => {
       var dow = vm.selectedMonth.getDay()
 
@@ -253,6 +280,42 @@ export default {
 .calendar-day-current {
   .card {
     background: rgba(0, 255, 0, 0.2);
+  }
+}
+
+.calendar-day-on-leave {
+  .card {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(96, 109, 188, 0.3),
+      rgba(96, 109, 188, 0.3) 10px,
+      rgba(70, 82, 152, 0.1) 10px,
+      rgba(70, 82, 152, 0.1) 20px
+    );
+  }
+}
+
+.calendar-day-current-on-leave {
+  .card {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(0, 255, 0, 0.3),
+      rgba(0, 255, 0, 0.3) 10px,
+      rgba(0, 255, 0, 0.1) 10px,
+      rgba(0, 255, 0, 0.1) 20px
+    );
+  }
+}
+
+.calendar-day-weekend-on-leave {
+  .card {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 0, 0, 0.3),
+      rgba(255, 0, 0, 0.3) 10px,
+      rgba(255, 0, 0, 0.1) 10px,
+      rgba(255, 0, 0, 0.1) 20px
+    );
   }
 }
 
