@@ -5,13 +5,9 @@ div
 
   .row
     .col-md-8
-      b-button-group
-        b-button(@click='sortUsers()') All
-        span(v-for='group in groups')
-          b-button(@click='sortUsers(group)') {{ group.name }}
       .btn-group
-        button.btn.btn-secondary(@click='sortUsers()') All
-        button.btn.btn-secondary(v-for='group in groups' @click='sortUsers(group)') {{ group.name }}
+        button.btn.btn-secondary(@click='setSortBy("all")') All
+        button.btn.btn-secondary(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}
     .col-md-3
       .input-group
         span.input-group-addon Search
@@ -55,7 +51,7 @@ import Vue from 'vue';
 
 var data = {
   // groups: [],
-  sortedUsers: [],
+  sortBy: 'all',
   query: ''
 }
 
@@ -78,14 +74,12 @@ export default {
     },
 
     groups: function() {
-      if(store.getters.user_groups){
-        this.sortUsers()
+      if(store.getters.user_groups)
         return store.getters.user_groups
-      }
     },
 
     filteredUsers: function(){
-      if(store.getters.users){
+      if(store.getters.users && this.sortedUsers){
         var query = this.query;
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
@@ -93,46 +87,58 @@ export default {
                 || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
       }
-    }
+    },
+
+    sortedUsers: function() {
+      // this.sortedUsers = [];
+      if(this.sortBy !== 'all' && this.users){
+        var users = [];
+        this.users.forEach(user => {
+          user.groups.forEach( group => {
+              if(group === this.sortBy){
+                user.toggleInfo = false;
+                users.push(user);
+              }
+            });
+        });
+        return users;
+      } else {
+        if(this.users)
+          return this.users;
+      }
+    },
   },
 
   methods: {
-    sortUsers: function(val) {
-      this.sortedUsers = [];
-      if(val && this.users){
-        this.users.forEach(user => {
-          user.groups.forEach( group => {
-            if(group === val.id){
-              user.toggleInfo = false;
-              this.sortedUsers.push(user);
-            }
-          });
-        });
-      } else {
-        this.users.forEach( user => {
-          this.sortedUsers.push(user);
-        });
-      }
-    },
-
     toggleUserInfo: function(user) {
-      var index = this.sortedUsers.indexOf(user);
-      this.sortedUsers.forEach(u => {
+      var index = this.filteredUsers.indexOf(user);
+      this.filteredUsers.forEach(u => {
         if(u != user){
           u.toggleInfo = false;
-          Vue.set(this.sortedUsers, this.sortedUsers.indexOf(u), u);
+          Vue.set(this.filteredUsers, this.filteredUsers.indexOf(u), u);
         }
         user.toggleInfo = !user.toggleInfo;
-        Vue.set(this.sortedUsers, index, user)
+        Vue.set(this.filteredUsers, index, user)
       })
+    },
+
+    setSortBy: function(value) {
+      if(value === 'all') {
+        this.sortBy = 'all';
+      } else {
+        this.sortBy = this.groups.find(x => x == value).id;
+      }
+      console.log(this.sortedUsers);
     }
   },
 
   filters: {
     getGroupAsString: function(val){
-      var output = '';
-      output += store.getters.user_groups.find(group => val == group.id).name;
-      return output;
+      if(store.getters.user_groups){
+        var output = '';
+        output += store.getters.user_groups.find(group => val == group.id).name;
+        return output;
+      }
     },
 
     fullGender: function(val){
@@ -158,4 +164,5 @@ export default {
 .card-columns {
   margin-top: 1rem;
 }
+
 </style>
