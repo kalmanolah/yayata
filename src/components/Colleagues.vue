@@ -9,6 +9,9 @@ div
         b-button(@click='sortUsers()') All
         span(v-for='group in groups')
           b-button(@click='sortUsers(group)') {{ group.name }}
+      .btn-group
+        button.btn.btn-secondary(@click='sortUsers()') All
+        button.btn.btn-secondary(v-for='group in groups' @click='sortUsers(group)') {{ group.name }}
     .col-md-3
       .input-group
         span.input-group-addon Search
