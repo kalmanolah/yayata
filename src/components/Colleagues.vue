@@ -75,8 +75,10 @@ export default {
     },
 
     groups: function() {
-      if(store.getters.user_groups)
+      if(store.getters.user_groups){
+        this.sortUsers()
         return store.getters.user_groups
+      }
     },
 
     filteredUsers: function(){
