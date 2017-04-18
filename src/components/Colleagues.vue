@@ -1,40 +1,60 @@
 <template lang="pug">
 div
   .row
-    .col-md-8
-      .alert.alert-warning.card-top-red
-        | You have 1 due timesheet that is still open. Please fix that ASAP or Johan will haunt your dreams.
+    div.h3 Colleagues
+
   .row
     .col-md-8
-      .card
-        h4.card-title.text-md-center
-          | COLLEAGUES
-        table.table
-          tbody
-            tr
-              td Port of Antwerp (Amaris Consultancy)
-              td.text-md-right 92 hours (11,5 days)
-            tr
-              td Fabricom (LPA Track &amp; trace)
-              td.text-md-right 24 hours (3 days)
-            tr
-              td Google (Search Engine Optimisation)
-              td.text-md-right 16 hours (2 days)
-            tr
-              td <strong>Total</strong>
-              td.text-md-right <strong>132 hours (16,5 days)</strong>
-            tr
-              td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>36 hours (4,5 days)</strong>
+      b-button-group
+        b-button(@click='sortUsers()') All
+        span(v-for='group in groups')
+          b-button(@click='sortUsers(group)') {{ group.name }}
+    .col-md-3
+      .input-group
+        span.input-group-addon Search
+        input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
+      
+
   .row
-    .col-md-8
+    //- wrap the caaards
+    .card-columns
+      .card(v-for='user in filteredUsers')
+        .card-block
+          .card-title
+            span.user-fullname {{ user.first_name }} {{ user.last_name }}
+            span(v-for='group in user.groups').tag.tag-primary.pull-right  {{ group | getGroupAsString }}
+          .card-text
+            table.table
+              tr
+                td <strong>Email: </strong>
+                td.text-md-right {{ user.email }}
+              tr
+                td <strong>Telephone: </strong>
+                td.text-md-right +32 498 348585
+              tr(v-if='user.toggleInfo')
+                td <strong>Birth Date: </strong>
+                td.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
+              tr(v-if='user.toggleInfo')
+                td <strong>Gender: </strong>
+                td.text-md-right {{ user.gender | fullGender }}
+              tr(v-if='user.toggleInfo')
+                td <strong>Country: </strong>
+                td.text-md-right {{ user.country }}    
+            button.btn.btn-sm.pull-right(@click='toggleUserInfo(user)') More info
+
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import * as types from '../store/mutation-types'
+import store from '../store';
+import Vue from 'vue';
 
-var data = {}
+var data = {
+  // groups: [],
+  sortedUsers: [],
+  query: ''
+}
 
 export default {
   name: 'colleagues',
@@ -45,7 +65,9 @@ export default {
     return data;
   },
 
-  created: () => {}
+  created: () => {
+  },
+
   computed: {
     users: function(){
       if(store.getters.users)
@@ -68,8 +90,67 @@ export default {
       }
     }
   },
+
+  methods: {
+    sortUsers: function(val) {
+      this.sortedUsers = [];
+      if(val && this.users){
+        this.users.forEach(user => {
+          user.groups.forEach( group => {
+            if(group === val.id){
+              user.toggleInfo = false;
+              this.sortedUsers.push(user);
+            }
+          });
+        });
+      } else {
+        this.users.forEach( user => {
+          this.sortedUsers.push(user);
+        });
+      }
+    },
+
+    toggleUserInfo: function(user) {
+      var index = this.sortedUsers.indexOf(user);
+      this.sortedUsers.forEach(u => {
+        if(u != user){
+          u.toggleInfo = false;
+          Vue.set(this.sortedUsers, this.sortedUsers.indexOf(u), u);
+        }
+        user.toggleInfo = !user.toggleInfo;
+        Vue.set(this.sortedUsers, index, user)
+      })
+    }
+  },
+
+  filters: {
+    getGroupAsString: function(val){
+      var output = '';
+      output += store.getters.user_groups.find(group => val == group.id).name;
+      return output;
+    },
+
+    fullGender: function(val){
+      var output = ''
+      val == 'm' ? output += 'Male' : output += 'Female';
+      return output;
+    }
+  }
+
 }
 </script>
 
 <style>
+.tag {
+  margin-left: 0.1rem;
+  margin-right: 0.1rem;
+}
+
+.user-fullname {
+  font-weight: bold;
+}
+
+.card-columns {
+  margin-top: 1rem;
+}
 </style>
