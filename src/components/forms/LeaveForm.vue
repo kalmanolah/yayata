@@ -24,10 +24,9 @@ export default {
     this.model.start_date = moment();
     this.model.start_full_day = true;
     this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
-    this.model.end_date = moment().add(1, 'days');
     this.model.end_full_day = true;
     this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
-    this.model.attachments = '';
+    this.model.attachments = null;
 
     store.dispatch(
       types.NINETOFIVER_API_REQUEST, {
@@ -42,7 +41,9 @@ export default {
         // For each leave object in the response, push the date for each leavedate object into a global array.
         response.data.results.forEach(lv => {
           lv.leavedate_set.forEach(ld => {
-            leavedate_arr.push(moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss').toDate());
+            var start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+
+            leavedate_arr.push(start.toDate());
           });
         });
 
@@ -64,6 +65,8 @@ export default {
             label: "From",
             featured: true,
             required: true,
+            placeholder: 'Start of leave',
+            validator: VueFormGenerator.validators.date,
 
             pikadayOptions: {
               minDate: moment().toDate(),
@@ -113,6 +116,7 @@ export default {
             label: "To",
             featured: true,
             required: true,
+            placeholder: 'End of leave',
             validator: VueFormGenerator.validators.date,
 
             pikadayOptions: {
@@ -224,7 +228,6 @@ export default {
                     leave_type: model.leave_type,
                     status: store.getters.leave_statuses[3],      //Get 'DRAFT'
                     description: model.description,
-                    attachments: model.attachments[0],
                   },
                   emulateJSON: true,
                 }
