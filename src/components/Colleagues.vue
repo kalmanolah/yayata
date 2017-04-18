@@ -134,7 +134,7 @@ export default {
 
     fullGender: function(val){
       var output = ''
-      val == 'm' ? output += 'Male' : output += 'Female';
+      val == 'f' ? output += 'Female' : output += 'Male';
       return output;
     }
   }
