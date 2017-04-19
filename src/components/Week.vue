@@ -1,7 +1,7 @@
 <template lang="pug">
 div(class='calendar')
   div(class='row')
-    div(class='col-md-4 text-md-left')
+    div(class='col-sm-4 text-sm-left')
       div(
         class='btn-group'
         role='group'
@@ -14,8 +14,8 @@ div(class='calendar')
         )
           i(class='fa fa-angle-double-left')
           |  &nbsp;Previous
-    h1(class='col-md-4 text-md-center') {{ selectedYear }} Week {{ selectedWeek }} 
-    div(class='col-md-4 text-md-right')
+    h1(class='col-sm-4 text-sm-center') {{ selectedYear }} Week {{ selectedWeek }} 
+    div(class='col-sm-4 text-sm-right')
       div(
         class='btn-group'
         role='group'
@@ -30,18 +30,17 @@ div(class='calendar')
           i(class='fa fa-angle-double-right')
       
     //- Getting the months now shown and allowing routing back to where you came from
-    span.col-md-offset-3.col-md-6.text-md-center
+    span.col-sm-12.text-sm-center
       router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-        h3(class='col-md-3 text-md-left') {{ periodStartMonth | moment('MMMM')}}
+        h3 {{ periodStartMonth | moment('MMMM')}}
       div(v-if='periodEndMonth.month() != periodStartMonth.month()')
-        h3(class='col-md-1') -
         router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-          h3(class='col-md-3 text-md-right') {{ periodEndMonth | moment('MMMM')}}
+          h3 {{ periodEndMonth | moment('MMMM')}}
 
   hr
   
   //- Buttons to toggle what to display
-  div.btn-group.centered
+  div.btn-group
     button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
     button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
     button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
@@ -51,22 +50,22 @@ div(class='calendar')
     div.card-group
       div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
 
-        div.card-header.text-md-center.card-info
-          | {{ weekDay | moment('dddd') }} <br> {{ weekDay | moment('DD/MM') }}
-          button.btn.btn-secondary.col-lg-12(v-on:click='setStandby(weekDay)') Standby 
+        div.card-header.card-info
+          span.pull-left {{ weekDay | moment('ddd') }}  {{ weekDay | moment('DD/MM') }}
+          //- Standby toggle
+          toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
 
-        //- Content of performances
-        div.card-block(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
-          ul.list-group
-            li.list-group-item
-              span.card-title 
-                | {{ findContractName(perf.contract) }}
-              div.card-text 
-                | <small>{{ perf.duration }} hours </small> 
+        //- Content of activityPerformances
+        div.card-block.list-group.performance-entry(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
+          li.list-group-item
+            div.list-group-item-heading
+              | {{ findContractName(perf.contract) }}
+            div.list-group-item-text
+              | <small>{{ perf.duration }} h </small> 
 
-        //- Performance creation
-        b-popover(title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-lg-12 + 
+        //- Performance creation    -   disabled for future activityPerformances
+        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
+          b-btn.btn-success.col-sm-12.fa.fa-plus
           .text-xs-center.col-lg-12(slot='content' )
             strong.fa.fa-calendar-check-o
               | {{ weekDay | moment('DD/MM/YYYY') }} 
@@ -75,7 +74,7 @@ div(class='calendar')
   
         div.card-footer.text-lg-center
           small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} hours</strong>
+            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
 
 
 </template>
@@ -134,11 +133,16 @@ export default {
 
   methods: {
 
+    //Get whether user is on standby
+    getStandbyStatus: function(day) {
+      return (this.standbyPerformances.findIndex(x => x.day == day.format('D')) !== -1)
+    },
+
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
       var total = 0;
 
-      for(var val of this.performances.filter(x => x.day == day.format('D'))) 
+      for(var val of this.activityPerformances.filter(x => x.day == day.format('D'))) 
         total += parseFloat(val.duration);
 
       return total;
@@ -146,32 +150,93 @@ export default {
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      return this.work_schedule[0][day.format('dddd').toLowerCase()];
+      if(this.work_schedule)
+        return this.work_schedule[0][day.format('dddd').toLowerCase()];
+    },
+
+    //Make the call to standby
+    toggleStandby: function(day) {
+      if(this.getStandbyStatus(day))
+        this.deleteStandby(this.standbyPerformances.find(x => x.day == day.format('D')));
+      else
+        this.setStandby(day);
+    },
+
+    //Delete standbyperformance for specific day
+    deleteStandby: function(standby) {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        {
+          path: '/my_performances/standby/' + standby.id + '/',
+          method: 'DELETE',
+          params: {
+            id: standby.id
+          }
+        }).then((delRes) => {
+          if(delRes.status == 204)
+            this.onSubmitSuccess();
+        });
     },
 
     //Set standbyperformance for specific day
     setStandby: function(day) {
-      var timesheet = store.state.ninetofiver.timesheets.find(x => 
+
+      //Get the timesheet corresponding to the date of the day
+      var timesheet = store.getters.timesheets.find(x => 
         x.month == (day.month() + 1)
         &&
         x.year == day.year()
       );
 
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST,
-        {
-          path: '/my_performances/standby/',
-          method: 'POST',
-          body: {
-            timesheet: timesheet.id,
-            day: day.date()
-          },
-          emulateJSON: true,
-        }
-      ).then((response) => {
-        if(response.status == 201)
-          this.$emit('success', response);
-      });
+      if(timesheet) {
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_performances/standby/',
+            method: 'POST',
+            body: {
+              timesheet: timesheet.id,
+              day: day.date()
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+          if(response.status == 201)
+            this.onSubmitSuccess();
+        });
+      } else {
+        //Timesheet was not found, so a new one is made for that date
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST,
+          {
+            path: '/my_timesheets/',
+            method: 'POST',
+            body: {
+              month: day.month() + 1,
+              year: day.year(),
+              closed: false
+            },
+            emulateJSON: true,
+          }
+        ).then((tsRes) => {
+          store.dispatch(
+            types.NINETOFIVER_API_REQUEST,
+            {
+              path: '/my_performances/standby/',
+              method: 'POST',
+              body: {
+                timesheet: tsRes.data.id,
+                day: day.date()
+              },
+              emulateJSON: true,
+            }
+          ).then((spRes) => {
+            if(response.status == 201)
+            this.onSubmitSuccess();
+          });
+        });
+      }
+
     },
 
     //Sets the popover placement, based on the weekindex and weekformat
@@ -212,6 +277,8 @@ export default {
     selectNextWeek: function () {
       var year = parseInt(this.selectedYear);
       var week = parseInt(this.selectedWeek) + 1;
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       if (week > moment().isoWeekYear(year).isoWeeksInYear()) {
         week = 1;
@@ -225,6 +292,8 @@ export default {
     selectPreviousWeek: function () {
       var year = parseInt(this.selectedYear);
       var week = parseInt(this.selectedWeek) - 1;
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       if (week == 0) {
         year--;
@@ -259,7 +328,8 @@ export default {
     //Calls performance with correct params
     makePerformances: function(arr) {
       var start, end, month;
-      this.performances = [];
+      this.activityPerformances = [];
+      this.standbyPerformances = [];
 
       //If the index of the lowest value in the array is not the first,
       //the days are transitioning from one month to the other
@@ -269,22 +339,23 @@ export default {
         var maxIndex = arr.indexOf(Math.max.apply(Math, arr));
 
         start = arr[0],
-        end = arr[maxIndex],   
-        month = parseInt(this.periodStartMonth.format('MM'));     //Months are zero-indexed
+        end = arr[maxIndex],
+        //Months are zeroindexed in MomentJS, not in our DB
+        month = this.periodStartMonth.month() + 1;
 
         this.callPerformance(month, start, end);
 
         //Reset the vars for use further below
         start = arr[maxIndex + 1],
         end = arr[arr.length - 1],
-        month = parseInt(this.periodEndMonth.format('MM'));
+        month = this.periodEndMonth.month() + 1;
 
         this.callPerformance(month, start, end);
       
       } else {
         start = arr[0],
         end = arr[arr.length - 1],
-        month = parseInt(this.periodStartMonth.format('MM')) + 1;
+        month = this.periodStartMonth.month() + 1;
 
         this.callPerformance(month, start, end);
       }
@@ -294,7 +365,7 @@ export default {
     callPerformance: function(month, start, end) {
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/activity',
+        path: '/my_performances/',
         params: {
           year: this.selectedYear,
           timesheet__month: month,
@@ -302,17 +373,25 @@ export default {
           day__lte: end,
         },
       }).then((response) => {
-        this.performances = this.performances.concat( response.data.results );
+        // this.activityPerformances = this.activityPerformances.concat( response.data.results );
+        response.data.results.forEach(p => {
+          if(p.type === 'StandbyPerformance')
+            this.standbyPerformances = this.standbyPerformances.concat(p);
+          else if(p.type === 'ActivityPerformance')
+            this.activityPerformances = this.activityPerformances.concat(p);
+          else
+            console.log( p );
+        });
       });
     },
 
-    //Get the performances linked to a day
+    //Get the activityPerformances linked to a day
     getDaysPerformances: function(day) {
       var result = [];
 
-      for(var i = 0; i < this.performances.length; i++)
-        if(this.performances[i].day == day)
-          result.push(this.performances[i]);
+      for(var i = 0; i < this.activityPerformances.length; i++)
+        if(this.activityPerformances[i].day == day)
+          result.push(this.activityPerformances[i]);
 
       return result;
     }
@@ -323,12 +402,17 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
-      performances: [],
+      activityPerformances: [],
+      standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
       popoverStyle: {
         'max-width': '400px'
       },
+      toggleButtonLabels: {
+        checked: 'On call',
+        unchecked: 'Off call'
+      }
     }
 
   },
@@ -353,6 +437,18 @@ export default {
   .card {
     background: rgba(0, 255, 0, 0.2);
   }
+}
+
+.performance-entry {
+  padding: 3px 3px;
+  margin: 5px;
+  font-size: 95%;
+
+  li {
+    padding: 3px;
+    margin: 2px;
+  }
+
 }
 
 </style>

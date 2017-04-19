@@ -71,9 +71,6 @@ const mutations = {
   [types.NINETOFIVER_SET_CONTRACTS] (state, { contracts }) {
     state.contracts = contracts;
   },
-  [types.NINETOFIVER_SET_CONTRACT_DURATIONS] (state, { contract_durations }) {
-    state.contract_durations = contract_durations;
-  },
   [types.NINETOFIVER_SET_CONTRACT_USERS] (state, { contract_users }) {
     state.contract_users = contract_users;
   },
@@ -99,7 +96,7 @@ const getters = {
   //User specific
   timesheets: state => state.timesheets,
   contracts: state => {
-    if(!state.contracts || !state.companies || !state.contract_durations)
+    if(!state.contracts || !state.companies )
       return null;
     else {
       return state.contracts.map(x => {
@@ -117,14 +114,13 @@ const getters = {
           projectName: x.name,
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration        
+          total_duration: x.hours_spent
         };
       });
     }
       
   },
-  contract_durations: state => state.contract_durations,
-  contract_users: state => state.contract_durations,
+  contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
   work_schedule: state => state.work_schedule,
 
@@ -140,22 +136,8 @@ const getters = {
   contract_users_count: state => {
     if(state.contract_users)
       return state.contract_users.length;
-  },
-  projects: state => {
-    if(state.contracts && state.companies && state.total_duration) {
-      return state.contracts.map(x => {
-        return {
-          id: x.id,
-          customerID: x.customer,
-          companyID: x.company,
-          projectName: x.name,
-          customerName: state.companies.find(com => com.id == x.customer).name,
-          companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration
-        };
-      });
-    }
   }
+  
 }
 
 // actions
@@ -238,10 +220,14 @@ const actions = {
   },
 
   [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
+
+    options.path = '/services/my_user';
+    
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/my_user/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USER, {
           user: res.data
         })
@@ -255,10 +241,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_LEAVE_TYPES] (store, options = {}) {
 
+    options.path = '/leave_types/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/leave_types/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_LEAVE_TYPES, {
           leave_types: res.data.results.map(x => {
@@ -277,10 +266,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES] (store, options = {}) {
 
+    options.path = '/performance_types/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/performance_types/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_PERFORMANCE_TYPES, {
           performance_types: res.data.results.map(x => {
@@ -299,10 +291,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES] (store, options = {}) {
 
+    options.path = '/employment_contract_types/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/employment_contract_types/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_EMPLOYMENT_CONTRACT_TYPES, {
           employment_contract_types: res.data.results.map(x => {
@@ -321,10 +316,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_CONTRACT_GROUPS] (store, options = {}) {
 
+    options.path = '/contract_groups/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/contract_groups/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_CONTRACT_GROUPS, {
           contract_groups: res.data.results.map(x => {
@@ -343,10 +341,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_COMPANIES] (store, options = {}) {
 
+    options.path = '/companies/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/companies/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_COMPANIES, {
           companies: res.data.results
@@ -363,16 +364,20 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_TIMESHEETS] (store, options = {}) {
 
-    return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_timesheets/'
-      }).then((res) => {
+    options.path = '/my_timesheets/';
 
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+
+        //Filter out all future timesheets after today's month
         var today = moment();
         var timesheets = res.data.results.filter(x => {
           return ( 
             x.year < today.year() 
-            || (x.year == today.year() && x.month <= today.month())
+            || (x.year == today.year() && x.month <= today.month() + 1)
           )
         });
 
@@ -390,10 +395,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
 
+    options.path = '/my_contracts/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_contracts/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_CONTRACTS, {
           contracts: res.data.results
@@ -408,32 +416,15 @@ const actions = {
   },
 
 
-  [types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS] (store, options = {}) {
-
-    return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path:'/my_contract_durations/'
-      }).then((res) => {
-
-        store.commit(types.NINETOFIVER_SET_CONTRACT_DURATIONS, {
-          contract_durations: res.data.results
-        });
-        resolve(res);
-
-      }, (res) => {
-        reject(res);
-      });
-    });
-
-  },
-
-
   [types.NINETOFIVER_RELOAD_CONTRACT_USERS] (store, options = {}) {
 
+    options.path = '/contract_users/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path:'/contract_users/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_CONTRACT_USERS, {
           contract_users: res.data.results
@@ -450,14 +441,20 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
 
+    options.path = '/my_performances/activity/';
+
+    if(!options.params) {
+      options.params = {
+        timesheet__year: new Date().getFullYear(),
+        timesheet__month: new Date().getMonth()
+      };
+    } else {
+      options.params['timesheet__year'] = new Date().getFullYear();
+      options.params['timesheet__month'] = new Date().getMonth();
+    }
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path:'/my_performances/activity/',
-        params: {
-          timesheet__month: new Date().getMonth(),
-          timesheet__year: new Date().getFullYear()
-        }
-      }).then((res) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES, {
           monthly_activity_performances: res.data.results
@@ -473,10 +470,14 @@ const actions = {
 
 
   [types.NINETOFIVER_RELOAD_WORK_SCHEDULE] (store, options = {}) {
+
+    options.path = '/my_workschedules/';
+
     return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path:'/my_workschedules/'
-      }).then((res) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
           work_schedule: res.data.results

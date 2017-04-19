@@ -5,10 +5,9 @@ div(class='calendar')
       h3 My Leaves
       p Here, have an overview of all your leaves. Whatever
         div
-          #accordion(v-for='(leave, i) in sortedLeaves' role='tablist', aria-multiselectable='true')
-            hr(v-if='leave.leave_start < new Date()')
+          #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
-              div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
+              div.card-header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
                 div.row
                   div.col-md-10
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
@@ -17,13 +16,37 @@ div(class='calendar')
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                       | {{ leave.status }}
                     
-              div.collapse(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
+              div.collapse(role='tabpanel', v-bind:id='"procCollapse-" + i', v-bind:aria-labelledby='"procHeading-" + i')
                 div.card-block
                   div
                     | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                     | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
     div.col-md-6
+      //- Holidays
       cmpHolidays
+
+      hr
+
+      //- Pending leaves
+      h3 Pending leaves
+        span Still awaiting approval by Johan
+      div
+        #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
+          .card( v-bind:class='getRibbonStyleClass(leave)')
+            div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+              div.row
+                div.col-md-10
+                  a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
+                    | {{ leave.description }}
+                div.col-md-2 
+                  span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                    | {{ leave.status }}
+                  
+            div.collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
+              div.card-block
+                div
+                  | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                  | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
 
 
 </template>
@@ -72,16 +95,38 @@ export default {
     });
   },
 
-  computed: { 
+  computed: {
 
-    sortedLeaves: function() {
-      return this.leaves.sort(function(a, b) {
-        a = a.leave_start.toDate();
-        b = b.leave_start.toDate();
-
-        return a > b ? -1 : (a < b ? 1 : 0);
+    acceptedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[2])
+          return x;
       });
     },
+
+    pendingLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[0])
+          return x;
+      });
+    },
+
+    processedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status !== store.getters.leave_statuses[0] 
+          && x.status !== store.getters.leave_statuses[3])
+          return x;
+      });
+    },
+
+    // sortedLeaves: function() {
+    //   return this.leaves.sort(function(a, b) {
+    //     a = a.leave_start.toDate();
+    //     b = b.leave_start.toDate();
+
+    //     return a > b ? -1 : (a < b ? 1 : 0);
+    //   });
+    // },
 
     nearestLeave: function() {
       //Start nearest to today
@@ -89,7 +134,22 @@ export default {
     },
   },
 
+  filter: {
+
+
+  },
+
   methods: {
+
+    //Sorts the leaves from future to past
+    sortLeaves: function(val) {
+      return val.sort(function(a, b) {
+        a = a.leave_start.toDate();
+        b = b.leave_start.toDate();
+
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });
+    },
 
     //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {

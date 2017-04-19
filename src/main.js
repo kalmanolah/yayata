@@ -8,6 +8,7 @@ import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 
 import BootstrapVue from 'bootstrap-vue'
+import ToggleButton from 'vue-js-toggle-button'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -21,9 +22,10 @@ import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 
 import Colleagues from './components/Colleagues.vue'
-import Projects from './components/Projects.vue'
+import Contracts from './components/Contracts.vue'
 
 // Vue.use(Vuex)
+Vue.use(ToggleButton)
 Vue.use(BootstrapVue)
 Vue.use(VueRouter)
 Vue.use(VueResource)
@@ -66,17 +68,17 @@ export const router = new VueRouter({
           component: Week,
         },
         {
-          name: 'my_colleagues',
+          name: 'colleagues',
           path: '/colleagues',
           component: Colleagues,
         },
         {
-          name: 'my_leaves',
+          name: 'leaves',
           path: '/leaves',
           component: Leaves,
         },
         {
-          name: 'my_timesheets',
+          name: 'timesheets',
           path: '/timesheets',
           component: Timesheets,
         },
@@ -86,9 +88,9 @@ export const router = new VueRouter({
           component: Companies,
         },
         {
-          name: 'my_projects',
-          path: '/projects',
-          component: Projects,
+          name: 'contracts',
+          path: '/contracts',
+          component: Contracts,
         }
       ],
     },
