@@ -50,10 +50,8 @@ import store from '../store';
 import Vue from 'vue';
 
 var data = {
-  // groups: [],
   sortBy: 'all',
   query: '',
-  visible: false
 }
 
 export default {
@@ -79,19 +77,21 @@ export default {
         return store.getters.user_groups
     },
 
+    // Filter users by input
     filteredUsers: function(){
       if(store.getters.users && this.sortedUsers){
         var query = this.query;
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
+          // Fields to filter on
           return user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1
                 || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
       }
     },
 
+    // Sort users by group
     sortedUsers: function() {
-      // this.sortedUsers = [];
       if(this.sortBy !== 'all' && this.users){
         var users = [];
         this.users.forEach(user => {
@@ -112,18 +112,6 @@ export default {
   methods: {
     hideOpen: function() {
       $('.collapse').collapse('hide');
-    },
-
-    toggleUserInfo: function(user) {
-      var index = this.sortedUsers.indexOf(user);
-      this.sortedUsers.forEach(u => {
-        if(u != user){
-          u.toggleInfo = false;
-          Vue.set(this.sortedUsers, this.sortedUsers.indexOf(u), u);
-        }
-        user.toggleInfo = !user.toggleInfo;
-        Vue.set(this.sortedUsers, index, user)
-      })
     },
 
     setSortBy: function(value) {
