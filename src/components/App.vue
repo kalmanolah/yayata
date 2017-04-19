@@ -17,6 +17,9 @@ div(
             router-link(:to='{ name: "my_timesheets" }')
               h3 Timesheets 
               p.small I said hey, what's going on
+            router-link(:to='{ name: "calendar_month_redirect" }')
+              h3 Calendar
+              p.small It's a calendar, what more can I say
             router-link(:to='{ name: "my_projects" }')
               h3 Projects
               p.small What am I working on
