@@ -7,7 +7,7 @@ div(class='calendar')
         div
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
-              div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"collapse-" + i', v-bind:href='"#collapse-" + i')
+              div.card-header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
                 div.row
                   div.col-md-10
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
@@ -16,7 +16,7 @@ div(class='calendar')
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                       | {{ leave.status }}
                     
-              div.collapse(role='tabpanel', v-bind:id='"collapse-" + i', v-bind:aria-labelledby='"heading-" + i')
+              div.collapse(role='tabpanel', v-bind:id='"procCollapse-" + i', v-bind:aria-labelledby='"procHeading-" + i')
                 div.card-block
                   div
                     | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
@@ -24,6 +24,29 @@ div(class='calendar')
     div.col-md-6
       //- Holidays
       cmpHolidays
+
+      hr
+
+      //- Pending leaves
+      h3 Pending leaves
+        span Still awaiting approval by Johan
+      div
+        #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
+          .card( v-bind:class='getRibbonStyleClass(leave)')
+            div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+              div.row
+                div.col-md-10
+                  a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
+                    | {{ leave.description }}
+                div.col-md-2 
+                  span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                    | {{ leave.status }}
+                  
+            div.collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
+              div.card-block
+                div
+                  | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                  | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
 
 
 </template>
