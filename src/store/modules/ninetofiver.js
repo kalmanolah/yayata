@@ -120,7 +120,7 @@ const getters = {
     }
       
   },
-  contract_users: state => state.contract_durations,
+  contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
   work_schedule: state => state.work_schedule,
 
