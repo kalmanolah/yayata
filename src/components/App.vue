@@ -63,8 +63,6 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
     if (!store.getters.timesheets)
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
-    if (!store.getters.contract_durations)
-      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS);
     if (!store.getters.contracts)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
     if(!store.getters.contract_users)

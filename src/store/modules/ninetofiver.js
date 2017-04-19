@@ -71,9 +71,6 @@ const mutations = {
   [types.NINETOFIVER_SET_CONTRACTS] (state, { contracts }) {
     state.contracts = contracts;
   },
-  [types.NINETOFIVER_SET_CONTRACT_DURATIONS] (state, { contract_durations }) {
-    state.contract_durations = contract_durations;
-  },
   [types.NINETOFIVER_SET_CONTRACT_USERS] (state, { contract_users }) {
     state.contract_users = contract_users;
   },
@@ -99,7 +96,7 @@ const getters = {
   //User specific
   timesheets: state => state.timesheets,
   contracts: state => {
-    if(!state.contracts || !state.companies || !state.contract_durations)
+    if(!state.contracts || !state.companies )
       return null;
     else {
       return state.contracts.map(x => {
@@ -117,13 +114,12 @@ const getters = {
           projectName: x.name,
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: state.contract_durations.find(td => td.id == x.id).total_duration        
+          total_duration: x.hours_spent
         };
       });
     }
       
   },
-  contract_durations: state => state.contract_durations,
   contract_users: state => state.contract_durations,
   monthly_activity_performances: state => state.monthly_activity_performances,
   work_schedule: state => state.work_schedule,
@@ -390,26 +386,6 @@ const actions = {
       }, (res) => {
         reject(res);
       })
-    });
-
-  },
-
-
-  [types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS] (store, options = {}) {
-
-    return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path:'/my_contract_durations/'
-      }).then((res) => {
-
-        store.commit(types.NINETOFIVER_SET_CONTRACT_DURATIONS, {
-          contract_durations: res.data.results
-        });
-        resolve(res);
-
-      }, (res) => {
-        reject(res);
-      });
     });
 
   },
