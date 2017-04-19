@@ -2,7 +2,7 @@
 div
   h3 My timesheets
   p.subtitle Overview of all open timesheets
-  div(v-for="(year_group,year) in timesheets")
+  div(v-for="(year_group, year) in timesheets")
     
     br
 

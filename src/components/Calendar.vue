@@ -45,7 +45,7 @@ div(class='calendar')
       }, determineLeave(n)]'
     )
       router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
-        div(class='card card-block' v-bind:class='{ "calendar-day-on-leave": determineLeave(n)}')
+        div(class='card card-block')
           h4 {{ n }}
 
 </template>
@@ -109,8 +109,6 @@ export default {
         return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' : 
                 this.isWeekendDay(day) ? 'calendar-day-weekend-on-leave' :
                 'calendar-day-on-leave';
-
-      return '';
     },
 
     getDayOfWeek: function (day) {

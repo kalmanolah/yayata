@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-    button.col-md-12.btn-success(v-on:click='submitForm') +
+    button.col-md-12.btn-success.fa.fa-check(v-on:click='submitForm')
 </template>
 
 <script>
@@ -92,7 +92,6 @@ export default {
 
             values: function() {
               if(store.getters.contracts) {
-                console.log( store.getters.contracts );
                 return store.getters.contracts.map(x => {
                   return { id: x.id, name: x.customerName + ':' + x.name }
                 });                

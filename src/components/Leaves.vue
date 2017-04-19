@@ -6,9 +6,8 @@ div(class='calendar')
       p Here, have an overview of all your leaves. Whatever
         div
           #accordion(v-for='(leave, i) in sortedLeaves' role='tablist', aria-multiselectable='true')
-            hr(v-if='leave.leave_start < new Date()')
             .card( v-bind:class='getRibbonStyleClass(leave)')
-              div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', 'v-bind:aria-controls='"collapse-" + i', 'v-bind:href='"#collapse-" + i')
+              div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"collapse-" + i', v-bind:href='"#collapse-" + i')
                 div.row
                   div.col-md-10
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
@@ -72,7 +71,28 @@ export default {
     });
   },
 
-  computed: { 
+  computed: {
+
+    acceptedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[2])
+          return x;
+      });
+    },
+
+    pendingLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[0])
+          return x;
+      });
+    },
+
+    rejectedLeaves: function() {
+      return this.leaves.filter(x => {
+        if(x.status === store.getters.leave_statuses[1])
+          return x;
+      });
+    },
 
     sortedLeaves: function() {
       return this.leaves.sort(function(a, b) {
