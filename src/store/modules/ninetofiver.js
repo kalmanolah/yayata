@@ -11,6 +11,7 @@ const state = {
   leave_types: null,
   performance_types: null,
   employment_contract_types: null,
+  user_groups: null,
 
   //Global props, more likely to change
   contract_groups: null,
@@ -62,6 +63,11 @@ const mutations = {
   [types.NINETOFIVER_SET_CONTRACT_GROUPS] (state, { contract_groups }) {
     state.contract_groups = contract_groups;
   },
+
+  [types.NINETOFIVER_SET_USER_GROUPS] (state, { user_groups }) {
+    state.user_groups = user_groups;
+  },
+
   [types.NINETOFIVER_SET_COMPANIES] (state, { companies }) {
     state.companies = companies;
   },
@@ -98,6 +104,7 @@ const getters = {
   performance_types: state => state.performance_types,
   employment_contract_types: state => state.employment_contract_types,
   contract_groups: state => state.contract_groups,
+  user_groups: state => state.user_groups,
   companies: state => state.companies,
   users: state => state.users,
 
@@ -345,6 +352,24 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_USER_GROUPS] (store, options = {}) {
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/groups/'
+      }).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_USER_GROUPS, {
+          user_groups: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
 
   [types.NINETOFIVER_RELOAD_COMPANIES] (store, options = {}) {
 

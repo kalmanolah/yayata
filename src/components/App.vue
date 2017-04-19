@@ -64,6 +64,8 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
     if (!store.getters.contract_groups)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
+    if (!store.getters.user_groups)
+      store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
     if (!store.getters.companies)
       store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
     if (!store.getters.timesheets)
