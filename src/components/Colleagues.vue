@@ -15,31 +15,32 @@ div
       
 
   .row
-    //- wrap the caaards
     .card-columns
-      .card(v-for='user in filteredUsers')
-        .card-block
-          .card-title
-            span.user-fullname {{ user.first_name }} {{ user.last_name }}
-            span(v-for='group in user.groups').tag.tag-primary.pull-right  {{ group | getGroupAsString }}
-          .card-text
-            table.table
-              tr
-                td <strong>Email: </strong>
-                td.text-md-right {{ user.email }}
-              tr
-                td <strong>Telephone: </strong>
-                td.text-md-right +32 498 348585
-              tr(v-if='user.toggleInfo')
-                td <strong>Birth Date: </strong>
-                td.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
-              tr(v-if='user.toggleInfo')
-                td <strong>Gender: </strong>
-                td.text-md-right {{ user.gender | fullGender }}
-              tr(v-if='user.toggleInfo')
-                td <strong>Country: </strong>
-                td.text-md-right {{ user.country }}    
-            button.btn.btn-sm.pull-right(@click='toggleUserInfo(user)') More info
+      #accordion(v-for='(user, index) in filteredUsers' role='tablist' aria-multiselectable='true') 
+        .card
+          .card-block
+            .card-title(role='tab' v-bind:id='"title-" + index' data-parent='#accordion' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
+              span.user-fullname {{ user.first_name }} {{ user.last_name }}
+              span(v-for='group in user.groups').tag.tag-primary.pull-right  {{ group | getGroupAsString }}
+            .card-text
+              .row
+                .col-md-6 <strong>Email: </strong>
+                .col-md-6.text-md-right {{ user.email }}
+              .row
+                .col-md-6 <strong>Telephone: </strong>
+                .col-md-6.text-md-right +32 498 348585
+              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"title-" + index')
+                .row
+                  .col-md-6 <strong>Birth Date: </strong>
+                  .col-md-6.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
+                .row
+                  .col-md-6 <strong>Gender: </strong>
+                  .col-md-6.text-md-right {{ user.gender | fullGender }}
+                .row
+                  .col-md-6 <strong>Country: </strong>
+                  .col-md-6.text-md-right {{ user.country }}    
+              button.btn.btn-sm.pull-right(data-toggle='collapse' v-bind:href='"#collapse-" + index') More info
+              //- button.btn.btn-sm.pull-right(@click='getUserInfo(user)') More info
 
 </template>
 
@@ -52,7 +53,8 @@ import Vue from 'vue';
 var data = {
   // groups: [],
   sortBy: 'all',
-  query: ''
+  query: '',
+  visible: false
 }
 
 export default {
@@ -96,7 +98,6 @@ export default {
         this.users.forEach(user => {
           user.groups.forEach( group => {
               if(group === this.sortBy){
-                user.toggleInfo = false;
                 users.push(user);
               }
             });
@@ -110,6 +111,10 @@ export default {
   },
 
   methods: {
+    // getUserInfo(user)
+    // TODO: userinfos in de store steken
+    //       van de meegegeven user de userinfo ophalen en weergeven.
+    // Hoe differentieren tussen verschillende userinfos en enkel de huidige weergeven?
     toggleUserInfo: function(user) {
       var index = this.sortedUsers.indexOf(user);
       this.sortedUsers.forEach(u => {
@@ -128,7 +133,6 @@ export default {
       } else {
         this.sortBy = this.groups.find(x => x == value).id;
       }
-      console.log(this.sortedUsers);
     }
   },
 
@@ -163,6 +167,10 @@ export default {
 
 .card-columns {
   margin-top: 1rem;
+}
+
+tr {
+  width: 100%;
 }
 
 </style>
