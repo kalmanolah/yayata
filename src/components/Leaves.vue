@@ -5,7 +5,7 @@ div(class='calendar')
       h3 My Leaves
       p Here, have an overview of all your leaves. Whatever
         div
-          #accordion(v-for='(leave, i) in sortedLeaves' role='tablist', aria-multiselectable='true')
+          #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               div.card-header(role='tab', v-bind:id='"heading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"collapse-" + i', v-bind:href='"#collapse-" + i')
                 div.row
@@ -22,6 +22,7 @@ div(class='calendar')
                     | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                     | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
     div.col-md-6
+      //- Holidays
       cmpHolidays
 
 
@@ -87,21 +88,22 @@ export default {
       });
     },
 
-    rejectedLeaves: function() {
+    processedLeaves: function() {
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[1])
+        if(x.status !== store.getters.leave_statuses[0] 
+          && x.status !== store.getters.leave_statuses[3])
           return x;
       });
     },
 
-    sortedLeaves: function() {
-      return this.leaves.sort(function(a, b) {
-        a = a.leave_start.toDate();
-        b = b.leave_start.toDate();
+    // sortedLeaves: function() {
+    //   return this.leaves.sort(function(a, b) {
+    //     a = a.leave_start.toDate();
+    //     b = b.leave_start.toDate();
 
-        return a > b ? -1 : (a < b ? 1 : 0);
-      });
-    },
+    //     return a > b ? -1 : (a < b ? 1 : 0);
+    //   });
+    // },
 
     nearestLeave: function() {
       //Start nearest to today
@@ -109,7 +111,22 @@ export default {
     },
   },
 
+  filter: {
+
+
+  },
+
   methods: {
+
+    //Sorts the leaves from future to past
+    sortLeaves: function(val) {
+      return val.sort(function(a, b) {
+        a = a.leave_start.toDate();
+        b = b.leave_start.toDate();
+
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });
+    },
 
     //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
