@@ -68,17 +68,17 @@ export const router = new VueRouter({
           component: Week,
         },
         {
-          name: 'my_colleagues',
+          name: 'colleagues',
           path: '/colleagues',
           component: Colleagues,
         },
         {
-          name: 'my_leaves',
+          name: 'leaves',
           path: '/leaves',
           component: Leaves,
         },
         {
-          name: 'my_timesheets',
+          name: 'timesheets',
           path: '/timesheets',
           component: Timesheets,
         },

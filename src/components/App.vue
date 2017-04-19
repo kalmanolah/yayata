@@ -14,16 +14,16 @@ div(
       div.row
         div.col-md-10.offset-md-1.col-sm-8
           nav
-            router-link(:to='{ name: "my_timesheets" }')
+            router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
               p.small I said hey, what's going on
             router-link(:to='{ name: "contracts" }')
               h3 Contracts
               p.small What am I working on
-            router-link(:to='{ name: "my_leaves" }')
+            router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small Sickness / Vacation
-            router-link(:to='{ name: "my_colleagues" }')
+            router-link(:to='{ name: "colleagues" }')
               h3 Colleagues
               p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')
