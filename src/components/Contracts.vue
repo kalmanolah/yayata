@@ -1,7 +1,7 @@
 <template lang="pug">
 div
-  h3 My projects
-  p.subtitle Overview of all my projects
+  h3 My contracts
+  p.subtitle Overview of all my contracts
 
   div.col-md-12.card
     h5.text-md-center.card-header 
@@ -47,7 +47,7 @@ import store from '../store';
 
 
 export default {
-  name: 'projects',
+  name: 'contracts',
 
   components: {},
 
@@ -107,7 +107,7 @@ export default {
       }
     },
 
-    //Gets the projects currently still active
+    //Gets the contracts currently still active
     activeContracts: function() {
       if(this.contracts && this.contract_detail)
         //First filter for active contracts
@@ -117,7 +117,7 @@ export default {
           });
     },
 
-    //Gets the projects currently unactive
+    //Gets the contracts currently unactive
     inactiveContracts: function() {
       if(this.contracts && this.contract_detail)
         return this.contracts.filter(x => x.active === false).map(c => {

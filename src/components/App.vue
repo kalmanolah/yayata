@@ -17,8 +17,8 @@ div(
             router-link(:to='{ name: "my_timesheets" }')
               h3 Timesheets 
               p.small I said hey, what's going on
-            router-link(:to='{ name: "my_projects" }')
-              h3 Projects
+            router-link(:to='{ name: "contracts" }')
+              h3 Contracts
               p.small What am I working on
             router-link(:to='{ name: "my_leaves" }')
               h3 Leaves

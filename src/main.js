@@ -22,7 +22,7 @@ import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 
 import Colleagues from './components/Colleagues.vue'
-import Projects from './components/Projects.vue'
+import Contracts from './components/Contracts.vue'
 
 // Vue.use(Vuex)
 Vue.use(ToggleButton)
@@ -88,9 +88,9 @@ export const router = new VueRouter({
           component: Companies,
         },
         {
-          name: 'my_projects',
-          path: '/projects',
-          component: Projects,
+          name: 'contracts',
+          path: '/contracts',
+          component: Contracts,
         }
       ],
     },
