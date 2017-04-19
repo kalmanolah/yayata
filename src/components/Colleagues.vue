@@ -5,9 +5,13 @@ div
 
   .row
     .col-md-8
-      .btn-group
-        button.btn.btn-secondary(@click='setSortBy("all")') All
-        button.btn.btn-secondary(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}
+      .btn-group(role='group' aria-label='Button group with nested dropdown')
+        button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
+        .btn-group(role='group')
+          button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
+          .dropdown-menu(aria-labelledby='btnGroupDrop')
+            //- button.btn.btn-secondary(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}          
+            a.dropdown-item(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}
     .col-md-3
       .input-group
         span.input-group-addon Search
@@ -51,6 +55,7 @@ import Vue from 'vue';
 
 var data = {
   sortBy: 'all',
+  groupLabel: 'group',
   query: '',
 }
 
@@ -117,8 +122,10 @@ export default {
     setSortBy: function(value) {
       if(value === 'all') {
         this.sortBy = 'all';
+        this.groupLabel = 'group';
       } else {
         this.sortBy = this.groups.find(x => x == value).id;
+        this.groupLabel = this.groups.find(x => x == value).name;        
       }
     }
   },
