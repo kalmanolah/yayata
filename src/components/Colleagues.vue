@@ -18,29 +18,28 @@ div
     .card-columns
       #accordion(v-for='(user, index) in filteredUsers' role='tablist' aria-multiselectable='true') 
         .card
+          .card-header( v-bind:id='"heading-" + index' role='tab' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
+            span.user-fullname {{ user.first_name }} {{ user.last_name }}
+            span(v-for='group in user.groups').tag.tag-primary.pull-right  {{ group | getGroupAsString }}
           .card-block
-            .card-title(role='tab' v-bind:id='"title-" + index' data-parent='#accordion' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
-              span.user-fullname {{ user.first_name }} {{ user.last_name }}
-              span(v-for='group in user.groups').tag.tag-primary.pull-right  {{ group | getGroupAsString }}
             .card-text
               .row
-                .col-md-6 <strong>Email: </strong>
-                .col-md-6.text-md-right {{ user.email }}
+                .col-md-3 <strong>Email: </strong>
+                .col-md-9.text-md-right {{ user.email }}
               .row
-                .col-md-6 <strong>Telephone: </strong>
-                .col-md-6.text-md-right +32 498 348585
-              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"title-" + index')
+                .col-md-3 <strong>Telephone: </strong>
+                .col-md-9.text-md-right +32 498 348585
+              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
                 .row
-                  .col-md-6 <strong>Birth Date: </strong>
-                  .col-md-6.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
+                  .col-md-3 <strong>Birth Date: </strong>
+                  .col-md-9.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
                 .row
-                  .col-md-6 <strong>Gender: </strong>
-                  .col-md-6.text-md-right {{ user.gender | fullGender }}
+                  .col-md-3 <strong>Gender: </strong>
+                  .col-md-9.text-md-right {{ user.gender | fullGender }}
                 .row
-                  .col-md-6 <strong>Country: </strong>
-                  .col-md-6.text-md-right {{ user.country }}    
-              button.btn.btn-sm.pull-right(data-toggle='collapse' v-bind:href='"#collapse-" + index') More info
-              //- button.btn.btn-sm.pull-right(@click='getUserInfo(user)') More info
+                  .col-md-3 <strong>Country: </strong>
+                  .col-md-9.text-md-right {{ user.country }}    
+            button.btn.btn-sm.pull-right.toggle-info(data-toggle='collapse' v-bind:data-target='"#collapse-" + index' @click='hideOpen()') More info
 
 </template>
 
@@ -111,10 +110,10 @@ export default {
   },
 
   methods: {
-    // getUserInfo(user)
-    // TODO: userinfos in de store steken
-    //       van de meegegeven user de userinfo ophalen en weergeven.
-    // Hoe differentieren tussen verschillende userinfos en enkel de huidige weergeven?
+    hideOpen: function() {
+      $('.collapse').collapse('hide');
+    },
+
     toggleUserInfo: function(user) {
       var index = this.sortedUsers.indexOf(user);
       this.sortedUsers.forEach(u => {
@@ -169,8 +168,8 @@ export default {
   margin-top: 1rem;
 }
 
-tr {
-  width: 100%;
+.toggle-info {
+  margin-top: .3rem;
 }
 
 </style>
