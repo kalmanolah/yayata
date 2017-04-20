@@ -1,42 +1,53 @@
 <template lang="pug">
 div
-  h3 My contracts
-  p.subtitle Overview of all my contracts
-
-  div.col-md-12.card
-    h5.text-md-center.card-header 
-      | ACTIVE
-
-    div.col-md-6.card-block(v-for='ac in activeContracts')
-      div.card-title {{ ac.display_label }} <br>
-        small.text-muted {{ ac.companyName }} → {{ ac.customerName }}
-      div.card-text {{ac.description}}
-      div.card-footer
-        div.row
-          small.col-md-7 <strong>Total:</strong> {{ ac.total_duration }} hours
-          small.col-md-5 <strong>This month:</strong> {{ ac.monthly_duration }} hours
-        div.row
-          small.col-md-7 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
-          small.col-md-5 <strong>Users:</strong> {{ ac.total_users }}
-
-  hr
-
-  div.col-md-12.card
-    h5.text-md-center.card-header 
-      | INACTIVE
-
-    div.col-md-6.card-block(v-for='ic in inactiveContracts')
-      div.card-title {{ ic.display_label }} <br>
-        small.text-muted {{ ic.companyName }} → {{ ic.customerName }}
-      div.card-text {{ic.description}}
-      div.card-footer
-        div.row
-          small.col-md-7 <strong>Total:</strong> {{ ic.total_duration }} hours
-          small.col-md-5 <strong>This month:</strong> {{ ic.monthly_duration }} hours
-        div.row
-          small.col-md-7 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
-          small.col-md-5 <strong>Users:</strong> {{ ic.total_users }}
-    
+  .col-md-9
+    .row 
+      h3 Contracts
+      p.subtitle Overview of all contracts
+    .row
+      .col-md-8
+        .btn-group(role='group' aria-label='Button group with nested dropdown')
+          button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
+          .btn-group(role='group')
+            button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
+            .dropdown-menu(aria-labelledby='btnGroupDrop')
+              a.dropdown-item(v-for='name in customers' @click='setSortBy(name)') {{ name }}
+      .col-md-4
+        .input-group
+          span.input-group-addon Search
+          input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
+    .row.card-row
+      .col-md-6(v-for='(contract, index) in filteredContracts')
+        .card(v-bind:class='getRibbonStyleClass(contract)')
+          .card-header 
+            div.contract-name {{ contract.name }}
+              span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
+            small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+          .card-block
+            .card-text
+              .row
+                .col-md-3 <strong>Description:</strong> 
+                .col-md-9.text-md-right {{ contract.description }}
+              hr
+              .row
+                .col-md-3 <strong>Total:</strong>
+                .col-md-9.text-md-right {{ contract.total_duration }} hours
+              hr
+              .row
+                .col-md-3 <strong>This month:</strong>
+                .col-md-9.text-md-right {{ contract.monthly_duration }} hours
+              hr
+              .row
+                .col-md-3 <strong>Groups:</strong>
+                .col-md-9.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
+              hr
+              .row
+                .col-md-3 <strong>Users:</strong>
+                .col-md-9.text-md-right {{ contract.total_users }}
+  .col-md-3
+    .row
+      h3 Advanced Filter
+      p.subtitle more advanced filtering here   
 
 </template>
 
@@ -52,7 +63,14 @@ export default {
   components: {},
 
   data () {
-    return {}
+    return {
+      sortBy: 'all',
+      customerName: 'Customer',
+      query: '',
+
+      // Stores the unique custoner names
+      customers: []
+    }
   },
 
   created: function () {},
@@ -82,8 +100,15 @@ export default {
 
     //Gets the contracts from the store
     contracts: function() {
-      if(store.getters.contracts) 
+      if(store.getters.contracts) {
+        // Get each unique customerName
+        store.getters.contracts.forEach((contract) => {
+          if(this.customers.indexOf(contract.customerName) === -1){
+            this.customers.push(contract.customerName);
+          }
+        }); 
         return store.getters.contracts;
+      }
     },
 
     //Stores extra information about the contracts
@@ -107,6 +132,34 @@ export default {
       }
     },
 
+    // Filter by user input
+    filteredContracts: function() {
+       if(this.sortedContracts){
+        var query = this.query;
+        return this.sortedContracts.filter( contract => {
+          // Fields to filter on
+          return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+                || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+        });
+      }
+    },
+
+    // Sort by customerName
+    sortedContracts: function() {
+      if(this.sortBy !== 'all' && this.contracts){
+        var contracts = [];
+        this.contracts.forEach(contract => {
+          if(contract.customerName === this.sortBy){
+            contracts.push(contract)
+          }
+        });
+        return this.activeSort(contracts);
+      } else {
+        if(this.contracts)
+          return this.activeSort(this.contracts);
+      }
+    },
+
     //Gets the contracts currently still active
     activeContracts: function() {
       if(this.contracts && this.contract_detail)
@@ -127,9 +180,62 @@ export default {
 
   },
 
-  methods: {}
+  methods: {
+    setSortBy: function(value) {
+      if(value === 'all') {
+        this.sortBy = 'all';
+        this.customerName = 'Customer';
+      } else {
+        this.sortBy = this.contracts.find(x => x.customerName == value).customerName;
+        this.customerName = this.contracts.find(x => x.customerName == value).customerName;
+        console.log(this.sortBy)    
+        console.log(this.groupLabel)    
+      }
+    },
+
+    activeSort: function(contracts) {
+      if(contracts){
+        return contracts.sort(function(a, b) {
+          a = a.active;
+          b = b.active;
+
+          return a > b ? -1 : (a < b ? 1 : 0);
+        });
+      }
+    },
+
+    getRibbonStyleClass: function(contract) {
+      return contract.active ? 'card-top-green' : 'card-top-red';                           
+    },
+
+    getTagStyleClass: function(contract) {
+      return contract.active ? 'tag-success' : 'tag-danger';
+    }
+  }
 }
 </script>
 
 <style>
+.dropdown-item:hover {
+  cursor: pointer;
+}
+
+.card-row {
+  margin-top: 1rem;
+   display: flex;
+   flex-wrap: wrap;
+}
+
+.card-row > div[class*='col-'] {
+  display: flex;
+
+}
+
+.card {
+  width: 100%;
+}
+
+.contract-name {
+  font-weight: bold;
+}
 </style>
