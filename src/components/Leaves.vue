@@ -2,17 +2,36 @@
 div(class='calendar')
   div.row
     div.col-md-6
-      h3 My Leaves
-      p Here, have an overview of all your leaves. Whatever
+
+      //- Upcoming leave
+      h3 Upcoming leave
+      p
+        div(v-if='nearestLeave')
+          div.list-group-item
+            p
+              | {{ nearestLeave.description }}
+            hr
+            div
+              | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+              | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+        div(v-else)
+          p.alert.alert-info No leaves coming up. Are you sure you don't need a break from all that hard work?
+
+
+      hr
+
+      //- All leaves
+      h3 All Leaves
+      p An overview of all your leaves
         div
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               div.card-header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
                 div.row
-                  div.col-md-10
+                  div.col-sm-9
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
                       | {{ leave.description }}
-                  div.col-md-2 
+                  div.col-sm-3
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                       | {{ leave.status }}
                     
@@ -29,16 +48,16 @@ div(class='calendar')
 
       //- Pending leaves
       h3 Pending leaves
-        span Still awaiting approval by Johan
+      p Still awaiting approval by Johan
       div
         #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
           .card( v-bind:class='getRibbonStyleClass(leave)')
             div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
               div.row
-                div.col-md-10
+                div.col-sm-9
                   a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
                     | {{ leave.description }}
-                div.col-md-2 
+                div.col-sm-3 
                   span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                     | {{ leave.status }}
                   
@@ -119,29 +138,21 @@ export default {
       });
     },
 
-    // sortedLeaves: function() {
-    //   return this.leaves.sort(function(a, b) {
-    //     a = a.leave_start.toDate();
-    //     b = b.leave_start.toDate();
+    //Filters for upcoming leaves, sorts them & returns the first result
+    nearestLeave: function(val) {
+      var upcoming = this.acceptedLeaves.filter(x => {
+        return moment().isSameOrBefore(x.leave_end)
+      });
 
-    //     return a > b ? -1 : (a < b ? 1 : 0);
-    //   });
-    // },
-
-    nearestLeave: function() {
-      //Start nearest to today
-      //Start < today < end
+      return this.sortLeaves(upcoming).reverse()[0];
     },
   },
 
-  filter: {
-
-
-  },
+  filter: { },
 
   methods: {
 
-    //Sorts the leaves from future to past
+    //Sorts the leaves from furthest in the future to furthest  in the past
     sortLeaves: function(val) {
       return val.sort(function(a, b) {
         a = a.leave_start.toDate();
