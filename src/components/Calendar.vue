@@ -42,11 +42,20 @@ div(class='calendar')
       v-bind:class='[{ \
         "calendar-day-weekend": isWeekendDay(n), \
         "calendar-day-current": isCurrentDay(n), \
-      }, determineLeave(n)]'
+      }, determineLeaveStyle(n)]'
     )
       router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
         div(class='card card-block')
-          h4 {{ n }}
+          p {{ n }}
+            b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top')
+              i.fa.fa-plane
+              div(slot='content')
+                div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
+                div <strong>From: </strong> {{ getLeaveRange(n).leave_start | moment('DD MMMM  HH:mm') }}
+                div <strong>Until: </strong> {{ getLeaveRange(n).leave_end | moment('DD MMMM  HH:mm') }}
+          small.pull-right.tag(v-bind:class='getDailyQuota(n)')
+            |  {{ getPerformedHours(n) | roundHoursFilter }} /
+            | {{ getRequiredHours(n) | roundHoursFilter}}
 
 </template>
 
@@ -65,37 +74,112 @@ export default {
 
   watch: {
     '$route' (to, from) {
-      this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1)
+      this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1);
+      this.getPerformances();
+      this.getLeaves();
     }
   },
 
   created: function () {
     
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_leaves/',
-    }).then((response) => {
-
-      response.data.results.forEach(lv => {
-        lv.leavedate_set.forEach(lvd => {
-          lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
-        });
-      });
-
-      this.leaves = response.data.results;
-    }, () => {
-      this.loading = false
-    });
+    //Get most recent data
+    this.getPerformances();
+    this.getLeaves();
 
   },
 
   methods: {
 
+    //Return style based on quota
+    getDailyQuota: function(day) {
+      var quota = this.getRequiredHours(day) - this.getPerformedHours(day);
+
+      return quota <= 0 ? 'tag-success' : 'tag-danger';
+    },
+
+    //Get all leaves for this month
+    getLeaves: function() {
+      //Make param for month's range
+      var startOfMonth = moment(this.selectedMonth).startOf('month');
+      var endOfMonth = moment(this.selectedMonth).endOf('month');
+      var range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_leaves/',
+        params: {
+          status: store.getters.leave_statuses[2],
+          leavedate__range: range
+        }
+      }).then((response) => {
+
+        response.data.results.forEach(lv => {
+          lv.leavedate_set.forEach(lvd => {
+            lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
+            lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+          });
+        
+          lv['leave_start'] = lv.leavedate_set[0].starts_at;
+          lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+
+          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).name;
+
+        });
+
+        this.leaves = response.data.results;
+      }, () => {
+        this.loading = false;
+      });
+    },
+
+    //Get all performances for this month
+    getPerformances: function() {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_performances/activity/',
+        params: {
+          timesheet__month: this.selectedMonth.getMonth() + 1,
+          timesheet__year: this.selectedMonth.getFullYear()
+        }
+      }).then((response) => {
+        this.performances = response.data.results;
+      }, () => {
+        this.loading = false;
+      });
+    },
+
+    //Get hours required per day
+    getRequiredHours: function(day) {
+      var total = 0;
+
+      if(this.workschedule) {
+        var date = moment(this.selectedMonth).date(day);
+
+        this.workschedule.forEach(x => {
+          total += parseFloat(x[date.format('dddd').toLowerCase()]);
+        });        
+      }
+
+      return total;
+    },
+
+    //Get hours performed per day
+    getPerformedHours: function(day) {
+      var total = 0;
+
+      if(this.performances) {
+        this.performances.forEach(x => {
+          if(x.day === day)
+            total += parseFloat(x.duration);
+        });
+      }
+
+      return total;
+    },
+
     //Check whether user is on leave on that particular day
     isOnLeave: function(day) {
       var today = moment(this.selectedMonth).date(day);
 
-      return this.acceptedLeaves.some(x => {
+      return this.leaves.some(x => {
         var start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
         var end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
         
@@ -103,8 +187,16 @@ export default {
       });
     },
 
+    getLeaveRange: function(day) {
+      var today = moment(this.selectedMonth).date(day);
+      return this.leaves.find(x => {
+        return today.isSameOrAfter(x.leave_start) 
+          && today.isSameOrBefore(x.leave_end);
+      });
+    },
+
     //Return style according to leave/no-leave
-    determineLeave: function(day) {
+    determineLeaveStyle: function(day) {
       if(this.isOnLeave(day))
         return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' : 
                 this.isWeekendDay(day) ? 'calendar-day-weekend-on-leave' :
@@ -184,6 +276,7 @@ export default {
 
     return {
       leaves: [],
+      performances: [],
 
       weekDays: [
         'Monday',
@@ -215,25 +308,14 @@ export default {
 
   computed: {
 
-    acceptedLeaves: function() {
-      return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[2])
-          return x;
-      });
+    leaveTypes: function() {
+      if(store.getters.leave_types)
+        return store.getters.leave_types;
     },
 
-    pendingLeaves: function() {
-      return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0])
-          return x;
-      });
-    },
-
-    rejectedLeaves: function() {
-      return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[1])
-          return x;
-      });
+    workschedule: function() {
+      if(store.getters.work_schedule)
+        return store.getters.work_schedule;
     },
 
     dayOffset: (vm) => {
@@ -252,6 +334,13 @@ export default {
 
   },
 
+  filters: {
+
+    roundHoursFilter: function(val) {
+      return Math.round(val * 2) / 2;
+    },
+  },
+
 }
 </script>
 
@@ -266,53 +355,23 @@ export default {
 }
 
 .calendar-day-dummy {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .calendar-day-weekend {
   .card {
-    background: rgba(255, 0, 0, 0.2);
+    background: rgba(150, 150, 150, 0.1);
   }
 }
 
 .calendar-day-current {
   .card {
-    background: rgba(0, 255, 0, 0.2);
-  }
-}
-
-.calendar-day-on-leave {
-  .card {
     background: repeating-linear-gradient(
       45deg,
-      rgba(96, 109, 188, 0.3),
-      rgba(96, 109, 188, 0.3) 10px,
-      rgba(70, 82, 152, 0.1) 10px,
-      rgba(70, 82, 152, 0.1) 20px
-    );
-  }
-}
-
-.calendar-day-current-on-leave {
-  .card {
-    background: repeating-linear-gradient(
-      45deg,
-      rgba(0, 255, 0, 0.3),
-      rgba(0, 255, 0, 0.3) 10px,
-      rgba(0, 255, 0, 0.1) 10px,
-      rgba(0, 255, 0, 0.1) 20px
-    );
-  }
-}
-
-.calendar-day-weekend-on-leave {
-  .card {
-    background: repeating-linear-gradient(
-      45deg,
-      rgba(255, 0, 0, 0.3),
-      rgba(255, 0, 0, 0.3) 10px,
-      rgba(255, 0, 0, 0.1) 10px,
-      rgba(255, 0, 0, 0.1) 20px
+      rgba(0, 215, 0, 0.25),
+      rgba(0, 215, 0, 0.25) 10px,
+      rgba(0, 215, 0, 0.1) 10px,
+      rgba(0, 215, 0, 0.1) 20px
     );
   }
 }
