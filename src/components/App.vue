@@ -29,6 +29,10 @@ div(
             router-link(:to='{ name: "companies" }')
               h3 Companies
               p.small Overview of clients
+            router-link(:to='{ name: "calendar_month_redirect" }')
+              h3 Calendar
+              p.small Get monthly overview
+
     div.col-md-10.offset-sm-3.offset-md-2
       div.row
         navbar
