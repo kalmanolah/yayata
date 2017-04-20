@@ -7,16 +7,15 @@ div(class='calendar')
       h3 Upcoming leave
       p
         div(v-if='nearestLeave')
-          div.list-group-item
-            p
-              | {{ nearestLeave.description }}
+          div.list-group-item.text-md-center
+            p <strong> {{ nearestLeave.leave_type }} </strong>
+            p {{ nearestLeave.description }}
             hr
             div
               | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
               | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
         div(v-else)
           p.alert.alert-info No leaves coming up. Are you sure you don't need a break from all that hard work?
-
 
       hr
 
@@ -30,7 +29,7 @@ div(class='calendar')
                 div.row
                   div.col-sm-9
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
-                      | {{ leave.description }}
+                      | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                   div.col-sm-3
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                       | {{ leave.status }}
@@ -48,7 +47,7 @@ div(class='calendar')
 
       //- Pending leaves
       h3 Pending leaves
-      p Still awaiting approval by Johan
+      p Still awaiting approval
       div
         #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
           .card( v-bind:class='getRibbonStyleClass(leave)')
@@ -56,7 +55,7 @@ div(class='calendar')
               div.row
                 div.col-sm-9
                   a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
-                    | {{ leave.description }}
+                    | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                 div.col-sm-3 
                   span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                     | {{ leave.status }}
@@ -82,7 +81,7 @@ var data = {
 }
 
 export default {
-  name: 'my_leaves',
+  name: 'leaves',
 
   data () {
     return data;
@@ -92,29 +91,19 @@ export default {
     cmpHolidays: Holidays,
   },
 
-  created: () => {
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_leaves/',
-    }).then((response) => {
+  created: function () {
+    
+    //Get most recent data
+    this.getLeaves();
 
-      //Converts the start / end datetime from strings to actual JS datetimes
-      response.data.results.forEach(lv => {
-        lv.leavedate_set.forEach(ld => {
-          ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
-          ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
-        });
-        
-        lv['leave_start'] = lv.leavedate_set[0].starts_at;
-        lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
-      });
-
-      data.leaves = response.data.results
-    }, () => {
-      this.loading = false
-    });
   },
 
   computed: {
+
+    leaveTypes: function() {
+      if(store.getters.leave_types)
+        return store.getters.leave_types;
+    },
 
     acceptedLeaves: function() {
       return this.leaves.filter(x => {
@@ -151,6 +140,31 @@ export default {
   filter: { },
 
   methods: {
+
+    getLeaves: function() {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_leaves/',
+      }).then((response) => {
+
+        //Converts the start / end datetime from strings to actual JS datetimes
+        response.data.results.forEach(lv => {
+          lv.leavedate_set.forEach(ld => {
+            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+          });
+          
+          lv['leave_start'] = lv.leavedate_set[0].starts_at;
+          lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+
+
+          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).name;
+        });
+
+        data.leaves = response.data.results
+      }, () => {
+        this.loading = false
+      });
+    },
 
     //Sorts the leaves from furthest in the future to furthest  in the past
     sortLeaves: function(val) {
