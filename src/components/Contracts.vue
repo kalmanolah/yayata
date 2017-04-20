@@ -43,7 +43,8 @@ div
               hr
               .row
                 .col-md-3 <strong>Users:</strong>
-                .col-md-9.text-md-right {{ contract.total_users }}
+                .col-md-9.text-md-right 
+                  div(v-for='user in contract.contract_users') {{ user.display_label }}
   .col-md-3
     .row
       h3 Advanced Filter
@@ -126,6 +127,14 @@ export default {
 
             cd.monthly_duration = totalHours;
             cd.total_users = store.getters.contract_users_count;
+            
+            var contract_users = [];
+            store.getters.contract_users.forEach((cu) =>{
+              if(cu.contract === cd.id){
+                contract_users.push(cu);
+              }
+            });
+            cd.contract_users = contract_users;
           }
 
           return contract_detail;
