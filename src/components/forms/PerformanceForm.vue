@@ -23,16 +23,6 @@ export default {
         return store.getters.timesheets;
     },
 
-    contracts: function() {
-      if(store.getters.contracts)
-        return store.getters.contracts;
-    },
-
-    leave_types: function() {
-      if(store.getters.leave_types)
-        return store.getters.leave_types;
-    }
-
   },
 
   watch: {},
@@ -40,7 +30,6 @@ export default {
   methods: {
 
     submitForm: function() {
-      var model = this.model;
       var timesheet = this.timesheets.find(x => 
         x.month == (this.today.month() + 1)
         &&
@@ -55,10 +44,10 @@ export default {
           body: {
             timesheet: timesheet.id,
             day: this.today.date(),
-            duration: model.duration,
-            description: model.description,
-            performance_type: model.performance_type,
-            contract: model.project,
+            duration: this.model.duration,
+            description: this.model.description,
+            performance_type: this.model.performance_type,
+            contract: this.model.contract,
           },
           emulateJSON: true,
         }
@@ -66,7 +55,6 @@ export default {
         if(response.status == 201)
           this.$emit('success', response);
       });
-      
     },
 
   },
@@ -77,7 +65,7 @@ export default {
 
       //VUE FORM GENERATOR FIELDS
       model: {
-        project: null,
+        contract: null,
         duration: 0,
         performance_type: null,
         description: "",
@@ -86,19 +74,23 @@ export default {
       schema: {
         fields: [
           {
-            //PROJECT
+            //CONTRACT
             type: "select",
-            model: "project",
+            model: "contract",
+            required: true,
 
             values: function() {
               if(store.getters.contracts) {
-                return store.getters.contracts.map(x => {
+                var activeContracts = store.getters.contracts.filter(x => { return x.active === true });
+
+                return activeContracts.map(x => {
                   return { id: x.id, name: x.customerName + ':' + x.name }
                 });                
               }
             },
 
-            styleClasses: 'col-md-8'
+            styleClasses: 'col-md-8',
+            validator: VueFormGenerator.validators.required
           },
           {
             //DURATION
@@ -116,20 +108,30 @@ export default {
             //DESCRIPTION
             type: "textArea",
             model: "description",
+            required: true,
 
-            styleClasses: 'col-md-12'
+            styleClasses: 'col-md-12',
+            validator: VueFormGenerator.validators.string
           },
           {
             //PERFORMANCE_TYPE
             type: "select",
             model: "performance_type",
             required: true,
-            values: function() {
-              if(store.getters.performance_types)
-                return store.getters.performance_types;
+            values: function(model) {
+              if(store.getters.performance_types && store.getters.contracts && model.contract) {
+                var cont = store.getters.contracts.find(c => {
+                  return c.id === model.contract
+                });
+
+                return store.getters.performance_types.filter(pt => {
+                  return cont.performance_types.includes(pt.id);
+                });
+              }
             },
 
             styleClasses: 'col-md-12',
+            validator: VueFormGenerator.validators.required
           }
         ]
       },
