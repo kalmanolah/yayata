@@ -14,24 +14,48 @@ import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
 
+var upcoming_leaves;
+
 export default {
+
+  created: function() {
+    this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
+
+    this.model.start_date = moment();
+    this.model.start_full_day = true;
+    this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
+    this.model.end_full_day = true;
+    this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
+    this.model.attachments = null;
+
+    store.dispatch(
+      types.NINETOFIVER_API_REQUEST, {
+        path: '/my_leaves/',
+        params: {
+          status: store.getters.leave_statuses[2],
+          leavedate__gte: moment().format('YYYY-MM-DDTHH:mm:ss')
+        }
+      }).then((response) => {
+        var leavedate_arr = [];
+
+        // For each leave object in the response, push the date for each leavedate object into a global array.
+        response.data.results.forEach(lv => {
+          lv.leavedate_set.forEach(ld => {
+            var start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+
+            leavedate_arr.push(start.toDate());
+          });
+        });
+
+        upcoming_leaves = leavedate_arr;
+      });
+
+  },
 
   data: () => {
     return {
       name: 'LeaveForm',
-
-      model: {
-        start_date: moment(),
-        end_date: moment().add(1, 'days'),
-        start_hour: moment('09:00', 'HH:mm').format('HH:mm'),
-        end_hour: moment('15:30', 'HH:mm').format('HH:mm'),
-        start_full_day: true,
-        end_full_day: true,
-        description: "",
-        leave_type: null,
-        attachment: "",
-      },
-
+      
       schema: {
         fields: [
           {
@@ -41,6 +65,8 @@ export default {
             label: "From",
             featured: true,
             required: true,
+            placeholder: 'Start of leave',
+            validator: VueFormGenerator.validators.date,
 
             pikadayOptions: {
               minDate: moment().toDate(),
@@ -49,6 +75,12 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+
+              disableDayFn: val => {
+                return upcoming_leaves.find(x => {
+                  return x.setHours(0,0,0,0) === val.setHours(0,0,0,0)
+                });
+              }
             },
 
             styleClasses: ['col-md-6', 'clearfix']
@@ -68,7 +100,7 @@ export default {
             model: "start_hour",
             label: "Time",
             required: false,
-            step: 60*5,         //Jump by 5 minutes
+            step: 60 * 5,         //Jump by 5 minutes
 
             styleClasses: 'col-md-4',
 
@@ -84,6 +116,7 @@ export default {
             label: "To",
             featured: true,
             required: true,
+            placeholder: 'End of leave',
             validator: VueFormGenerator.validators.date,
 
             pikadayOptions: {
@@ -93,6 +126,12 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+
+              disableDayFn: val => {
+                return upcoming_leaves.find(x => {
+                  return x.getTime() === val.getTime()
+                });
+              }
             },
 
             styleClasses: ['col-md-6', 'clearfix', ],
@@ -117,7 +156,7 @@ export default {
             model: "end_hour",
             label: "Time",
             required: false,
-            step: 60*5,         //Jump by 5 minutes,
+            step: 60 * 5,         //Jump by 5 minutes,
 
             styleClasses: 'col-md-4',
 
@@ -154,7 +193,7 @@ export default {
             //ATTACHMENT
             type: "input",
             inputType: "file",
-            model: "attachment",
+            model: "attachments",
             label: "Attachment",
             files: true,
             multiple: true,
@@ -174,11 +213,12 @@ export default {
                 s_date.hours(s_time.hours()).minutes(s_time.minutes());
 
               var e_time = moment(model.end_hour, "HH:mm");
-              var e_date = moment(model.end_date).startOf('date');
+              var e_date = moment(model.end_date).endOf('date');
 
               if(!model.end_full_day)
                 e_date.hours(e_time.hours()).minutes(e_time.minutes());
 
+              //Make leave object
               store.dispatch(
                 types.NINETOFIVER_API_REQUEST, 
                 { 
@@ -188,13 +228,13 @@ export default {
                     leave_type: model.leave_type,
                     status: store.getters.leave_statuses[3],      //Get 'DRAFT'
                     description: model.description,
-                    attachments: model.attachment,
                   },
                   emulateJSON: true,
                 }
               ).then((lvResponse) => {
                 console.log(lvResponse);
 
+                //Make leavedates and bind them to the leave
                 store.dispatch(
                   types.NINETOFIVER_API_REQUEST,
                   {
@@ -209,6 +249,9 @@ export default {
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
+                  console.log( lvdResponse );
+
+                  //Update the leave object's status
                   store.dispatch(
                     types.NINETOFIVER_API_REQUEST, 
                     {
@@ -224,6 +267,48 @@ export default {
                     //INSERT CONFIRMATION
                   });
                 });
+
+                //If attachments were added to the leaverequest
+                if(model.attachments) {
+                  var attachIDs = [];
+
+                  for(var i = 0; i < model.attachments.length; i++) {
+                    var formData = new FormData();
+                    formData.append('label', model.attachments[i].name)
+                    formData.append('file', model.attachments[i]);
+
+                    //Make attachment
+                    store.dispatch(
+                      types.NINETOFIVER_API_REQUEST,
+                      {
+                        path: '/my_attachments/',
+                        method: 'POST',
+                        body: formData
+                      }
+                    ).then((attResponse) => {
+                      console.log(attResponse);
+
+                      attachIDs.push(attResponse.data.id);
+
+                      if(attachIDs.length === model.attachments.length) {
+                        //Make patchcall to my_leaves to link attachment_id
+                        store.dispatch(
+                          types.NINETOFIVER_API_REQUEST,
+                          {
+                            path: '/my_leaves/' + lvResponse.body.id + '/',
+                            method: 'PATCH',
+                            body: {
+                              attachments: attachIDs 
+                            }
+                          }
+                        ).then((attUpdateResponse) => {
+                          console.log(attUpdateResponse);
+                        });
+                      }
+                      
+                    });
+                  }
+                }
               }, () => {
                 this.loading = false
               });

@@ -13,12 +13,12 @@ div
             | {{ today | moment('MMMM YYYY') }}
         table.table
           tbody
-            tr(v-for="(p, index) in contracts" v-bind:key="p.id")              
-              td {{ p.customerName }}: {{ p.name }}
-              td.text-md-right {{ p.total_duration }} hours ({{p.total_duration | hoursToDaysFilter }} days)
+            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+              td {{ c.customerName }}: {{ c.name }}
+              td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalContractDuration | roundHoursFilter }} hours ({{totalContractDuration | hoursToDaysFilter}} days)</strong>
+              td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>36 hours (4,5 days)</strong>
@@ -37,6 +37,7 @@ div
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length == 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
+              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
   .row
     .col-md-5.offset-md-1
       LeaveForm
@@ -46,6 +47,7 @@ div
 <script>
 import { mapState } from 'vuex';
 import LeaveForm from './forms/LeaveForm.vue';
+import * as types from '../store/mutation-types'
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
@@ -67,7 +69,18 @@ export default {
   },
 
   data () {
-    return data;
+    return {
+      today: moment(),
+      days: {
+        monday: 0,
+        tuesday: 0,
+        wednesday: 0,
+        thursday: 0,
+        friday: 0,
+        saturday: 0,
+        sunday: 0
+      }
+    }
   },
 
   created: function () {
@@ -76,16 +89,54 @@ export default {
     this.selectedDay = moment();
     this.getLeaves();
   },
+  created: function () {
 
-  computed: {  
+    //Make days-object containing amount of -days in current month
+    var dayOfMonth = moment().startOf('month');
+    var endOfMonth = moment().endOf('month');
 
-    //Calculates total hours of currently active projects
-    totalContractDuration: function() {
+    while(dayOfMonth <= endOfMonth) {
+      var weekday = dayOfMonth.format('dddd').toLowerCase();
+      this.days[weekday]++;
+      dayOfMonth.add(1, 'days');
+    }
+
+
+  },
+
+  computed: {
+
+    workschedule: function() {
+      if(store.getters.work_schedule)
+        return store.getters.work_schedule;
+    },
+    
+    //Calculates amount of hours that should be worked according to the workschedule
+    totalHoursRequired: function() {
       var total = 0;
 
-      if(this.contracts)
+      //Loop over each entry in the schedule array
+      //Check for each property in the entry if it appears in the days var
+      //Multiply total hours with times that day appears in this month
+      if(this.workschedule) {
+        this.workschedule.forEach(wschedule => {
+          for(var ws in wschedule)
+            if(this.days[ws])
+              total += parseFloat(wschedule[ws]) * this.days[ws];
+        });
+      }
+
+
+      return total;
+    },
+
+    //Calculates total hours of currently active projects
+    totalHoursPerformed: function() {
+      var total = 0;
+
+      if(this.contracts)  
         this.contracts.forEach(x => { 
-          total += x.total_duration 
+          total += x.monthly_duration
         });
 
       return total;
@@ -108,9 +159,29 @@ export default {
         return store.getters.open_timesheet_count;
     },
 
+    monthlyActivityPerformances: function() {
+      if(store.getters.monthly_activity_performances) 
+        return store.getters.monthly_activity_performances;
+    },
+
     contracts: function() {
-      if(store.getters.contracts)
-        return store.getters.contracts;
+      if(store.getters.contracts && store.getters.monthly_activity_performances) {
+        var active_contrs = store.getters.contracts.filter(x => x.active === true);
+
+        //For each entry, calculate the total performances duration
+        active_contrs.forEach(c => {
+          var total = 0;
+
+          this.monthlyActivityPerformances.forEach(x => {
+            if(x.contract === c.id)
+              total += parseFloat(x.duration);
+          });
+
+          c.monthly_duration = total;
+        });
+
+        return active_contrs;
+      }
     },
 
     users: function() {
@@ -206,6 +277,12 @@ export default {
         });         
       });
     }
+    //Subtracts hours worked from hours supposed to work. Returns 0 if negative result
+    getHoursToFill() {
+      var remaining = this.totalHoursRequired - this.totalHoursPerformed;
+      return remaining > 0 ? remaining : 0;
+    }
+
   },
 
   watch: { }

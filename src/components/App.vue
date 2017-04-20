@@ -14,19 +14,19 @@ div(
       div.row
         div.col-md-10.offset-md-1.col-sm-8
           nav
-            router-link(:to='{ name: "my_timesheets" }')
+            router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
               p.small I said hey, what's going on
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small It's a calendar, what more can I say
-            router-link(:to='{ name: "my_projects" }')
-              h3 Projects
+            router-link(:to='{ name: "contracts" }')
+              h3 Contracts
               p.small What am I working on
-            router-link(:to='{ name: "my_leaves" }')
+            router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small Sickness / Vacation
-            router-link(:to='{ name: "my_colleagues" }')
+            router-link(:to='{ name: "colleagues" }')
               h3 Colleagues
               p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')
@@ -70,8 +70,6 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
     if (!store.getters.timesheets)
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
-    if (!store.getters.contract_durations)
-      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_DURATIONS);
     if (!store.getters.contracts)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
     if(!store.getters.contract_users)
