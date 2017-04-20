@@ -445,7 +445,7 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
 
-    options.path = '/my_contracts/';
+    options.path = '/contracts/';
 
     return new Promise((resolve, reject) => {
       store.dispatch(
