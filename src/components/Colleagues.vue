@@ -1,9 +1,9 @@
 <template lang="pug">
 div
-  .col-md-10
+  .col-md-9
     .row
       h3 Colleagues
-
+      p.subtitle Overview of all colleagues
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
@@ -13,12 +13,10 @@ div
             .dropdown-menu(aria-labelledby='btnGroupDrop')
               //- button.btn.btn-secondary(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}          
               a.dropdown-item(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}
-      .col-md-3
+      .col-md-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
-        
-
     .row
       .card-columns
         #accordion(v-for='(user, index) in filteredUsers' role='tablist' aria-multiselectable='true') 
@@ -45,7 +43,7 @@ div
                     .col-md-3 <strong>Country: </strong>
                     .col-md-9.text-md-right {{ user.country }}    
               button.btn.btn-sm.pull-right.toggle-info(data-toggle='collapse' v-bind:data-target='"#collapse-" + index' @click='hideOpen()') More info
-  .col-md-2
+  .col-md-3
     h3 Advanced filter
 
 </template>
@@ -164,6 +162,10 @@ export default {
 </script>
 
 <style>
+.dropdown-item:hover {
+  cursor: pointer;
+}
+
 .tag {
   margin-left: 0.1rem;
   margin-right: 0.1rem;
