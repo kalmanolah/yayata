@@ -21,7 +21,7 @@ div
               td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
             tr
               td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>36 hours (4,5 days)</strong>
+              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
     .col-md-5
       .card
         h4.card-title.text-md-center Absent colleagues
@@ -35,9 +35,8 @@ div
               tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
                 td {{ leave.user.first_name }} {{ leave.user.last_name }}
                 td.text-md-right {{ leave.leave_type }}
-              tr(v-if='sortedLeaves.length == 0')
+              tr(v-if='sortedLeaves.length === 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
-              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
   .row
     .col-md-5.offset-md-1
       LeaveForm
@@ -47,19 +46,10 @@ div
 <script>
 import { mapState } from 'vuex';
 import LeaveForm from './forms/LeaveForm.vue';
-import * as types from '../store/mutation-types'
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
 
-var data = {
-  today: new Date(),
-  selectedDay: new Date(),
-  earliestLeave: new Date(),
-  latestLeave: new Date(),
-  leaves: [],
-  leavesSelectedDay: []
-}
 
 export default {
   name: 'dashboard',
@@ -79,7 +69,13 @@ export default {
         friday: 0,
         saturday: 0,
         sunday: 0
-      }
+      },
+      today: new Date(),
+      selectedDay: new Date(),
+      earliestLeave: new Date(),
+      latestLeave: new Date(),
+      leaves: [],
+      leavesSelectedDay: []
     }
   },
 
@@ -88,8 +84,6 @@ export default {
     this.latestLeave = moment();
     this.selectedDay = moment();
     this.getLeaves();
-  },
-  created: function () {
 
     //Make days-object containing amount of -days in current month
     var dayOfMonth = moment().startOf('month');
@@ -255,14 +249,15 @@ export default {
                   + ','
                   + this.latestLeave.add(7, 'days').format('YYYY-MM-DDTHH:mm:ss')
       this.tempDate = moment(this.selectedDay);
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/leaves/',
-      params: {
-        status: 'APPROVED',
-        // Between (today - 7 days) and (today + 7 days).
-        leavedate__range: range
+      var options = {
+        path: '/leaves/',
+        params: {
+          status: 'APPROVED',
+          // Between (today - 7 days) and (today + 7 days).
+          leavedate__range: range
+        }
       }
-      }).then((response) => {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
         this.leaves = [];
         response.body.results.forEach((leave) => {
           this.leaves.push(leave);
@@ -276,7 +271,7 @@ export default {
           this.filterLeaves();
         });         
       });
-    }
+    },
     //Subtracts hours worked from hours supposed to work. Returns 0 if negative result
     getHoursToFill() {
       var remaining = this.totalHoursRequired - this.totalHoursPerformed;
