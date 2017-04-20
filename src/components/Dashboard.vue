@@ -69,6 +69,9 @@ export default {
       this.days[weekday]++;
       dayOfMonth.add(1, 'days');
     }
+    
+    //Reload to get most recent data
+    store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
 
 
   },
@@ -116,7 +119,7 @@ export default {
         return store.getters.open_timesheet_count;
     },
 
-    monthlyActivityPerformances: function() {
+    monthlyActivityPerformances: function() {      
       if(store.getters.monthly_activity_performances) 
         return store.getters.monthly_activity_performances;
     },
