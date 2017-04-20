@@ -28,6 +28,7 @@ const state = {
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
+  group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   week_formatting: {
     'workweek': {
       'start': 1,
@@ -143,6 +144,7 @@ const getters = {
   //Predefined
   leave_statuses: state => state.leave_statuses,
   week_formatting: state => state.week_formatting,
+  group_names: state => state.group_names,
 
   //Calculated
   open_timesheet_count: state => { 
