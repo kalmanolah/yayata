@@ -146,26 +146,26 @@ export default {
 
     // Sort by customerName
     sortedContracts: function() {
-      if(this.sortBy !== 'all' && this.contracts){
+      if(this.sortBy !== 'all' && this.fullContracts){
         var contracts = [];
-        this.contracts.forEach(contract => {
+        this.fullContracts.forEach(contract => {
           if(contract.customerName === this.sortBy){
             contracts.push(contract)
           }
         });
         return this.activeSort(contracts);
       } else {
-        if(this.contracts)
-          return this.activeSort(this.contracts);
+        if(this.fullContracts)
+          return this.activeSort(this.fullContracts);
       }
     },
 
     //Gets the contracts currently still active
-    activeContracts: function() {
+    fullContracts: function() {
       if(this.contracts && this.contract_detail)
         //First filter for active contracts
         //Then find the corresponding contract_detail
-        return this.contracts.filter(x => x.active === true).map(c => {
+        return this.contracts.map(c => {
             return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
           });
     },
