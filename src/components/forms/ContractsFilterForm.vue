@@ -1,0 +1,267 @@
+<template lang="pug">
+div
+  .card
+    .card-block
+      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+      
+</template>
+<script>
+import VueFormGenerator from 'vue-form-generator';
+import * as types from '../../store/mutation-types';
+import store from '../../store';
+
+export default {
+    name: 'ContractsFilterForm',
+    data () {
+        return {
+            model: {
+                company__country: '',
+                contractuser__user__last_name__icontains: '',
+                customer__vat_identification_number: '',
+                label__icontains: '',
+                customer__name__icontains: '',
+                description__icontains: '',
+                contractuser__user__groups__icontains: '',
+                active: '',
+                performance_types__label__icontains: '',
+                customer__internal: '',
+                contractuser__user__first_name__icontains: '',
+                company__internal: '',
+                company__name__icontains: '',
+                contractuser__user__username__icontains: '',
+                company__vat_identification_number: '',
+                contract_groups__label__icontains: ''
+            },
+
+            schema: {
+                fields: [
+                    // CONTRACTUSER
+                    {
+                      // contractuser__user__first_name__icontains
+                      type: "input",
+                      inputType: "text",
+                      label: "Contractuser",
+                      model: "contractuser__user__first_name__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "First name",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // contractuser__user__last_name_icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Contractuser last name",
+                      model: "contractuser__user__last_name_icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Last name",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // contractuser__user__groups__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "User groups contract user",
+                      model: "contractuser__user__groups__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Usergroup",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // contractuser__user__username__icontainsany__internal
+                      type: "input",
+                      inputType: "text",
+                      // label: "Contractuser username internal",
+                      model: "contractuser__user__username__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Username",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    // CUSTOMER
+                    {
+                      // customer__vat_identification_number
+                      type: "input",
+                      inputType: "text",
+                      label: "Customer",
+                      model: "customer__vat_identification_number",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "VAT indentification number of the customer",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // customer__name__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Customer name",
+                      model: "customer__name__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Customer name",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // customer__internal
+                      type: "input",
+                      inputType: "text",
+                      // label: "Customer internal",
+                      model: "customer__internal",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    // COMPANY
+                    {
+                      // Company__country
+                      type: "input",
+                      inputType: "text",
+                      label: "Company",
+                      model: "company__country",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Country of the contract company",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // company__internal
+                      type: "input",
+                      inputType: "text",
+                      // label: "Company internal",
+                      model: "company__internal",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // company__name__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Company name",
+                      model: "company__name__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // company__vat_identification_number
+                      type: "input",
+                      inputType: "text",
+                      // label: "Company VAT",
+                      model: "company__vat_identification_number",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    // CONTRACT
+                    {
+                      // contract_groups__label__icontains
+                      type: "input",
+                      inputType: "text",
+                      label: "Contract",
+                      model: "contract_groups__label__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // label__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Contract Label",
+                      model: "label__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Contract label",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // description__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Description",
+                      model: "description__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Contract description",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // active
+                      type: "input",
+                      inputType: "text",
+                      // label: "Active",
+                      model: "active",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Active contract or not",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      // performance_types__label__icontains
+                      type: "input",
+                      inputType: "text",
+                      // label: "Performance type",
+                      model: "performance_types__label__icontains",
+                      readonly: false,
+                      required: false,
+                      disabled: false,
+                      placeholder: "Performance type",
+                      validator: VueFormGenerator.validators.string
+                    },
+                    {
+                      //SUBMIT FIELD
+                      type: "submit",
+                      validateBeforeSubmit: true,
+                      styleClasses: '',
+                      onSubmit: function(model, schema) {
+                        // Clean empty input values
+                        Object.keys(model).filter( (key) => {
+                          if(model[key] === '')
+                            delete model[key]
+                        });
+                        var options = {
+                            path: '/contracts/',
+                            params: model
+                          }                        
+                        store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
+                          console.log(response);
+                        });
+                      }
+                    },
+                ]
+            },
+
+            formOptions: {
+              validateAfterLoad: true,
+              validateAfterChanged: true
+            }
+        }
+    }
+}
+</script>
+<style>
+
+</style>
