@@ -262,6 +262,22 @@ export default {
       },
 
       resetForm: function() {
+        this.model.company__country = '',
+        this.model.contractuser__user__last_name__icontains = '',
+        this.model.customer__vat_identification_number = '',
+        this.model.label__icontains = '',
+        this.model.customer__name__icontains = '',
+        this.model.description__icontains = '',
+        this.model.contractuser__user__groups__icontains = '',
+        this.model.active = '',
+        this.model.performance_types__label__icontains = '',
+        this.model.customer__internal = '',
+        this.model.contractuser__user__first_name__icontains = '',
+        this.model.company__internal = '',
+        this.model.company__name__icontains = '',
+        this.model.contractuser__user__username__icontains = '',
+        this.model.company__vat_identification_number = '',
+        this.model.contract_groups__label__icontains = ''
         var options = {
           path: '/contracts/'
         }
