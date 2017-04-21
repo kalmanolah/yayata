@@ -17,7 +17,7 @@ div
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
-    .row.card-row
+    .row.card-row(v-if='users')
       .col-md-6#accordion(v-for='(user, index) in filteredUsers' role='tablist' aria-multiselectable='true') 
         .card
           .card-header( v-bind:id='"heading-" + index' role='tab' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
@@ -42,6 +42,11 @@ div
                   .col-md-3 <strong>Country: </strong>
                   .col-md-9.text-md-right {{ user.country }}    
             button.btn.btn-sm.pull-right.toggle-info(data-toggle='collapse' v-bind:data-target='"#collapse-" + index' @click='hideOpen()') More info
+    .row(v-if='users.length === 0')
+      .col-md-3
+      .col-md-6
+        h1.text-md-center.notice No colleagues found!
+      .col-md-3
   .col-md-3
     .row
       h3 Advanced Filter
@@ -213,6 +218,12 @@ export default {
 
 .toggle-info {
   margin-top: .3rem;
+}
+
+.notice {
+  background-color: #fff;
+  border: 1px solid black;
+  border-radius: 5px;
 }
 
 </style>
