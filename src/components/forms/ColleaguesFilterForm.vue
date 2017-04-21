@@ -295,97 +295,21 @@ export default {
                       validator: VueFormGenerator.validators.string
                     },
                     {
-                      // active_monday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_monday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active monday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_tuesday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_tuesday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active tuesday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_wednesday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_wednesday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active wednesday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_thursday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_thursday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active thursday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_firday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_friday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active friday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_saturday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_saturday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active saturday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // active_sunday
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "active_sunday",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active sunday",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    }
-                ]
+                      type: "checklist",
+                      label: "Active days",
+                      model: "active_days",
+                      listBox: true,
+                      values: [
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday"
+                      ]    
+                   }
+                 ]
             },
 
             formOptions: {
@@ -398,11 +322,14 @@ export default {
     methods: {
       submitUserFilterForm: function() {
         Object.keys(this.model).filter((key) => {
+          if(key === 'active_days'){
+            this.model[key].forEach( val => {
+              // How do we do this?
+            });
+          }
           if(this.model[key] === '')
             delete this.model[key]
         });
-        console.log(this.model);
-        
         var options = {
             path: '/users/',
             params: this.model
