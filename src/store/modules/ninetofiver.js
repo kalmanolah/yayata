@@ -395,11 +395,13 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_USERS] (store, options = {}) {
 
-    return new Promise((resolve, reject) => {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/users/'
-      }).then((res) => {
+    options.path = '/users/'
 
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USERS, {
           users: res.data.results
         });
