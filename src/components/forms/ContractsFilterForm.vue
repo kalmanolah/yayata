@@ -3,6 +3,7 @@ div
   .card
     .card-block
       vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+      button.btn.btn-primary.btn-block(@click='submitForm') Submit
       
 </template>
 <script>
@@ -230,27 +231,7 @@ export default {
                       disabled: false,
                       placeholder: "Performance type",
                       validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      //SUBMIT FIELD
-                      type: "submit",
-                      validateBeforeSubmit: true,
-                      styleClasses: '',
-                      onSubmit: function(model, schema) {
-                        // Clean empty input values
-                        Object.keys(model).filter( (key) => {
-                          if(model[key] === '')
-                            delete model[key]
-                        });
-                        var options = {
-                            path: '/contracts/',
-                            params: model
-                          }                        
-                        store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
-                          console.log(response);
-                        });
-                      }
-                    },
+                    }
                 ]
             },
 
@@ -259,6 +240,24 @@ export default {
               validateAfterChanged: true
             }
         }
+    },
+
+    methods: {
+      submitForm: function() {
+        Object.keys(this.model).filter((key) => {
+          if(this.model[key] === '')
+            delete this.model[key]
+        });
+        var options = {
+            path: '/contracts/',
+            params: this.model
+          }                        
+        store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
+            if(response){
+            this.$emit('filterResult', response);
+            } 
+        });
+      }
     }
 }
 </script>
