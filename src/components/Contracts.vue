@@ -50,7 +50,7 @@ div
       h3 Advanced Filter
       p.subtitle more advanced filtering here   
     .row
-      ContractsFilterForm(v-on:filterResult='formContracts = arguments[0]')
+      ContractsFilterForm
 </template>
 
 <script>
