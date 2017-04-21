@@ -49,19 +49,23 @@ div
     .row
       h3 Advanced Filter
       p.subtitle more advanced filtering here   
-
+    .row
+      ContractsFilterForm(v-on:filterResult='formContracts = arguments[0]')
 </template>
 
 <script>
 import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
+import ContractsFilterForm from './forms/ContractsFilterForm.vue';
 
 
 export default {
   name: 'contracts',
 
-  components: {},
+  components: {
+    ContractsFilterForm
+  },
 
   data () {
     return {
@@ -70,7 +74,8 @@ export default {
       query: '',
 
       // Stores the unique custoner names
-      customers: []
+      customers: [],
+      formContracts: []
     }
   },
 
@@ -190,6 +195,9 @@ export default {
   },
 
   methods: {
+    // resultsFound: function() {
+    //   formContracts = 
+    // },
     setSortBy: function(value) {
       if(value === 'all') {
         this.sortBy = 'all';

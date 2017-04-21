@@ -3,7 +3,11 @@ div
   .card
     .card-block
       vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-      button.btn.btn-primary.btn-block(@click='submitForm') Submit
+      .row
+        .col-md-6
+          button.btn.btn-primary.btn-block(@click='submitForm') Submit
+        .col-md-6
+          button.btn.btn-danger.btn-block(@click='resetForm') Reset
       
 </template>
 <script>
@@ -209,18 +213,6 @@ export default {
                       validator: VueFormGenerator.validators.string
                     },
                     {
-                      // active
-                      type: "input",
-                      inputType: "text",
-                      // label: "Active",
-                      model: "active",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Active contract or not",
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
                       // performance_types__label__icontains
                       type: "input",
                       inputType: "text",
@@ -231,6 +223,20 @@ export default {
                       disabled: false,
                       placeholder: "Performance type",
                       validator: VueFormGenerator.validators.string
+                    },
+                     {
+                      type: "switch",
+                        label: "Active",
+                        model: "active",
+                        multi: true,
+                        readonly: false,
+                        featured: false,
+                        disabled: false,
+                        default: true,
+                        dataOn: 'Active',
+                        dataOff: 'Inactive',
+                        textOn: "Active",
+                        textOff: "Inactive"
                     }
                 ]
             },
@@ -252,15 +258,17 @@ export default {
             path: '/contracts/',
             params: this.model
           }                        
-        store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
-            if(response){
-            this.$emit('filterResult', response);
-            } 
-        });
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS, options);
+      },
+
+      resetForm: function() {
+        var options = {
+          path: '/contracts/'
+        }
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS, options);
       }
     }
 }
 </script>
 <style>
-
 </style>
