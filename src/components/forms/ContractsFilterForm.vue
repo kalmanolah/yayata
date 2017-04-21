@@ -2,7 +2,7 @@
 div
   .card
     .card-block
-      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+      vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
       .row
         .col-md-6
           button.btn.btn-primary.btn-block(@click='submitForm') Submit
@@ -63,6 +63,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Last name",
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -75,6 +76,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Usergroup",
+                      styleClasses: 'no-label-field',                                            
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -87,6 +89,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Username",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     // CUSTOMER
@@ -99,7 +102,7 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "VAT indentification number of the customer",
+                      placeholder: "VAT indentification number",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -111,7 +114,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Customer name",
+                      placeholder: "Name",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -123,7 +127,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Performance type",
+                      placeholder: "Customer internal",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     // COMPANY
@@ -136,7 +141,7 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Country of the contract company",
+                      placeholder: "Country",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -148,7 +153,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Performance type",
+                      placeholder: "internal",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -160,7 +166,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Performance type",
+                      placeholder: "Name",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -172,7 +179,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Performance type",
+                      placeholder: "VAT identification number",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     // CONTRACT
@@ -185,7 +193,7 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Performance type",
+                      placeholder: "Group",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -197,7 +205,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Contract label",
+                      placeholder: "Label",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -209,7 +218,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Contract description",
+                      placeholder: "Description",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -222,6 +232,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Performance type",
+                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                      {
@@ -287,4 +298,11 @@ export default {
 }
 </script>
 <style>
+.form-group>label {
+  font-weight: bold;
+}
+
+.no-label-field {
+  margin-top: -1.2rem;
+}
 </style>
