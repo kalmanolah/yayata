@@ -1,7 +1,7 @@
 <template lang="pug">
   div
     vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-    button.col-md-12.btn-success.fa.fa-check(v-on:click='submitForm')
+    button.btn.col-md-12.btn-success.fa.fa-check(v-on:click='submitForm')
 </template>
 
 <script>
@@ -36,48 +36,58 @@ export default {
         x.year == this.today.year()
       );
 
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
-        {
-          path: '/my_performances/activity/',
-          method: 'POST',
-          body: {
-            timesheet: timesheet.id,
-            day: this.today.date(),
-            duration: this.model.duration,
-            description: this.model.description,
-            performance_type: this.model.performance_type,
-            contract: this.model.contract,
-          },
-          emulateJSON: true,
-        }
-      ).then((response) => {
-
-        if(response.status == 201) {
-          this.$emit('success', response);
-          this.$toast('Performance successfully added', 
-            { 
-              id: 'performance-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1500,
-              transition: 'slide-down',
-              mode: 'override'
-            });
-          
-        } else {
-          console.log(response);
-          this.$toast('Error adding performance. Console has more information.', 
-            { 
-              id: 'performance-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1500,
-              transition: 'slide-down',
-              mode: 'override'
-            });
-        }
+      var modelValidationCheck = Object.keys(this.model).every(x => {
+        return this.model[x] != null;
       });
+
+      console.log( modelValidationCheck );
+      if( !modelValidationCheck || this.model.duration <= 0) {
+        this.$toast('Please fill in all information before submitting.')
+      } else {
+
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST, 
+          {
+            path: '/my_performances/activity/',
+            method: 'POST',
+            body: {
+              timesheet: timesheet.id,
+              day: this.today.date(),
+              duration: this.model.duration,
+              description: this.model.description,
+              performance_type: this.model.performance_type,
+              contract: this.model.contract,
+            },
+            emulateJSON: true,
+          }
+        ).then((response) => {
+
+          if(response.status == 201) {
+            this.$emit('success', response);
+            this.$toast('Performance successfully added', 
+              { 
+                id: 'performance-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1500,
+                transition: 'slide-down',
+                mode: 'override'
+              });
+
+          } else {
+            console.log(response);
+            this.$toast('Error adding performance. Console has more information.', 
+              { 
+                id: 'performance-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1500,
+                transition: 'slide-down',
+                mode: 'override'
+              });
+          }
+        });
+      }
     },
 
   },
@@ -100,7 +110,6 @@ export default {
             //CONTRACT
             type: "select",
             model: "contract",
-            required: true,
 
             values: function() {
               if(store.getters.contracts) {
@@ -113,7 +122,6 @@ export default {
             },
 
             styleClasses: 'col-md-8',
-            validator: VueFormGenerator.validators.required
           },
           {
             //DURATION
@@ -134,13 +142,11 @@ export default {
             required: true,
 
             styleClasses: 'col-md-12',
-            validator: VueFormGenerator.validators.string
           },
           {
             //PERFORMANCE_TYPE
             type: "select",
             model: "performance_type",
-            required: true,
             values: function(model) {
               if(store.getters.performance_types && store.getters.contracts && model.contract) {
                 var cont = store.getters.contracts.find(c => {
@@ -154,7 +160,6 @@ export default {
             },
 
             styleClasses: 'col-md-12',
-            validator: VueFormGenerator.validators.required
           }
         ]
       },
