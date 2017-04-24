@@ -449,11 +449,11 @@ const actions = {
     if(!options.params) {
       options.params = {
         timesheet__year: new Date().getFullYear(),
-        timesheet__month: new Date().getMonth()
+        timesheet__month: new Date().getMonth() + 1
       };
     } else {
       options.params['timesheet__year'] = new Date().getFullYear();
-      options.params['timesheet__month'] = new Date().getMonth();
+      options.params['timesheet__month'] = new Date().getMonth() + 1;
     }
 
     return new Promise((resolve, reject) => {

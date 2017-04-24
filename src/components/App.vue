@@ -75,6 +75,8 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
     if(!store.getters.work_schedule)
       store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
+    if(!store.getters.upcoming_leaves)
+      store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
   },
 
   method: {},
