@@ -37,13 +37,13 @@ div(class='calendar')
         router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
           h3 {{ periodEndMonth | moment('MMMM')}}
 
-  hr
+      hr
   
-  //- Buttons to toggle what to display
-  div.btn-group
-    button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
-    button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
-    button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
+    //- Buttons to toggle what to display
+    div.btn-group.col-sm-12
+      button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
+      button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
+      button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
 
   //- Cards
   div.calendar-header
@@ -64,7 +64,7 @@ div(class='calendar')
               | <small>{{ perf.duration }} h </small> 
 
         //- Performance creation    -   disabled for future activityPerformances
-        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
+        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' v-bind:placement='setPopoverPlacement(weekIndex)' v-bind:popover-style='popoverStyle')
           b-btn.btn-success.col-sm-12.fa.fa-plus
           .text-xs-center.col-lg-12(slot='content' )
             strong.fa.fa-calendar-check-o
@@ -240,9 +240,12 @@ export default {
     },
 
     //Sets the popover placement, based on the weekindex and weekformat
-    // setPopoverPlacement: function(val) {
-    //   return (val >= Math.floor((this.currentWeekFormat.end - this.currentWeekFormat.start) / 2) + 1) ? 'left' : 'right';
-    // },
+    setPopoverPlacement: function(val) {
+      var day = val + 1;
+      var range = this.currentWeekFormat.end - this.currentWeekFormat.start + 1;
+
+      return ( day / range >= 0.7 ) ? 'left' : 'right';
+    },
 
     //Set Week format
     setWeekFormat: function(format) {
