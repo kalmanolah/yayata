@@ -92,9 +92,12 @@ export default {
 
     //Return style based on quota
     getDailyQuota: function(day) {
-      var quota = this.getRequiredHours(day) - this.getPerformedHours(day);
+      var performed = this.getPerformedHours(day);
+      var required = this.getRequiredHours(day);
 
-      return quota <= 0 ? 'tag-success' : 'tag-danger';
+      var quota = required > 0 ? performed / required : 1;
+
+      return quota >= 1 ? 'tag-success' : quota <= 0.4 ? 'tag-danger' : 'tag-warning';
     },
 
     //Get all leaves for this month
