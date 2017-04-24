@@ -5,7 +5,7 @@ div
       i.fa.fa-plane
       | &nbsp; Request a Leave
     .card-block
-      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+      vue-form-generator(v-if='upcomingLeaves', :schema="schema", :model="model", :options="formOptions")
 </template>
 
 <script>
@@ -14,48 +14,74 @@ import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
 
-var upcoming_leaves;
+var upcoming_leaves = [];
 var vm;
+var today;
 
 export default {
 
   created: function() {
-    this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
-
-    this.model.start_date = moment();
-    this.model.start_full_day = true;
-    this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
-    this.model.end_full_day = true;
-    this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
-    this.model.attachments = null;
-
     vm = this;
 
-    store.dispatch(
-      types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
-        params: {
-          leavedate__gte: moment().format('YYYY-MM-DDTHH:mm:ss')
-        }
-      }).then((response) => {
+    vm.$on('test', function(start, end) { 
+
+      console.log( 'HALLOOOOO' );
+      this.initializeModel(start, end);
+    });
+  },
+
+  computed: {
+
+    upcomingLeaves: function() {
+      if(store.getters.upcoming_leaves) {
         var leavedate_arr = [];
+        today = moment();
 
         // For each leave object in the response w/out rejected status
         // push the date for each leavedate object into a global array.
-        response.data.results.forEach(lv => {
+        store.getters.upcoming_leaves.forEach(lv => {
 
           if(lv.status !== store.getters.leave_statuses[1]) {
             lv.leavedate_set.forEach(ld => {
               var start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+              var end = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+
+              // If today is same date as lvd's start/end
+              // && lvd's start && end are at the start <> end of the day
+              if( today.startOf('day').isSameOrBefore(start)
+                && today.endOf('day').isSameOrAfter(end)) {
+                today = today.add(1, 'days');
+              }
 
               leavedate_arr.push(start.toDate());
-            });            
+            });
           }
         });
 
+        this.initializeModel(today, null);
         upcoming_leaves = leavedate_arr;
-      });
+        return store.getters.upcoming_leaves;
+      }
+    }
 
+  },
+
+  methods: {
+
+    //Sets up model, needs to be called when upcoming_leaves are fully loaded to set start_- & end_date
+    initializeModel: function(start_date, end_date) {
+      console.log( this.model );
+      this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
+      console.log( this.model );
+
+      this.model.start_date = start_date;
+      this.model.start_full_day = true;
+      this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
+      this.model.end_date = this.model.start_date;
+      this.model.end_full_day = true;
+      this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
+      this.model.attachments = null;   
+    }
   },
 
   data: () => {
@@ -81,6 +107,7 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+              showDaysInNextAndPreviousMonths: true,
 
               disableDayFn: val => {
                 return upcoming_leaves.find(x => {
@@ -89,7 +116,7 @@ export default {
               }
             },
 
-            styleClasses: ['col-md-6', 'clearfix']
+            styleClasses: ['col-md-6', 'clearfix'],
           },
           {
             //FROM DURATION
@@ -111,7 +138,7 @@ export default {
             styleClasses: 'col-md-4',
 
             disabled: function(model) {
-            //Enabled if full day-duration is false
+              //Enabled if full day-duration is false
               return model && model.start_full_day;
             }
           },
@@ -132,6 +159,7 @@ export default {
               formatStrict: true,
               firstDay: 1,
               showWeekNumber: true,
+              showDaysInNextAndPreviousMonths: true,
 
               disableDayFn: val => {
                 return upcoming_leaves.find(x => {
@@ -255,7 +283,7 @@ export default {
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
-                  
+
                   if(lvdResponse.status == 201) {
                     vm.$toast('Leave successfully requested.',
                     { 
