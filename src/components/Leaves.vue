@@ -4,25 +4,26 @@ div(class='calendar')
     div.col-md-6
 
       //- Upcoming leave
-      h3 Upcoming leave
-      p
-        div(v-if='nearestLeave')
-          div.list-group-item.text-md-center
-            p <strong> {{ nearestLeave.leave_type }} </strong>
-            p {{ nearestLeave.description }}
-            hr
-            div
-              | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-              | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-        div(v-else)
-          p.alert.alert-info No leaves coming up. Are you sure you don't need a break from all that hard work?
+      h3.text-md-center Upcoming leave
+      div(v-if='nearestLeave')
+        div.list-group-item.text-md-center
+          p <strong> {{ nearestLeave.leave_type }} </strong>
+          p {{ nearestLeave.description }}
+          hr
+          div
+            | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+            | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+      div(v-else)
+        p.alert.alert-info No leaves coming up. Are you sure you don't need a break from all that hard work?
 
       hr
 
       //- All leaves
-      h3 All Leaves
-      p An overview of all your leaves
-        div
+      h3.text-md-center All Leaves
+        button.btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
+          i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
+      p.text-md-center An overview of all your leaves
+        div(v-if='showAllLeaves')
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               div.card-header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
@@ -46,9 +47,11 @@ div(class='calendar')
       hr
 
       //- Pending leaves
-      h3 Pending leaves
-      p Still awaiting approval
-      div
+      h3.text-md-center Pending leaves
+        button.btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
+          i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
+      p.text-md-center Still awaiting approval
+      div(v-if='showPendingLeaves')
         #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
           .card( v-bind:class='getRibbonStyleClass(leave)')
             div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
@@ -76,15 +79,16 @@ import Holidays from './Holidays.vue';
 import LeaveForm from './forms/LeaveForm.vue';
 import moment from 'moment';
 
-var data = {
-  leaves: [],
-}
 
 export default {
   name: 'leaves',
 
   data () {
-    return data;
+    return {
+      leaves: [],
+      showAllLeaves: false,
+      showPendingLeaves: false,
+    }
   },
 
   components: {
@@ -156,11 +160,10 @@ export default {
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-
           lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).name;
         });
 
-        data.leaves = response.data.results
+        this.leaves = response.data.results
       }, () => {
         this.loading = false
       });
