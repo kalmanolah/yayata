@@ -22,12 +22,6 @@ export default {
 
   created: function() {
     vm = this;
-
-    vm.$on('test', function(start, end) { 
-
-      console.log( 'HALLOOOOO' );
-      this.initializeModel(start, end);
-    });
   },
 
   computed: {
@@ -70,9 +64,7 @@ export default {
 
     //Sets up model, needs to be called when upcoming_leaves are fully loaded to set start_- & end_date
     initializeModel: function(start_date, end_date) {
-      console.log( this.model );
       this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
-      console.log( this.model );
 
       this.model.start_date = start_date;
       this.model.start_full_day = true;
