@@ -52,8 +52,31 @@ export default {
           emulateJSON: true,
         }
       ).then((response) => {
-        if(response.status == 201)
+
+        if(response.status == 201) {
           this.$emit('success', response);
+          this.$toast('Performance successfully added', 
+            { 
+              id: 'performance-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1500,
+              transition: 'slide-down',
+              mode: 'override'
+            });
+          
+        } else {
+          console.log(response);
+          this.$toast('Error adding performance. Console has more information.', 
+            { 
+              id: 'performance-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1500,
+              transition: 'slide-down',
+              mode: 'override'
+            });
+        }
       });
     },
 

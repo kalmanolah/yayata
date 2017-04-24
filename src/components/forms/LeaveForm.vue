@@ -15,6 +15,7 @@ import * as types from '../../store/mutation-types';
 import store from '../../store';
 
 var upcoming_leaves;
+var vm;
 
 export default {
 
@@ -27,6 +28,8 @@ export default {
     this.model.end_full_day = true;
     this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
     this.model.attachments = null;
+
+    vm = this;
 
     store.dispatch(
       types.NINETOFIVER_API_REQUEST, {
@@ -252,7 +255,30 @@ export default {
                     emulateJSON: true,
                   }
                 ).then((lvdResponse) => {
-                  console.log( lvdResponse );
+                  
+                  if(lvdResponse.status == 201) {
+                    vm.$toast('Leave successfully requested.',
+                    { 
+                      id: 'leave-toast',
+                      horizontalPosition: 'right',
+                      verticalPosition: 'top',
+                      duration: 1500,
+                      transition: 'slide-down',
+                      mode: 'override'
+                    });  
+
+                  } else {
+                    console.log(lvdResponse);
+                    vm.$toast('Something went wrong during the request. Check console for more info.',
+                    { 
+                      id: 'leave-toast',
+                      horizontalPosition: 'right',
+                      verticalPosition: 'top',
+                      duration: 1500,
+                      transition: 'slide-down',
+                      mode: 'override'
+                    });
+                  }
 
                   //Update the leave object's status
                   store.dispatch(
@@ -265,10 +291,7 @@ export default {
                       },
                       emulateJSON: true,
                     }
-                  ).then((updateResponse) => {
-                    console.log(updateResponse);
-                    //INSERT CONFIRMATION
-                  });
+                  );
                 });
 
                 //If attachments were added to the leaverequest
@@ -312,8 +335,6 @@ export default {
                     });
                   }
                 }
-              }, () => {
-                this.loading = false
               });
 
             },
