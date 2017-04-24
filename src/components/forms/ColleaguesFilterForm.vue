@@ -68,7 +68,6 @@ export default {
                       // last_name__icontains
                       type: "input",
                       inputType: "text",
-                      // label: "Contractuser last name",
                       model: "last_name__icontains",
                       readonly: false,
                       required: false,
@@ -81,7 +80,6 @@ export default {
                       // username
                       type: "input",
                       inputType: "text",
-                      // label: "User groups contract user",
                       model: "username",
                       readonly: false,
                       required: false,
@@ -94,7 +92,6 @@ export default {
                       // email
                       type: "input",
                       inputType: "text",
-                      // label: "Contractuser username internal",
                       model: "email",
                       readonly: false,
                       required: false,
@@ -118,7 +115,6 @@ export default {
                       // label__icontains
                       type: "input",
                       inputType: "text",
-                      // label: "Customer name",
                       model: "label__icontains",
                       readonly: false,
                       required: false,
@@ -131,7 +127,6 @@ export default {
                       // userinfo__gender__iexact
                       type: "input",
                       inputType: "text",
-                      // label: "Customer internal",
                       model: "userinfo__gender__iexact",
                       readonly: false,
                       required: false,
@@ -156,7 +151,6 @@ export default {
                       // userinfo__birth_date__year__lte
                       type: "input",
                       inputType: "text",
-                      // label: "Company internal",
                       model: "userinfo__birth_date__year__lte",
                       readonly: false,
                       required: false,
@@ -169,7 +163,6 @@ export default {
                       // userrelative__name__icontains
                       type: "input",
                       inputType: "text",
-                      // label: "Company name",
                       model: "userrelative__name__icontains",
                       readonly: false,
                       required: false,
@@ -207,7 +200,6 @@ export default {
                       // employmentcontract__started_at__year__gte
                       type: "input",
                       inputType: "text",
-                      // label: "Contract Label",
                       model: "employmentcontract__started_at__year__gte",
                       readonly: false,
                       required: false,
@@ -220,7 +212,6 @@ export default {
                       // employmentcontract__started_at__year__lte
                       type: "input",
                       inputType: "text",
-                      // label: "Description",
                       model: "employmentcontract__started_at__year__lte",
                       readonly: false,
                       required: false,
@@ -233,7 +224,6 @@ export default {
                       // employmentcontract__ended_at__year__gte 
                       type: "input",
                       inputType: "text",
-                      // label: "Performance type",
                       model: "employmentcontract__ended_at__year__gte",
                       readonly: false,
                       required: false,
@@ -246,7 +236,6 @@ export default {
                       // employmentcontract__ended_at__year__lte 
                       type: "input",
                       inputType: "text",
-                      // label: "Performance type",
                       model: "employmentcontract__ended_at__year__lte",
                       readonly: false,
                       required: false,
@@ -259,7 +248,6 @@ export default {
                       // leave__leavedate__starts_at__lte 
                       type: "input",
                       inputType: "text",
-                      // label: "Performance type",
                       model: "leave__leavedate__starts_at__lte",
                       readonly: false,
                       required: false,
@@ -272,7 +260,6 @@ export default {
                       // leave__leavedate__ends_at__gte
                       type: "input",
                       inputType: "text",
-                      // label: "Performance type",
                       model: "leave__leavedate__ends_at__gte",
                       readonly: false,
                       required: false,
