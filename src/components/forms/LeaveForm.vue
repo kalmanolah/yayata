@@ -32,19 +32,22 @@ export default {
       types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/',
         params: {
-          status: store.getters.leave_statuses[2],
           leavedate__gte: moment().format('YYYY-MM-DDTHH:mm:ss')
         }
       }).then((response) => {
         var leavedate_arr = [];
 
-        // For each leave object in the response, push the date for each leavedate object into a global array.
+        // For each leave object in the response w/out rejected status
+        // push the date for each leavedate object into a global array.
         response.data.results.forEach(lv => {
-          lv.leavedate_set.forEach(ld => {
-            var start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
 
-            leavedate_arr.push(start.toDate());
-          });
+          if(lv.status !== store.getters.leave_statuses[1]) {
+            lv.leavedate_set.forEach(ld => {
+              var start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+
+              leavedate_arr.push(start.toDate());
+            });            
+          }
         });
 
         upcoming_leaves = leavedate_arr;
