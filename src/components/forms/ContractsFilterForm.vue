@@ -2,12 +2,14 @@
 div
   .card
     .card-block
-      vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
-      .row
+      .row.form-buttons
         .col-md-6
           button.btn.btn-primary.btn-block(@click='submitForm') Submit
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') Reset
+      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+      div.active-toggle Contract status
+        toggle-button.pull-right(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
       
 </template>
 <script>
@@ -19,6 +21,10 @@ export default {
     name: 'ContractsFilterForm',
     data () {
         return {
+            toggleButtonLabels: {
+              checked: 'Active',
+              unchecked: 'Inactive'
+            },
             model: {
                 company__country: '',
                 contractuser__user__last_name__icontains: '',
@@ -27,7 +33,7 @@ export default {
                 customer__name__icontains: '',
                 description__icontains: '',
                 contractuser__user__groups__icontains: '',
-                active: '',
+                active: true,
                 performance_types__label__icontains: '',
                 customer__internal: '',
                 contractuser__user__first_name__icontains: '',
@@ -234,21 +240,23 @@ export default {
                       placeholder: "Performance type",
                       styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
-                    },
-                     {
-                      type: "switch",
-                        label: "Active",
-                        model: "active",
-                        multi: true,
-                        readonly: false,
-                        featured: false,
-                        disabled: false,
-                        default: true,
-                        dataOn: 'Active',
-                        dataOff: 'Inactive',
-                        textOn: "Active",
-                        textOff: "Inactive"
                     }
+                    // ,
+                    //  {
+                    //   type: "switch",
+                    //     label: "Active",
+                    //     model: "active",
+                    //     multi: true,
+                    //     readonly: false,
+                    //     featured: false,
+                    //     disabled: false,
+                    //     default: true,
+                    //     dataOn: 'Active',
+                    //     dataOff: 'Inactive',
+                    //     textOn: "Active",
+                    //     textOff: "Inactive",
+                    //     styleClasses: "vue-js-switch"
+                    // }
                 ]
             },
 
@@ -280,7 +288,7 @@ export default {
         this.model.customer__name__icontains = '',
         this.model.description__icontains = '',
         this.model.contractuser__user__groups__icontains = '',
-        this.model.active = '',
+        this.model.active = true,
         this.model.performance_types__label__icontains = '',
         this.model.customer__internal = '',
         this.model.contractuser__user__first_name__icontains = '',
@@ -293,8 +301,16 @@ export default {
           path: '/contracts/'
         }
         store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS, options);
+      },
+
+      toggleActive: function() {
+        this.model.active = !this.model.active;
+      },
+
+      getActiveValue: function() {
+        return this.model.active ? this.model.active : false;
       }
-    }
+    },
 }
 </script>
 <style>
@@ -304,5 +320,13 @@ export default {
 
 .no-label-field {
   margin-top: -1.2rem;
+}
+
+.active-toggle {
+  margin-top: 1rem;
+}
+
+.form-buttons {
+  margin-bottom: .5rem;
 }
 </style>
