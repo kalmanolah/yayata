@@ -42,7 +42,7 @@ div
                   .col-md-3 <strong>Country: </strong>
                   .col-md-9.text-md-right {{ user.country }}    
             button.btn.btn-sm.pull-right.toggle-info(data-toggle='collapse' v-bind:data-target='"#collapse-" + index' @click='hideOpen()') More info
-    .row(v-if='users.length === 0')
+    .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
         h1.text-md-center.notice No colleagues found!
