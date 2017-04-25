@@ -145,8 +145,8 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Born after",
-                      validator: VueFormGenerator.validators.string
+                      placeholder: "Born after year",
+                      validator: VueFormGenerator.validators.date
                     },
                     {
                       // userinfo__birth_date__year__lte
@@ -156,7 +156,7 @@ export default {
                       readonly: false,
                       required: false,
                       disabled: false,
-                      placeholder: "Born before",
+                      placeholder: "Born before year",
                       styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
@@ -317,24 +317,26 @@ export default {
           if(this.model[key] === '')
             delete this.model[key]
         });
-        Object.values(this.model['active_days']).filter((day) => {
-          console.log(day);
-          if(day === 'active_monday'){
-            this.model.active_monday = 'True';
-          } else if (day === 'active_tuesday'){
-            this.model.active_tuesday = 'True';
-          } else if (day === 'active_wednesday'){
-            this.model.active_wednesday = 'True';
-          } else if (day === 'active_thursday') {
-            this.model.active_thursday = 'True';
-          } else if (day === 'active_friday') {
-            this.model.active_friday = 'True';
-          } else if (day === 'active_saturday') {
-            this.model.active_saturday = 'True';
-          } else {
-            this.model.active_sunday = 'True';
-          }
-        });
+        if(this.model.active_days){
+          Object.values(this.model['active_days']).filter((day) => {
+            console.log(day);
+            if(day === 'active_monday'){
+              this.model.active_monday = 'True';
+            } else if (day === 'active_tuesday'){
+              this.model.active_tuesday = 'True';
+            } else if (day === 'active_wednesday'){
+              this.model.active_wednesday = 'True';
+            } else if (day === 'active_thursday') {
+              this.model.active_thursday = 'True';
+            } else if (day === 'active_friday') {
+              this.model.active_friday = 'True';
+            } else if (day === 'active_saturday') {
+              this.model.active_saturday = 'True';
+            } else {
+              this.model.active_sunday = 'True';
+            }
+          });
+        }
         var options = {
             path: '/users/',
             params: this.model
