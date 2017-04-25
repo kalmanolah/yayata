@@ -211,8 +211,6 @@ export default {
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
         this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
         this.customerName = this.filtered_contracts.find(x => x.customerName == value).customerName;
-        console.log(this.sortBy)    
-        console.log(this.groupLabel)    
       }
     },
 
