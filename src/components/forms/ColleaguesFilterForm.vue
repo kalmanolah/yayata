@@ -19,12 +19,12 @@ export default {
     name: 'ColleaguesFilterForm',
     data () {
         return {
-            model: {
+           model: {
                 first_name__icontains: '',
                 last_name__icontains: '',
                 username: '',
                 email: '',
-                is_active: '',
+                is_active: true,
                 groups__icontains: '',
                 label__icontains: '',
                 userinfo__gender__iexact: '',
@@ -109,6 +109,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Group",
+                      styleClasses: "no-label-field",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -182,7 +183,6 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Type",
-                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -194,6 +194,7 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Company name",
+                      styleClasses: "no-label-field",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -278,7 +279,6 @@ export default {
                       required: false,
                       disabled: false,
                       placeholder: "Workschedule label",
-                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -287,13 +287,13 @@ export default {
                       model: "active_days",
                       listBox: true,
                       values: [
-                          "Monday",
-                          "Tuesday",
-                          "Wednesday",
-                          "Thursday",
-                          "Friday",
-                          "Saturday",
-                          "Sunday"
+                          { name: "Monday", value: "active_monday" },
+                          { name: "Tuesday", value: "active_tuesday" },
+                          { name: "Wednesday", value: "active_wednesday"},
+                          { name: "Thursday", value: "active_thursday" },
+                          { name: "Friday", value: "active_friday" },
+                          { name: "Saturday", value: "active_saturday" },
+                          { name: "Sunday", value: "actvive_sunday" }
                       ]    
                    }
                  ]
@@ -316,6 +316,24 @@ export default {
           }
           if(this.model[key] === '')
             delete this.model[key]
+        });
+        Object.values(this.model['active_days']).filter((day) => {
+          console.log(day);
+          if(day === 'active_monday'){
+            this.model.active_monday = 'True';
+          } else if (day === 'active_tuesday'){
+            this.model.active_tuesday = 'True';
+          } else if (day === 'active_wednesday'){
+            this.model.active_wednesday = 'True';
+          } else if (day === 'active_thursday') {
+            this.model.active_thursday = 'True';
+          } else if (day === 'active_friday') {
+            this.model.active_friday = 'True';
+          } else if (day === 'active_saturday') {
+            this.model.active_saturday = 'True';
+          } else {
+            this.model.active_sunday = 'True';
+          }
         });
         var options = {
             path: '/users/',
@@ -351,7 +369,8 @@ export default {
         this.model.active_thursday= '',
         this.model.active_friday= '',
         this.model.active_saturday= '',
-        this.model.active_sunday= ''
+        this.model.active_sunday= '',
+        this.model.active_days = []
         var options = {
           path: '/users/'
         }
