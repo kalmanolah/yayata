@@ -265,7 +265,7 @@ export default {
             path: '/contracts/',
             params: this.model
           }                        
-        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       },
 
       resetForm: function() {
@@ -288,7 +288,7 @@ export default {
         var options = {
           path: '/contracts/'
         }
-        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       },
 
       toggleActive: function() {

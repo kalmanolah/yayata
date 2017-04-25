@@ -17,6 +17,7 @@ const state = {
   contract_groups: null,
   companies: null,
   users: null,
+  filtered_contracts: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -82,6 +83,9 @@ const mutations = {
   [types.NINETOFIVER_SET_CONTRACTS] (state, { contracts }) {
     state.contracts = contracts;
   },
+  [types.NINETOFIVER_SET_FILTERED_CONTRACTS] (state, { filtered_contracts }) {
+    state.filtered_contracts = filtered_contracts;
+  },
   [types.NINETOFIVER_SET_CONTRACT_USERS] (state, { contract_users }) {
     state.contract_users = contract_users;
   },
@@ -131,7 +135,30 @@ const getters = {
         };
       });
     }
-      
+  },
+  filtered_contracts: state => {
+    if(!state.filtered_contracts || !state.companies )
+      return null;
+    else {
+      return state.filtered_contracts.map(x => {
+        return {
+          id: x.id, 
+          name: x.label, 
+          type: x.type,
+          display_label: x.display_label,
+          description: x.description,
+          performance_types: x.performance_types,
+          contract_groups: x.contract_groups,
+          active: x.active,
+          customer: x.customer,
+          company: x.company,
+          projectName: x.name,
+          customerName: state.companies.find(com => com.id == x.customer).name,
+          companyName: state.companies.find(com => com.id == x.company).name,
+          total_duration: x.hours_spent
+        };
+      });
+    }
   },
   contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
@@ -457,6 +484,30 @@ const actions = {
 
         store.commit(types.NINETOFIVER_SET_CONTRACTS, {
           contracts: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
+  
+  
+  [types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS] (store, options = {}) {
+    
+    if(!options.path) {
+      options.path = '/contracts/';
+    }
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_FILTERED_CONTRACTS, {
+          filtered_contracts: res.data.results
         });
         resolve(res);
 

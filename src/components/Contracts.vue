@@ -7,6 +7,7 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
+          button.btn.btn-secondary(type='button' @click='setSortBy("/my_contracts/")') My contracts
           button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
@@ -17,7 +18,7 @@ div
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
     .row.card-row
-      .col-md-6(v-for='(contract, index) in filteredContracts')
+      .col-md-6(v-for='(contract, index) in queryContracts')
         .card(v-bind:class='getRibbonStyleClass(contract)')
           .card-header 
             div.contract-name {{ contract.name }}
@@ -75,11 +76,14 @@ export default {
 
       // Stores the unique custoner names
       customers: [],
-      formContracts: []
     }
   },
 
-  created: function () {},
+  created: function () {
+    if(!store.getters.filtered_contracts){
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
+    }
+  },
 
   filters: {
 
@@ -105,22 +109,22 @@ export default {
   computed: {
 
     //Gets the contracts from the store
-    contracts: function() {
-      if(store.getters.contracts) {
+    filtered_contracts: function() {
+      if(store.getters.filtered_contracts) {
         // Get each unique customerName
-        store.getters.contracts.forEach((contract) => {
+        store.getters.filtered_contracts.forEach((contract) => {
           if(this.customers.indexOf(contract.customerName) === -1){
             this.customers.push(contract.customerName);
           }
         }); 
-        return store.getters.contracts;
+        return store.getters.filtered_contracts;
       }
     },
 
     //Stores extra information about the contracts
     contract_detail: function() {
-      if(this.contracts && store.getters.monthly_activity_performances && store.getters.contract_users) {
-          var contract_detail = this.contracts.map(x => { return {id: x.id}});
+      if(this.filtered_contracts && store.getters.monthly_activity_performances && store.getters.contract_users) {
+          var contract_detail = this.filtered_contracts.map(x => { return {id: x.id}});
 
           for(var cd of contract_detail) {
             var totalHours = 0;
@@ -147,7 +151,7 @@ export default {
     },
 
     // Filter by user input
-    filteredContracts: function() {
+    queryContracts: function() {
        if(this.sortedContracts){
         var query = this.query;
         return this.sortedContracts.filter( contract => {
@@ -176,18 +180,18 @@ export default {
 
     //Gets the contracts currently still active
     fullContracts: function() {
-      if(this.contracts && this.contract_detail)
+      if(this.filtered_contracts && this.contract_detail)
         //First filter for active contracts
         //Then find the corresponding contract_detail
-        return this.contracts.map(c => {
+        return this.filtered_contracts.map(c => {
             return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
           });
     },
 
     //Gets the contracts currently unactive
     inactiveContracts: function() {
-      if(this.contracts && this.contract_detail)
-        return this.contracts.filter(x => x.active === false).map(c => {
+      if(this.filtered_contracts && this.contract_detail)
+        return this.filtered_contracts.filter(x => x.active === false).map(c => {
             return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
           });
     },
@@ -195,16 +199,18 @@ export default {
   },
 
   methods: {
-    // resultsFound: function() {
-    //   formContracts = 
-    // },
     setSortBy: function(value) {
       if(value === 'all') {
         this.sortBy = 'all';
         this.customerName = 'Customer';
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+      } else if(value === '/my_contracts/') {
+        var options = { path: '/my_contracts/' };
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       } else {
-        this.sortBy = this.contracts.find(x => x.customerName == value).customerName;
-        this.customerName = this.contracts.find(x => x.customerName == value).customerName;
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+        this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
+        this.customerName = this.filtered_contracts.find(x => x.customerName == value).customerName;
         console.log(this.sortBy)    
         console.log(this.groupLabel)    
       }
