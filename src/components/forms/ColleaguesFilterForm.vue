@@ -9,6 +9,7 @@ div
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') 
             <i class="fa fa-refresh" aria-hidden="true"></i> Reset
+      hr
       vue-form-generator.pre-scrollable(:schema="schema", :model="model", :options="formOptions") 
       
 </template>
@@ -126,17 +127,16 @@ export default {
                       styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
-                    {
-                      // userinfo__gender__iexact
-                      type: "input",
-                      inputType: "text",
+                   {
+                      type: "select",
+                      label: "Gender",
                       model: "userinfo__gender__iexact",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Gender",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
+                      values: function() {
+                        return [
+                          { name: "Male", id: "M" },
+                          { name: "Female", id: "F" }
+                        ]
+                      }
                     },
                     {
                       // userinfo__birth_date__year__gte
