@@ -4,7 +4,7 @@ div
     .card-block
       .row
         .col-md-6
-          button.btn.btn-primary.btn-block(@click='submitForm')
+          button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
             <i class="fa fa-filter" aria-hidden="true"></i> Submit
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') 
