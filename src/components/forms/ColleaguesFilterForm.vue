@@ -343,7 +343,7 @@ export default {
             path: '/users/',
             params: this.model
           }                        
-        store.dispatch(types.NINETOFIVER_RELOAD_USERS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
       },
 
       resetForm: function() {
@@ -378,7 +378,7 @@ export default {
         var options = {
           path: '/users/'
         }
-        store.dispatch(types.NINETOFIVER_RELOAD_USERS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
       }
     }
 }

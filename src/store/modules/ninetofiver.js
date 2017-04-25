@@ -18,6 +18,7 @@ const state = {
   companies: null,
   users: null,
   filtered_contracts: null,
+  filtered_users: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -77,6 +78,10 @@ const mutations = {
     state.users = users;
   },
 
+  [types.NINETOFIVER_SET_FILTERED_USERS] (state, { filtered_users }) {
+    state.filtered_users = filtered_users;
+  },
+
   [types.NINETOFIVER_SET_TIMESHEETS] (state, { timesheets }) {
     state.timesheets = timesheets;
   },
@@ -109,6 +114,7 @@ const getters = {
   user_groups: state => state.user_groups,
   companies: state => state.companies,
   users: state => state.users,
+  filtered_users: state => state.filtered_users,
 
   //User specific
   timesheets: state => state.timesheets,
@@ -431,6 +437,27 @@ const actions = {
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USERS, {
           users: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
+  
+  [types.NINETOFIVER_RELOAD_FILTERED_USERS] (store, options = {}) {
+
+    options.path = '/users/'
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_FILTERED_USERS, {
+          filtered_users: res.data.results
         });
         resolve(res);
 

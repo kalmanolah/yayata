@@ -17,8 +17,8 @@ div
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
-    .row.card-row(v-if='users')
-      .col-md-6#accordion(v-for='(user, index) in filteredUsers' role='tablist' aria-multiselectable='true') 
+    .row.card-row(v-if='filtered_users')
+      .col-md-6#accordion(v-for='(user, index) in queryUsers' role='tablist' aria-multiselectable='true') 
         .card
           .card-header( v-bind:id='"heading-" + index' role='tab' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
             span.user-fullname {{ user.first_name }} {{ user.last_name }}
@@ -80,12 +80,15 @@ export default {
   },
 
   created: () => {
+    if(!store.getters.filtered_users){
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS);
+    }
   },
 
   computed: {
-    users: function(){
-      if(store.getters.users)
-        return store.getters.users
+    filtered_users: function(){
+      if(store.getters.filtered_users)
+        return store.getters.filtered_users
     },
 
     groups: function() {
@@ -94,8 +97,8 @@ export default {
     },
 
     // Filter users by input
-    filteredUsers: function(){
-      if(store.getters.users && this.sortedUsers){
+    queryUsers: function(){
+      if(store.getters.filtered_users && this.sortedUsers){
         var query = this.query;
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
@@ -108,9 +111,9 @@ export default {
 
     // Sort users by group
     sortedUsers: function() {
-      if(this.sortBy !== 'all' && this.users){
+      if(this.sortBy !== 'all' && this.filtered_users){
         var users = [];
-        this.users.forEach(user => {
+        this.filtered_users.forEach(user => {
           user.groups.forEach( group => {
               if(group === this.sortBy){
                 users.push(user);
@@ -119,8 +122,8 @@ export default {
         });
         return users;
       } else {
-        if(this.users)
-          return this.users;
+        if(this.filtered_users)
+          return this.filtered_users;
       }
     },
   },
