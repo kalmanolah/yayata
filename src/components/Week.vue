@@ -56,26 +56,38 @@ div(class='calendar')
           toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
 
         //- Content of activityPerformances
-        div.card-block.list-group.performance-entry(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
+        div.card-block.list-group.performance-entry(v-for='(perf, i) in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
           li.list-group-item
             div.list-group-item-heading
               | {{ findContractName(perf.contract) }}
             div.list-group-item-text
               | <small>{{ perf.duration }} h </small> 
 
-        //- Performance creation    -   disabled for future activityPerformances
-        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' v-bind:placement='setPopoverPlacement(weekIndex)' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-sm-12.fa.fa-plus
-          .text-xs-center.col-lg-12(slot='content' )
-            strong.fa.fa-calendar-check-o
-              | {{ weekDay | moment('DD/MM/YYYY') }} 
-            div
-              PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
-  
-        div.card-footer.text-lg-center
+        div.card-block.list-group.performance-entry
+          li.list-group-item
+            //- Performance creation is disabled for future activityPerformances
+            link-popover(v-if='weekDay < new Date()')
+              span
+                button.btn.btn-success
+                  i.fa.fa-plus
+              div(slot='content')
+                h5.text-xs-center
+                  i.fa.fa-calendar-check-o 
+                  span &nbsp;{{ weekDay |moment('DD/MM/YYYY') }}
+                hr
+                PerformanceForm(:selected-date='weekDay', @success='onSubmitSuccess')
+       
+        //- b-popover(v-if='weekDay < new Date()', triggers='click', :placement='setPopoverPlacement(weekIndex)', :popover-style='popoverStyle')
+        //-   b-btn.btn-success.col-sm-12.fa.fa-plus
+        //-   .text-xs-center.col-lg-12(slot='content' )
+        //-     strong.fa.fa-calendar-check-o
+        //-       | {{ weekDay | moment('DD/MMMM/YYYY') }} 
+        //-     div
+        //-       PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
+
+        div.card-footer.text-sm-center
           small.text-muted
             | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
-
 
 </template>
 
@@ -173,8 +185,29 @@ export default {
             id: standby.id
           }
         }).then((delRes) => {
-          if(delRes.status == 204)
+          if(delRes.status == 204) {
+            this.$toast('User no longer on standby', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });
             this.onSubmitSuccess();
+          } else {
+            console.log( delRes );
+            this.$toast('Something went wrong. Check console for more information', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });  
+          }
         });
     },
 
@@ -201,8 +234,29 @@ export default {
             emulateJSON: true,
           }
         ).then((response) => {
-          if(response.status == 201)
+          if(response.status == 201) {
+            this.$toast('User on standby', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });
             this.onSubmitSuccess();
+          } else {
+            console.log(response);
+            this.$toast('Something went wrong. Check console for more information', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });            
+          }
         });
       } else {
         //Timesheet was not found, so a new one is made for that date
@@ -231,8 +285,29 @@ export default {
               emulateJSON: true,
             }
           ).then((spRes) => {
-            if(response.status == 201)
-            this.onSubmitSuccess();
+            if(response.status == 201) {
+              this.$toast('User on standby', 
+                { 
+                  id: 'standby-toast',
+                  horizontalPosition: 'right',
+                  verticalPosition: 'top',
+                  duration: 1000,
+                  transition: 'slide-down',
+                  mode: 'override'
+                });
+              this.onSubmitSuccess();
+            } else {
+              console.log(response);
+              this.$toast('Something went wrong. Check console for more information', 
+                { 
+                  id: 'standby-toast',
+                  horizontalPosition: 'right',
+                  verticalPosition: 'top',
+                  duration: 1000,
+                  transition: 'slide-down',
+                  mode: 'override'
+                });
+            }
           });
         });
       }

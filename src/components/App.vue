@@ -140,4 +140,76 @@ export default {
   font-weight: 300;
   margin-top: 1rem;
 }
+
+
+.popover-enter-active {
+  transition: all .3s ease-in-out;
+}
+
+.popover-leave-active {
+  transition: all .3s ease-in-out;
+}
+
+.popover-enter,
+.popover-leave-active {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.popover {
+  /*popover container*/
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  border: 0px;
+  margin: 0px;
+  padding: 0px;
+  z-index: 5;
+
+  button {
+    width: 100%;
+    margin: -4px;
+    z-index: 5;
+  }
+
+}
+
+.popover__content {
+  /*Style of hidden popover content*/
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 6px 6px rgba(16, 16, 16, 0.04), 0 6px 6px rgba(0, 0, 0, 0.05);
+  max-width: 70vw;
+  padding: 10px;
+  position: absolute;
+  width: 300px;
+  z-index: 1069;
+}
+
+.popover__content:hover {
+  /*background-color: red;*/
+}
+
+.popover__text {
+  /*Initially shown text*/
+}
+
+.popover__text:hover {
+
+}
+
+.popover__close-icon {
+  cursor: pointer;
+  display: inline-block;
+  fill: #000;
+  fill-opacity: .3;
+  height: .9rem;
+  position: absolute;
+  right: 10px;
+  stroke-width: 0;
+  stroke: currentColor;
+  width: .9em;
+}
+
+
 </style>

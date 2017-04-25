@@ -1,7 +1,8 @@
 <template lang="pug">
   div
     vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-    button.btn.col-md-12.btn-success.fa.fa-check(v-on:click='submitForm')
+    button.btn.btn-success.col-md-12(v-on:click='submitForm')
+      i.fa.fa-check
 </template>
 
 <script>
@@ -69,7 +70,7 @@ export default {
                 id: 'performance-toast',
                 horizontalPosition: 'right',
                 verticalPosition: 'top',
-                duration: 1500,
+                duration: 1000,
                 transition: 'slide-down',
                 mode: 'override'
               });
@@ -81,7 +82,7 @@ export default {
                 id: 'performance-toast',
                 horizontalPosition: 'right',
                 verticalPosition: 'top',
-                duration: 1500,
+                duration: 1000,
                 transition: 'slide-down',
                 mode: 'override'
               });
