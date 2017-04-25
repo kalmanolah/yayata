@@ -9,6 +9,7 @@ div
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') 
             <i class="fa fa-refresh" aria-hidden="true"></i> Reset
+      hr
       .pre-scrollable
         vue-form-generator(:schema="schema", :model="model", :options="formOptions")
         div.active-toggle Contract status
