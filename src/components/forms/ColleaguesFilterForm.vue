@@ -4,9 +4,11 @@ div
     .card-block
       .row
         .col-md-6
-          button.btn.btn-primary.btn-block(@click='submitUserFilterForm') Submit
+          button.btn.btn-primary.btn-block(@click='submitForm')
+            <i class="fa fa-filter" aria-hidden="true"></i> Submit
         .col-md-6
-          button.btn.btn-danger.btn-block(@click='resetForm') Reset
+          button.btn.btn-danger.btn-block(@click='resetForm') 
+            <i class="fa fa-refresh" aria-hidden="true"></i> Reset
       vue-form-generator.pre-scrollable(:schema="schema", :model="model", :options="formOptions") 
       
 </template>

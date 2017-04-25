@@ -4,9 +4,11 @@ div
     .card-block
       .row.form-buttons
         .col-md-6
-          button.btn.btn-primary.btn-block(@click='submitForm') Submit
+          button.btn.btn-primary.btn-block(@click='submitForm')
+            <i class="fa fa-filter" aria-hidden="true"></i> Submit
         .col-md-6
-          button.btn.btn-danger.btn-block(@click='resetForm') Reset
+          button.btn.btn-danger.btn-block(@click='resetForm') 
+            <i class="fa fa-refresh" aria-hidden="true"></i> Reset
       .pre-scrollable
         vue-form-generator(:schema="schema", :model="model", :options="formOptions")
         div.active-toggle Contract status
@@ -242,23 +244,7 @@ export default {
                       styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     }
-                    // ,
-                    //  {
-                    //   type: "switch",
-                    //     label: "Active",
-                    //     model: "active",
-                    //     multi: true,
-                    //     readonly: false,
-                    //     featured: false,
-                    //     disabled: false,
-                    //     default: true,
-                    //     dataOn: 'Active',
-                    //     dataOff: 'Inactive',
-                    //     textOn: "Active",
-                    //     textOff: "Inactive",
-                    //     styleClasses: "vue-js-switch"
-                    // }
-                ]
+                   ]
             },
 
             formOptions: {
