@@ -141,19 +141,19 @@ export default {
                     {
                       // userinfo__birth_date__year__gte
                       type: "input",
-                      inputType: "text",
-                      label: "Company",
+                      inputType: "number",
                       model: "userinfo__birth_date__year__gte",
                       readonly: false,
                       required: false,
                       disabled: false,
                       placeholder: "Born after year",
-                      validator: VueFormGenerator.validators.date
+                      styleClasses: 'no-label-field',                      
+                      validator: VueFormGenerator.validators.integer,
                     },
                     {
                       // userinfo__birth_date__year__lte
                       type: "input",
-                      inputType: "text",
+                      inputType: "number",
                       model: "userinfo__birth_date__year__lte",
                       readonly: false,
                       required: false,
