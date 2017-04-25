@@ -40,11 +40,14 @@ div(class='calendar')
   hr
   
   //- Buttons to toggle what to display
-  div.btn-group
-    button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
-    button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
-    button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
-
+  .row
+    //- .col.align-self-start
+    .btn-group-wrap
+      div.btn-group.week-format-buttons
+        button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
+        button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
+        button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
+    //- .col.align-self-end
   //- Cards
   div.calendar-header
     div.card-group
@@ -451,4 +454,15 @@ export default {
 
 }
 
+.btn-group-wrap {
+    text-align: center;
+    margin-bottom: .5rem;
+}
+
+div.btn-group {
+    margin: 0 auto; 
+    text-align: center;
+    width: inherit;
+    display: inline-block;
+}
 </style>
