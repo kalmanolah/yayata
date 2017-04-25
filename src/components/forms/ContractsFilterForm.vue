@@ -7,9 +7,10 @@ div
           button.btn.btn-primary.btn-block(@click='submitForm') Submit
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') Reset
-      vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-      div.active-toggle Contract status
-        toggle-button.pull-right(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
+      .pre-scrollable
+        vue-form-generator(:schema="schema", :model="model", :options="formOptions")
+        div.active-toggle Contract status
+          toggle-button.pull-right(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
       
 </template>
 <script>

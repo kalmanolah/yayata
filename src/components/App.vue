@@ -141,4 +141,8 @@ export default {
   font-weight: 300;
   margin-top: 1rem;
 }
+
+.pre-scrollable {
+  max-height: 70vh;
+}
 </style>

@@ -2,12 +2,12 @@
 div
   .card
     .card-block
-      vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
       .row
         .col-md-6
           button.btn.btn-primary.btn-block(@click='submitUserFilterForm') Submit
         .col-md-6
           button.btn.btn-danger.btn-block(@click='resetForm') Reset
+      vue-form-generator.pre-scrollable(:schema="schema", :model="model", :options="formOptions") 
       
 </template>
 <script>
