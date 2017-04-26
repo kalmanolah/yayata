@@ -15,6 +15,7 @@ const state = {
 
   //Global props, more likely to change
   contract_groups: null,
+  contract_roles: null,
   companies: null,
   users: null,
   filtered_contracts: null,
@@ -27,10 +28,12 @@ const state = {
   contract_users: null,
   monthly_activity_performances: null,
   work_schedule: null,
+  show_extra_info: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
+  contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
   week_formatting: {
     'workweek': {
       'start': 1,
@@ -65,6 +68,10 @@ const mutations = {
 
   [types.NINETOFIVER_SET_CONTRACT_GROUPS] (state, { contract_groups }) {
     state.contract_groups = contract_groups;
+  },
+
+  [types.NINETOFIVER_SET_CONTRACT_ROLES] (state, { contract_roles }) {
+    state.contract_roles = contract_roles;
   },
 
   [types.NINETOFIVER_SET_USER_GROUPS] (state, { user_groups }) {
@@ -111,6 +118,7 @@ const getters = {
   performance_types: state => state.performance_types,
   employment_contract_types: state => state.employment_contract_types,
   contract_groups: state => state.contract_groups,
+  contract_roles: state => state.contract_roles,
   user_groups: state => state.user_groups,
   companies: state => state.companies,
   users: state => state.users,
@@ -155,10 +163,12 @@ const getters = {
           description: x.description,
           performance_types: x.performance_types,
           contract_groups: x.contract_groups,
+          contract_type: x.type,
           active: x.active,
           customer: x.customer,
           company: x.company,
           projectName: x.name,
+          project_estimate: x.hours_estimated,
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: x.hours_spent
@@ -169,11 +179,26 @@ const getters = {
   contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
   work_schedule: state => state.work_schedule,
+  show_extra_info: state => {
+    if(!state.user){
+      return null;
+    } else {
+      // Return true if the user is a project manager.
+      var show = false;
+      state.user.groups.forEach((group) => {
+        if(group.id === 3){
+          show = true;
+        }
+      });
+      return show;
+    }
+  },
 
   //Predefined
   leave_statuses: state => state.leave_statuses,
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
+  contract_types: state => state.contract_types,
 
   //Calculated
   open_timesheet_count: state => { 
@@ -385,6 +410,31 @@ const actions = {
 
   },
 
+
+  [types.NINETOFIVER_RELOAD_CONTRACT_ROLES] (store, options = {}) {
+
+    options.path = '/contract_roles/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_CONTRACT_ROLES, {
+          contract_roles: res.data.results.map(x => {
+            return { id: x.id, name: x.label }
+          })
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
+
   [types.NINETOFIVER_RELOAD_USER_GROUPS] (store, options = {}) {
 
     return new Promise((resolve, reject) => {
@@ -523,8 +573,10 @@ const actions = {
   
   
   [types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS] (store, options = {}) {
-    
-    if(!options.path) {
+    //  Check show_extra_info 
+    if(store.getters.show_extra_info !== null && !store.getters.show_extra_info){
+      options.path = '/my_contracts/' 
+    } else if(!options.path) {
       options.path = '/contracts/';
     }
     return new Promise((resolve, reject) => {
