@@ -7,12 +7,12 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortBy("/my_contracts/")' v-if='show_extra_info') My contracts
-          button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
+          button.btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
+          button.btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
             .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
-              a.dropdown-item(v-for='name in customers' @click='setSortBy(name)') {{ name }}
+              a.dropdown-item(v-for='name in customers' @click='setSortByCustomerName(name)') {{ name }}
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
             .dropdown-menu(aria-labelledby='btnGroupDropContractType')
@@ -61,7 +61,7 @@ div
               hr(v-if='contract.type === "ProjectContract"')
               .row(v-if='contract.type === "ProjectContract"')
                 .col-md-4 <strong>Hours to fill in:</strong>
-                .col-md-8.text-md-right {{ contract | getHoursLeft }} hours
+                .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract | getHoursLeft }} hours
                 
 
   .col-md-3(v-if='show_extra_info')
@@ -316,6 +316,20 @@ export default {
         }
         return (tempObj[contract.type]) ? tempObj[contract.type] : 'tag-primary';   
       }
+    },
+
+    HoursLeft: function(contract) {
+      var output = 0;
+      if(contract.project_estimate){
+        contract.project_estimate.forEach(estimate => {
+          output += estimate[0]
+        });
+      }
+      return output -= contract.total_duration;
+    },
+
+    getStyleClassHoursLeft: function(contract){
+      return this.HoursLeft(contract) >= 0 ? 'text-success' : 'text-danger'
     },
   }
 }
