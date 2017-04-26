@@ -45,6 +45,8 @@ export default {
 
     togglePopover: function() {
       this.showpopover = !this.showpopover;
+      if(this.showpopover)
+        this.$emit('popped');
     },
 
     closePopover: function() {
@@ -92,10 +94,10 @@ export default {
   background: #fff;
   border: 1px solid #ddd;
   box-shadow: 0 6px 6px rgba(16, 16, 16, 0.04), 0 6px 6px rgba(0, 0, 0, 0.1);
-  max-width: 350px;
+  max-width: 400px;
   padding: 10px;
   position: absolute;
-  width: 70vw;
+  width: 350px;
   z-index: 10001;
 }
 
