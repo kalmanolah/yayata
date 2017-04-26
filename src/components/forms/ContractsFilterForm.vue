@@ -39,6 +39,7 @@ export default {
                 contractuser__user__groups__icontains: '',
                 active: true,
                 performance_types__label__icontains: '',
+                performance_types__id: '',
                 customer__internal: '',
                 contractuser__user__first_name__icontains: '',
                 company__internal: '',
@@ -233,17 +234,15 @@ export default {
                       validator: VueFormGenerator.validators.string
                     },
                     {
-                      // performance_types__label__icontains
-                      type: "input",
-                      inputType: "text",
-                      // label: "Performance type",
-                      model: "performance_types__label__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Performance type",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
+                      //PERFORMANCE_TYPE
+                      type: "select",
+                      model: "performance_types__id",
+                      required: true,
+                      styleClasses: 'no-label-field',
+                      values: function() {
+                        if(store.getters.performance_types)
+                          return store.getters.performance_types;
+                      },
                     }
                    ]
             },
@@ -278,6 +277,7 @@ export default {
         this.model.contractuser__user__groups__icontains = '',
         this.model.active = true,
         this.model.performance_types__label__icontains = '',
+        this.model.performance_types__id = '',
         this.model.customer__internal = '',
         this.model.contractuser__user__first_name__icontains = '',
         this.model.company__internal = '',
