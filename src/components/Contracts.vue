@@ -257,7 +257,7 @@ export default {
   },
 
   methods: {
-    setSortBy: function(value) {
+    setSortByCustomerName: function(value) {
       // Get all contracts.
       if(value === 'all') {
         this.sortBy = 'all';
@@ -266,7 +266,12 @@ export default {
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       // Get user contracts.
       } else if(value === '/my_contracts/') {
-        var options = { path: '/my_contracts/' };
+        var options = { 
+          path: '/contracts/', 
+          params: {
+            contractuser__user__id: store.getters.user.id
+          } 
+        };
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       // Get contracts of company.
       } else {
