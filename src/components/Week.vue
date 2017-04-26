@@ -56,34 +56,38 @@ div(class='calendar')
           toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
 
         //- Content of activityPerformances
-        div.card-block.list-group.performance-entry(v-for='(perf, i) in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
-          li.list-group-item
-            div.list-group-item-heading
-              | {{ findContractName(perf.contract) }}
-            div.list-group-item-text
-              | <small>{{ perf.duration }} h </small> 
+        div.card-block.performance-list
+          li.list-group-item.performance-entry(
+            v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+            :key='perf.id',
+            :class='[list-group, performance-list]'
+          )
+            hovercard(:date='weekDay', :performance='perf', @success='onSubmitSuccess')
+              div
+                //- What's default shown
+                .list-group-item-heading {{ findContractName(perf.contract) }}
+                .list-group-item-text 
+                  div {{ perf.description }}
+                  hr
+                  span
+                    small.pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                    small.pull-right {{ perf.duration }} h
 
-        div.card-block.list-group.performance-entry
-          li.list-group-item
-            //- Performance creation is disabled for future activityPerformances
-            link-popover(v-if='weekDay < new Date()')
-              span
-                button.btn.btn-success
-                  i.fa.fa-plus
+              //- When clicked
               div(slot='content')
-                h5.text-xs-center
-                  i.fa.fa-calendar-check-o 
-                  span &nbsp;{{ weekDay |moment('DD/MM/YYYY') }}
-                hr
-                PerformanceForm(:selected-date='weekDay', @success='onSubmitSuccess')
-       
-        //- b-popover(v-if='weekDay < new Date()', triggers='click', :placement='setPopoverPlacement(weekIndex)', :popover-style='popoverStyle')
-        //-   b-btn.btn-success.col-sm-12.fa.fa-plus
-        //-   .text-xs-center.col-lg-12(slot='content' )
-        //-     strong.fa.fa-calendar-check-o
-        //-       | {{ weekDay | moment('DD/MMMM/YYYY') }} 
-        //-     div
-        //-       PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
+
+        //- Standard 'add' button
+        div.card-block.list-group.performance-list
+          //- Performance creation is disabled for future activityPerformances
+          hovercard(v-if='weekDay < new Date()', :date='weekDay', :performance='perf', @success='onSubmitSuccess')
+
+            //- What's default shown
+            span
+              button.btn.btn-success.btn-submit
+                i.fa.fa-plus
+
+            //- When clicked
+            div(slot='content')
 
         div.card-footer.text-sm-center
           small.text-muted
@@ -96,13 +100,13 @@ import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
-import PerformanceForm from './forms/PerformanceForm.vue';
+import HoverCard from './tools/HoverCard.vue';
 
 export default {
   name: 'week',
 
   components: {
-    PerformanceForm: PerformanceForm,
+    hovercard: HoverCard
   },
 
   watch: {
@@ -332,11 +336,24 @@ export default {
       this.getDaysOfWeek(this.currentWeekFormat);
     },
 
-    //Find the contract that belongs to the contract id
+    //Find the contract's name that belongs to the contract id
     findContractName: function(id) {
       if(store.getters.contracts) {
-        var cont = store.getters.contracts.find(x => x.id == id);
-        return cont.name + ': ' + cont.customerName;
+        return store.getters.contracts.find(x => x.id == id)['name'];
+      }
+    },
+
+    //Find the contract's customerName that belongs to the contract id
+    findCustomerName: function(contractID) {
+      if(store.getters.contracts) {
+        return store.getters.contracts.find(x => x.id == contractID)['customerName'];
+      }
+    },
+
+    //Find the performance_type's name
+    findPerformanceTypeName: function(id) {
+      if(store.getters.performance_types) {
+        return store.getters.performance_types.find(x => x.id == id)['name'];
       }
     },
 
@@ -517,16 +534,39 @@ export default {
   }
 }
 
-.performance-entry {
-  padding: 3px 3px;
-  margin: 5px;
+.performance-list {
+  background-color: #f5f5f5;
   font-size: 95%;
+  color: rgb(15,15,15);
+  position: relative;
+  padding: 0px;
 
-  li {
-    padding: 3px;
-    margin: 2px;
+  .list-group-item-heading {
+    font-weight: bold;
   }
 
+  .btn-submit {
+    width: 100%;
+    border-radius: 0;
+  }
 }
+
+
+.calendar-header {
+/*  .card {
+    border: 0px;
+  }
+
+  .card-header {
+    border-radius: 0;
+  }*/
+}
+
+.performance-entry {
+  padding: 5px;
+  margin: 2px;
+  position: relative;
+}
+
 
 </style>
