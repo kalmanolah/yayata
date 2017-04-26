@@ -16,7 +16,7 @@ import store from '../../store';
 
 var upcoming_leaves = [];
 var vm;
-var today;
+var model = { end_date: null };
 
 export default {
 
@@ -29,7 +29,7 @@ export default {
     upcomingLeaves: function() {
       if(store.getters.upcoming_leaves) {
         var leavedate_arr = [];
-        today = moment();
+        var today = moment();
 
         // For each leave object in the response w/out rejected status
         // push the date for each leavedate object into a global array.
@@ -64,21 +64,21 @@ export default {
 
     //Sets up model, needs to be called when upcoming_leaves are fully loaded to set start_- & end_date
     initializeModel: function(start_date, end_date) {
-      this.model = VueFormGenerator.schema.createDefaultObject(this.schema);
-
-      this.model.start_date = start_date;
-      this.model.start_full_day = true;
-      this.model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
-      this.model.end_date = this.model.start_date;
-      this.model.end_full_day = true;
-      this.model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
-      this.model.attachments = null;   
+      model.start_date = start_date;
+      model.start_full_day = true;
+      model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
+      model.end_date = model.start_date;
+      model.end_full_day = true;
+      model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
+      model.attachments = null;   
     }
   },
 
   data: () => {
     return {
       name: 'LeaveForm',
+
+      model: model,
       
       schema: {
         fields: [
@@ -109,6 +109,10 @@ export default {
             },
 
             styleClasses: ['col-md-6', 'clearfix'],
+
+            onChanged: function(model, newVal, oldVal, field) {
+                model.end_date = newVal;
+            },
           },
           {
             //FROM DURATION
@@ -154,7 +158,7 @@ export default {
               showDaysInNextAndPreviousMonths: true,
 
               disableDayFn: val => {
-                return upcoming_leaves.find(x => {
+                return val < model.start_date ? true : upcoming_leaves.find(x => {
                   return x.getTime() === val.getTime()
                 });
               }
