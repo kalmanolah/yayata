@@ -10,9 +10,13 @@ div
           button.btn.btn-secondary(type='button' @click='setSortBy("/my_contracts/")' v-if='show_extra_info') My contracts
           button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
           .btn-group(role='group')
-            button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
-            .dropdown-menu(aria-labelledby='btnGroupDrop')
+            button.btn.btn-secondary.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
+            .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
               a.dropdown-item(v-for='name in customers' @click='setSortBy(name)') {{ name }}
+          .btn-group(role='group')
+            button.btn.btn-secondary.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
+            .dropdown-menu(aria-labelledby='btnGroupDropContractType')
+              a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
       .col-md-4
         .input-group
           span.input-group-addon Search
@@ -221,7 +225,7 @@ export default {
       if(this.sortBy !== 'all' && this.fullContracts){
         var contracts = [];
         this.fullContracts.forEach(contract => {
-          if(contract.customerName === this.sortBy){
+          if(contract.customerName === this.sortBy || contract.type === this.sortBy){
             contracts.push(contract)
           }
         });
@@ -258,6 +262,7 @@ export default {
       if(value === 'all') {
         this.sortBy = 'all';
         this.customerName = 'Customer';
+        this.contractType = 'Contract type';
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       // Get user contracts.
       } else if(value === '/my_contracts/') {
@@ -269,6 +274,12 @@ export default {
         this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
         this.customerName = this.filtered_contracts.find(x => x.customerName == value).customerName;
       }
+    },
+
+    setSortByType: function(type) {
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS);
+        this.sortBy = this.filtered_contracts.find(x => x.type == type).type;
+        this.contractType = this.filtered_contracts.find(x => x.type == type).type;      
     },
 
     activeSort: function(contracts) {
