@@ -139,10 +139,12 @@ const getters = {
           description: x.description,
           performance_types: x.performance_types,
           contract_groups: x.contract_groups,
+          contract_type: x.type,
           active: x.active,
           customer: x.customer,
           company: x.company,
           projectName: x.name,
+          project_estimate: x.hours_estimated,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: x.hours_spent
