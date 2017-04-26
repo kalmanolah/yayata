@@ -52,8 +52,8 @@ div(class='calendar')
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center Still awaiting approval
       div(v-if='showPendingLeaves')
-        #accordion(v-for='(leave, i) in pendingLeaves' role='tablist', aria-multiselectable='true')
-          .card( v-bind:class='getRibbonStyleClass(leave)')
+        #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
+          .card(:class='getRibbonStyleClass(leave)')
             div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
               div.row
                 div.col-sm-9

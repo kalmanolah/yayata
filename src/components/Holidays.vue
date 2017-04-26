@@ -1,10 +1,11 @@
   <template lang="pug">
 div
-  h3 Upcoming holidays on {{ today | moment('DD MMMM YYYY') }}
-  p.subtitle This is a list of all upcoming holidays in the next few months.
+  h3.text-md-center Upcoming holidays on {{ today | moment('DD MMMM YYYY') }}
+  p.text-md-center.subtitle This is a list of all upcoming holidays in the next few months.
   ul.list-group
     li.list-group-item(v-for='holiday in holidays')
-      | {{ [ holiday.date, 'YYYY-MM-DD' ] | moment('DD MMMM YYYY') }} | {{ holiday.display_label }}
+      | {{ [ holiday.date, 'YYYY-MM-DD' ] | moment('DD MMMM YYYY') }}  
+      span.pull-right {{ holiday.display_label }}
 </template>
 
 <script>

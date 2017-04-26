@@ -116,7 +116,7 @@ const getters = {
           projectName: x.name,
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: x.hours_spent
+          total_duration: parseFloat(x.hours_spent)
         };
       });
     }
