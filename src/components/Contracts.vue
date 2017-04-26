@@ -7,7 +7,7 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortBy("/my_contracts/")') My contracts
+          button.btn.btn-secondary(type='button' @click='setSortBy("/my_contracts/")' v-if='show_extra_info') My contracts
           button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
@@ -23,30 +23,44 @@ div
           .card-header 
             div.contract-name {{ contract.name }}
               span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
+              span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
             small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
           .card-block
             .card-text
               .row
-                .col-md-3 <strong>Description:</strong> 
-                .col-md-9.text-md-right {{ contract.description }}
+                .col-md-4 <strong>Description:</strong> 
+                .col-md-8.text-md-right {{ contract.description }}
               hr
               .row
-                .col-md-3 <strong>Total:</strong>
-                .col-md-9.text-md-right {{ contract.total_duration }} hours
+                .col-md-4 <strong>This month:</strong>
+                .col-md-8.text-md-right {{ contract.monthly_duration }} hours
               hr
               .row
-                .col-md-3 <strong>This month:</strong>
-                .col-md-9.text-md-right {{ contract.monthly_duration }} hours
+                .col-md-4 <strong>Groups:</strong>
+                .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
               hr
               .row
-                .col-md-3 <strong>Groups:</strong>
-                .col-md-9.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
-              hr
-              .row
-                .col-md-3 <strong>Users:</strong>
-                .col-md-9.text-md-right 
+                .col-md-4 <strong>Users:</strong>
+                .col-md-8.text-md-right 
                   div(v-for='user in contract.contract_users') {{ user.display_label }}
-  .col-md-3
+              hr
+              .row
+                .col-md-5 <strong>Total hours allocated:</strong>
+                .col-md-7.text-md-right {{ contract.total_duration }} hours
+              hr
+              .row(v-if='contract.type === "ProjectContract"')
+                .col-md-4 <strong>Project estimates:</strong>
+                .col-md-8.text-md-right 
+                  div(v-for='estimate in contract.project_estimate') 
+                    .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
+                    .col-md-6.estimate {{ estimate[0] }} hours
+              hr(v-if='contract.type === "ProjectContract"')
+              .row(v-if='contract.type === "ProjectContract"')
+                .col-md-4 <strong>Hours to fill in:</strong>
+                .col-md-8.text-md-right {{ contract | getHoursLeft }} hours
+                
+
+  .col-md-3(v-if='show_extra_info')
     .row
       h3 Advanced Filter
       p.subtitle more advanced filtering here   
@@ -72,10 +86,11 @@ export default {
     return {
       sortBy: 'all',
       customerName: 'Customer',
+      contractType: 'Contract type',
       query: '',
-
       // Stores the unique custoner names
       customers: [],
+      contractTypes: []
     }
   },
 
@@ -83,10 +98,12 @@ export default {
     if(!store.getters.filtered_contracts){
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
     }
+    if(!store.getters.contract_roles){
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
+    }
   },
 
   filters: {
-
     //Return array as joined strings
     getContractGroupAsString: function(arr) {
       //If we're provided a value
@@ -104,11 +121,42 @@ export default {
       return 'None';
     },
 
+    getRoleAsString: function(val) {
+      if(val && store.getters.contract_roles){
+        var output = '';
+
+        output += store.getters.contract_roles.find(x => x.id == val).name;
+        return output;
+      }
+    },
+
+    getHoursLeft: function(val) {
+      var output = 0;
+      if(val.project_estimate){
+        val.project_estimate.forEach(estimate => {
+          output += estimate[0]
+        });
+
+        return output - val.total_duration;
+      }
+    }
+
   },
 
   computed: {
+    user_groups: function() {
+      if(store.getters.user){
+        return store.getters.user.groups;
+      }
+    },
 
-    //Gets the contracts from the store
+    show_extra_info: function() {
+      if(store.getters.show_extra_info){
+        return store.getters.show_extra_info
+      }
+    },
+
+   //Gets the contracts from the store
     filtered_contracts: function() {
       if(store.getters.filtered_contracts) {
         // Get each unique customerName
@@ -116,7 +164,13 @@ export default {
           if(this.customers.indexOf(contract.customerName) === -1){
             this.customers.push(contract.customerName);
           }
-        }); 
+        });
+        // Get each unique contractType
+        store.getters.filtered_contracts.forEach((contract) => {
+          if(this.contractTypes.indexOf(contract.type) === -1){
+            this.contractTypes.push(contract.type);
+          }
+        });
         return store.getters.filtered_contracts;
       }
     },
@@ -200,13 +254,16 @@ export default {
 
   methods: {
     setSortBy: function(value) {
+      // Get all contracts.
       if(value === 'all') {
         this.sortBy = 'all';
         this.customerName = 'Customer';
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+      // Get user contracts.
       } else if(value === '/my_contracts/') {
         var options = { path: '/my_contracts/' };
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+      // Get contracts of company.
       } else {
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
         this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
@@ -231,7 +288,19 @@ export default {
 
     getTagStyleClass: function(contract) {
       return contract.active ? 'tag-success' : 'tag-danger';
-    }
+    },
+
+    getTagStyleClassContractType: function(contract) {
+      // var contract_type = store.getters.contract_types.find(c => contract.type === c);
+      if(contract){
+        var tempObj = {
+          [store.getters.contract_types[2]]: 'tag-danger',        
+          [store.getters.contract_types[1]]: 'tag-primary',
+          [store.getters.contract_types[0]]: 'tag-success',
+        }
+        return (tempObj[contract.type]) ? tempObj[contract.type] : 'tag-primary';   
+      }
+    },
   }
 }
 </script>
@@ -259,4 +328,9 @@ export default {
 .contract-name {
   font-weight: bold;
 }
+
+.estimate {
+  padding-right: 0;
+}
+
 </style>
