@@ -7,8 +7,6 @@ import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 
-import BootstrapVue from 'bootstrap-vue'
-import LinkPopover from 'vue-link-popover'
 import ToggleButton from 'vue-js-toggle-button'
 import Toast from 'vue-easy-toast'
 
@@ -28,9 +26,7 @@ import Contracts from './components/Contracts.vue'
 
 // Vue.use(Vuex)
 Vue.use(Toast)
-Vue.use(LinkPopover)
 Vue.use(ToggleButton)
-Vue.use(BootstrapVue)
 Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueMoment)
