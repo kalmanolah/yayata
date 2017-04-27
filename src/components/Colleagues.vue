@@ -18,7 +18,7 @@ div
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
     .row.card-row(v-if='filtered_users')
-      .col-md-6#accordion(v-for='(user, index) in queryUsers' role='tablist' aria-multiselectable='true') 
+      .col-md-4#accordion(v-for='(user, index) in queryUsers' role='tablist' aria-multiselectable='true') 
         .card
           .card-header( v-bind:id='"heading-" + index' role='tab' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
             span.user-fullname {{ user.first_name }} {{ user.last_name }}
@@ -26,8 +26,8 @@ div
           .card-block
             .card-text
               .row
-                .col-md-3 <strong>Email: </strong>
-                .col-md-9.text-md-right {{ user.email }}
+                .col-md-2 <strong>Email: </strong>
+                .col-md-10.text-md-right.text-truncate {{ user.email }}
               .row
                 .col-md-3 <strong>Telephone: </strong>
                 .col-md-9.text-md-right +32 498 348585
@@ -70,7 +70,6 @@ var data = {
 
 export default {
   name: 'colleagues',
-
   components: {
     ColleaguesFilterForm
   },
@@ -86,6 +85,10 @@ export default {
   },
 
   computed: {
+    userId: function() {
+      return this.$route.params.userId;
+    },
+
     filtered_users: function(){
       if(store.getters.filtered_users)
         return store.getters.filtered_users
@@ -98,7 +101,7 @@ export default {
 
     // Filter users by input
     queryUsers: function(){
-      if(store.getters.filtered_users && this.sortedUsers){
+      if(store.getters.filtered_users && this.sortedUsers && this.userId === store.getters.colleagues_filter){
         var query = this.query;
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
@@ -106,12 +109,17 @@ export default {
           return user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1
                 || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
+      } else {
+         return this.sortedUsers.filter( user => {
+          // Fields to filter on
+          return user.id === this.userId;
+        });
       }
     },
 
     // Sort users by group
     sortedUsers: function() {
-      if(this.sortBy !== 'all' && this.filtered_users){
+      if(this.sortBy !== store.getters.colleagues_filter && this.filtered_users){
         var users = [];
         this.filtered_users.forEach(user => {
           user.groups.forEach( group => {
@@ -134,7 +142,7 @@ export default {
     },
 
     setSortBy: function(value) {
-      if(value === 'all') {
+      if(value === store.getters.colleagues_filter) {
         this.sortBy = 'all';
         this.groupLabel = 'group';
       } else {

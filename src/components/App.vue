@@ -26,7 +26,7 @@ div(
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small Sickness / Vacation
-            router-link(:to='{ name: "colleagues" }')
+            router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
               p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')

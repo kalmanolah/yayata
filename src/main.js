@@ -69,7 +69,7 @@ export const router = new VueRouter({
         },
         {
           name: 'colleagues',
-          path: '/colleagues',
+          path: '/colleagues/:userId',
           component: Colleagues,
         },
         {

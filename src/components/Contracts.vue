@@ -21,48 +21,54 @@ div
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
-    .row.card-row
-      .col-md-6(v-for='(contract, index) in queryContracts')
-        .card(v-bind:class='getRibbonStyleClass(contract)')
-          .card-header 
-            div.contract-name {{ contract.name }}
-              span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
-              span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
-            small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
-          .card-block
-            .card-text
-              .row
-                .col-md-4 <strong>Description:</strong> 
-                .col-md-8.text-md-right {{ contract.description }}
-              hr
-              .row
-                .col-md-4 <strong>This month:</strong>
-                .col-md-8.text-md-right {{ contract.monthly_duration }} hours
-              hr
-              .row
-                .col-md-4 <strong>Groups:</strong>
-                .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
-              hr
-              .row
-                .col-md-4 <strong>Users:</strong>
-                .col-md-8.text-md-right 
-                  div(v-for='user in contract.contract_users') {{ user.display_label }}
-              hr
-              .row
-                .col-md-5 <strong>Total hours allocated:</strong>
-                .col-md-7.text-md-right {{ contract.total_duration }} hours
-              hr
-              .row(v-if='contract.type === "ProjectContract"')
-                .col-md-4 <strong>Project estimates:</strong>
-                .col-md-8.text-md-right 
-                  div(v-for='estimate in contract.project_estimate') 
-                    .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
-                    .col-md-6.estimate {{ estimate[0] }} hours
-              hr(v-if='contract.type === "ProjectContract"')
-              .row(v-if='contract.type === "ProjectContract"')
-                .col-md-4 <strong>Hours to fill in:</strong>
-                .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract | getHoursLeft }} hours
-                
+    .row
+      .card-columns
+        div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
+          .card(v-bind:class='getRibbonStyleClass(contract)')
+            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
+              div.contract-name {{ contract.name }}
+                span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
+                span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
+              small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+            .card-block
+              .col-md-6
+                .card-text
+                  .row
+                    .col-md-4 <strong>Description:</strong> 
+                    .col-md-8.text-md-right {{ contract.description }}
+                  .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
+                    hr
+                    .row
+                      .col-md-4 <strong>This month:</strong>
+                      .col-md-8.text-md-right {{ contract.monthly_duration }} hours
+                    hr
+                    .row
+                      .col-md-4 <strong>Groups:</strong>
+                      .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
+                    hr
+                    .row
+                      .col-md-4 <strong>Users:</strong>
+                      .col-md-8.text-md-right 
+                        div(v-for='user in contract.contract_users') 
+                          router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
+                    hr
+                    .row
+                      .col-md-5 <strong>Total hours allocated:</strong>
+                      .col-md-7.text-md-right {{ contract.total_duration }} hours
+                    hr
+                    .row(v-if='contract.type === "ProjectContract"')
+                      .col-md-4 <strong>Project estimates:</strong>
+                      .col-md-8.text-md-right 
+                        div(v-for='estimate in contract.project_estimate') 
+                          .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
+                          .col-md-6.estimate {{ estimate[0] }} hours
+                    hr(v-if='contract.type === "ProjectContract"')
+                    .row(v-if='contract.type === "ProjectContract"')
+                      .col-md-4 <strong>Hours to fill in:</strong>
+                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract | getHoursLeft }} hours
+              .col-md-6
+                    div insert graph here
+                    
 
   .col-md-3(v-if='show_extra_info')
     .row
@@ -340,17 +346,6 @@ export default {
   cursor: pointer;
 }
 
-.card-row {
-  margin-top: 1rem;
-   display: flex;
-   flex-wrap: wrap;
-}
-
-.card-row > div[class*='col-'] {
-  display: flex;
-
-}
-
 .card {
   width: 100%;
 }
@@ -361,6 +356,11 @@ export default {
 
 .estimate {
   padding-right: 0;
+}
+
+.card-columns {
+  column-count: 1;
+  margin-right: 15px;
 }
 
 </style>
