@@ -144,55 +144,15 @@ export default {
                     },
                     // COMPANY
                     {
-                      // Company__country
-                      type: "input",
-                      inputType: "text",
-                      label: "Company",
-                      model: "company__country",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Country",
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // company__internal
-                      type: "input",
-                      inputType: "text",
-                      // label: "Company internal",
+                      // Company_internal
+                      type: "select",
+                      label: "Company",                      
                       model: "company__internal",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "internal",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // company__name__icontains
-                      type: "input",
-                      inputType: "text",
-                      // label: "Company name",
-                      model: "company__name__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Name",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // company__vat_identification_number
-                      type: "input",
-                      inputType: "text",
-                      // label: "Company VAT",
-                      model: "company__vat_identification_number",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "VAT identification number",
-                      styleClasses: 'no-label-field',                      
-                      validator: VueFormGenerator.validators.string
+                      required: true,
+                      values: function() {
+                        if(store.getters.companies)
+                          return store.getters.companies.filter(c => c.internal === true);
+                      },
                     },
                     // CONTRACT
                     {
