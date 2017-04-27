@@ -34,6 +34,7 @@ const state = {
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
+  colleagues_filter: 'all',
   week_formatting: {
     'workweek': {
       'start': 1,
@@ -201,6 +202,7 @@ const getters = {
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
   contract_types: state => state.contract_types,
+  colleagues_filter: state => state.colleagues_filter,
 
   //Calculated
   open_timesheet_count: state => { 
