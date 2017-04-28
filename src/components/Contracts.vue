@@ -435,10 +435,4 @@ export default {
   margin-right: 15px;
 }
 
-.fixed {
-  position: fixed;
-  left: 77vw;
-  width: 21vw;
-}
-
 </style>

@@ -47,7 +47,7 @@ div
       .col-md-6
         h1.text-md-center.notice No colleagues found!
       .col-md-3
-  .col-md-3
+  .col-md-3.fixed
     .row
       h3 Advanced Filter
       p.subtitle more advanced filtering here   

@@ -147,4 +147,10 @@ export default {
 .pre-scrollable {
   max-height: 70vh;
 }
+
+.fixed {
+  position: fixed;
+  left: 77vw;
+  width: 21vw;
+}
 </style>
