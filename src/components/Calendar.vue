@@ -100,6 +100,8 @@ export default {
       return quota >= 1 ? 'tag-success' : quota <= 0.4 ? 'tag-danger' : 'tag-warning';
     },
 
+
+
     //Get all leaves for this month
     getLeaves: function() {
       //Make param for month's range
@@ -178,7 +180,22 @@ export default {
       return total;
     },
 
-    //Check whether user is on leave on that particular day
+    //Check whether holiday / user is on leave
+    isExcusedFromWork: function(day) {
+      var today = moment(this.selectedMonth).date(day);
+      var onLeave = false;
+
+      if(store.getters.holidays) {
+        store.getters.holidays.forEach(x => {
+          if (today.format('YYYY-MM-DD') === x.date)
+            onLeave = true;
+        });
+      }
+
+      return onLeave || this.isOnLeave(day);
+    },
+
+    //Check whether user is on requested leave on that particular day
     isOnLeave: function(day) {
       var today = moment(this.selectedMonth).date(day);
 
@@ -190,6 +207,7 @@ export default {
       });
     },
 
+    //Formatting to help display in calendar
     getLeaveRange: function(day) {
       var today = moment(this.selectedMonth).date(day);
       return this.leaves.find(x => {
@@ -200,7 +218,7 @@ export default {
 
     //Return style according to leave/no-leave
     determineLeaveStyle: function(day) {
-      if(this.isOnLeave(day))
+      if(this.isExcusedFromWork(day))
         return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' : 
                 this.isWeekendDay(day) ? 'calendar-day-weekend-on-leave' :
                 'calendar-day-on-leave';
@@ -363,6 +381,12 @@ export default {
 
 .calendar-day-weekend {
   .card {
+    background: rgba(150, 150, 150, 0.25);
+  }
+}
+
+.calendar-day-on-leave {
+  .card {
     background: rgba(150, 150, 150, 0.1);
   }
 }
@@ -378,5 +402,6 @@ export default {
     );
   }
 }
+
 
 </style>
