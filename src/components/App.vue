@@ -77,7 +77,9 @@ export default {
     if(!store.getters.monthly_activity_performances)
       store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
     if(!store.getters.work_schedule)
-      store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
+      store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);    
+    if(!store.getters.project_estimates)
+      store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
   },
 
   method: {},

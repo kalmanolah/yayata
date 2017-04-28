@@ -20,6 +20,7 @@ const state = {
   users: null,
   filtered_contracts: null,
   filtered_users: null,
+  project_estimates: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -99,6 +100,9 @@ const mutations = {
   [types.NINETOFIVER_SET_FILTERED_CONTRACTS] (state, { filtered_contracts }) {
     state.filtered_contracts = filtered_contracts;
   },
+  [types.NINETOFIVER_SET_PROJECT_ESTIMATES] (state, { project_estimates }) {
+    state.project_estimates = project_estimates;
+  },
   [types.NINETOFIVER_SET_CONTRACT_USERS] (state, { contract_users }) {
     state.contract_users = contract_users;
   },
@@ -124,6 +128,7 @@ const getters = {
   companies: state => state.companies,
   users: state => state.users,
   filtered_users: state => state.filtered_users,
+  project_estimates: state => state.project_estimates,
 
   //User specific
   timesheets: state => state.timesheets,
@@ -145,7 +150,9 @@ const getters = {
           customer: x.customer,
           company: x.company,
           projectName: x.name,
-          project_estimate: x.hours_estimated,          
+          project_estimate: x.hours_estimated,
+          start_date: x.starts_at,
+          end_date: x.ends_at,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: x.hours_spent
@@ -171,6 +178,8 @@ const getters = {
           customer: x.customer,
           company: x.company,
           projectName: x.name,
+          start_date: x.starts_at,
+          end_date: x.ends_at,    
           project_estimate: x.hours_estimated,
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
@@ -512,6 +521,27 @@ const actions = {
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_FILTERED_USERS, {
           filtered_users: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
+  
+  [types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES] (store, options = {}) {
+
+    options.path = '/project_estimates/'
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_PROJECT_ESTIMATES, {
+          project_estimates: res.data.results
         });
         resolve(res);
 

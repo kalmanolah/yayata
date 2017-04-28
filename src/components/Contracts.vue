@@ -30,13 +30,13 @@ div
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
               small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
-            .card-block
-              .col-md-6
-                .card-text
-                  .row
-                    .col-md-4 <strong>Description:</strong> 
-                    .col-md-8.text-md-right {{ contract.description }}
-                  .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
+            .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
+              .card-block
+                .col-md-6
+                  .card-text
+                    .row
+                      .col-md-4 <strong>Description:</strong> 
+                      .col-md-8.text-md-right {{ contract.description }}
                     hr
                     .row
                       .col-md-4 <strong>This month:</strong>
@@ -51,10 +51,11 @@ div
                       .col-md-8.text-md-right 
                         div(v-for='user in contract.contract_users') 
                           router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
-                    hr
-                    .row
-                      .col-md-5 <strong>Total hours allocated:</strong>
-                      .col-md-7.text-md-right {{ contract.total_duration }} hours
+                    div(v-if='contract.type !== "SupportContract"')
+                      hr
+                      .row
+                        .col-md-5 <strong>Total hours allocated:</strong>
+                        .col-md-7.text-md-right {{ contract.total_duration }} hours
                     hr
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Project estimates:</strong>
@@ -66,8 +67,8 @@ div
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Hours to fill in:</strong>
                       .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract | getHoursLeft }} hours
-              .col-md-6
-                    div insert graph here
+                .col-md-6
+                  PieChart(:chart-data='contract.datacollection')
                     
 
   .col-md-3(v-if='show_extra_info')
@@ -83,13 +84,16 @@ import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import ContractsFilterForm from './forms/ContractsFilterForm.vue';
+import PieChart from './charts/PieChart.js';
+import moment from 'moment';
 
 
 export default {
   name: 'contracts',
 
   components: {
-    ContractsFilterForm
+    ContractsFilterForm,
+    PieChart
   },
 
   data () {
@@ -160,6 +164,13 @@ export default {
       }
     },
 
+    project_estimates: function() {
+      if(store.getters.project_estimates){
+        return store.getters.project_estimates;
+      }
+    },
+
+
     show_extra_info: function() {
       if(store.getters.show_extra_info){
         return store.getters.show_extra_info
@@ -209,7 +220,6 @@ export default {
             });
             cd.contract_users = contract_users;
           }
-
           return contract_detail;
       }
     },
@@ -247,9 +257,9 @@ export default {
       if(this.filtered_contracts && this.contract_detail)
         //First filter for active contracts
         //Then find the corresponding contract_detail
-        return this.filtered_contracts.map(c => {
-            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
-          });
+       return this.filtered_contracts.map(c => {
+          return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
+        });
     },
 
     //Gets the contracts currently unactive
@@ -263,6 +273,67 @@ export default {
   },
 
   methods: {
+    generateCharts: function(contracts){
+      contracts.forEach(c => {
+        if(c.type === "ProjectContract"){
+          this.generateProjectChart(c);
+        } else {
+          this.generateTimeLeftChart(c);
+        }
+      });
+    },
+
+    generateProjectChart: function(contract) {
+      console.log('in projc');
+      
+      var data = [];
+      var labels = [];
+      var total_allocated = 0;
+      this.project_estimates.forEach(estimate => {
+        if(estimate.project === contract.id){
+          total_allocated += Number(estimate.hours_estimated);
+          data.push(estimate.hours_estimated);
+          labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
+        }
+      })
+
+      var hoursToFillIn = total_allocated- contract.total_duration;
+      var datacollection = {
+        labels: labels,
+        datasets :[
+          {
+            label: 'Estimates',
+            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+            data: data
+          },
+          {
+            label: 'Time left',
+            backgroundColor: ['#41B883', '#E46651'],
+            data: [contract.total_duration, hoursToFillIn]
+          },
+        ]
+      }
+      contract.datacollection = datacollection;
+    },
+
+    generateTimeLeftChart: function(contract) {
+      var data = [];
+      var daysLeft = moment().diff(moment(contract.start_date), 'days');
+      var daysSinceStart = moment(contract.end_date).diff(moment(), 'days');
+      
+      var datacollection = {
+        labels: ['Days left', 'Days spent'],
+        datasets :[
+          {
+            label: 'Data One',
+            backgroundColor: ['#41B883', '#E46651'],
+            data: [daysSinceStart, daysLeft]
+          },
+        ]
+      }
+      contract.datacollection = datacollection;
+    },
+
     setSortByCustomerName: function(value) {
       // Get all contracts.
       if(value === 'all') {
@@ -294,6 +365,7 @@ export default {
     },
 
     activeSort: function(contracts) {
+      this.generateCharts(contracts);
       if(contracts){
         return contracts.sort(function(a, b) {
           a = a.active;
