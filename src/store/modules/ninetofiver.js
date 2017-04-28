@@ -128,7 +128,25 @@ const getters = {
   companies: state => state.companies,
   users: state => state.users,
   filtered_users: state => state.filtered_users,
-  project_estimates: state => state.project_estimates,
+  project_estimates: state => {
+    if(!state.project_estimates)
+      return null;
+    else {
+      return state.project_estimates.map(x => {
+        return {
+          id: x.id,
+          created_at: x.created_at,
+          updated_at: x.updated_at,
+          type: x.type,
+          display_label: x.display_label,
+          role: x.role,
+          project: x.project,
+          // Cast hours_estimated to number, gets converted to string.
+          hours_estimated: Number(x.hours_estimated)
+        }
+      });
+    }
+  },
 
   //User specific
   timesheets: state => state.timesheets,
