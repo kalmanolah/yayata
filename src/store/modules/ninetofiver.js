@@ -48,6 +48,9 @@ const mutations = {
   [types.NINETOFIVER_SET_USER] (state, { user }) {
     state.user = user;
   },
+  [types.NINETOFIVER_SET_HOLIDAYS] (state, { holidays }) {
+    state.holidays = holidays;
+  },
 
   [types.NINETOFIVER_SET_LEAVE_TYPES] (state, { leave_types }) {
     state.leave_types = leave_types;
@@ -233,6 +236,25 @@ const actions = {
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USER, {
           user: res.data
+        })
+        resolve(res)
+      }, (res) => {
+        reject(res)
+      })
+    })
+  },
+
+  [types.NINETOFIVER_RELOAD_HOLIDAYS] (store, options = {}) {
+
+    options.path = '/holidays/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_HOLIDAYS, {
+          holidays: res.data.results
         })
         resolve(res)
       }, (res) => {

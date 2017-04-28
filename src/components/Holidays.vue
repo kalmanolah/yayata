@@ -14,7 +14,6 @@ import store from '../store'
 import * as types from '../store/mutation-types'
 
 var data = {
-    holidays: [],
     today: new Date(),
 }
 
@@ -25,16 +24,13 @@ export default {
     return data;
   },
 
-  created: () => {
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/holidays/',
-      params: {
-      },
-    }).then((response) => {
-      data.holidays = response.data.results
-    }, () => {
-      this.loading = false
-    })
+  computed: {
+    holidays: function() {
+      if(store.getters.holidays)
+        return store.getters.holidays;
+    }
   },
+
+  created: () => {},
 }
 </script>
