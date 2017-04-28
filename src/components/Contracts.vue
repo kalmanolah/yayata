@@ -71,7 +71,7 @@ div
                   PieChart(:chart-data='contract.datacollection')
                     
 
-  .col-md-3(v-if='show_extra_info')
+  .col-md-3.fixed(v-if='show_extra_info')
     .row
       h3 Advanced Filter
       p.subtitle more advanced filtering here   
@@ -433,6 +433,12 @@ export default {
 .card-columns {
   column-count: 1;
   margin-right: 15px;
+}
+
+.fixed {
+  position: fixed;
+  left: 77vw;
+  width: 21vw;
 }
 
 </style>
