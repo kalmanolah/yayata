@@ -161,7 +161,7 @@ export default {
 
       var quota = required > 0 ? performed / required : 1;
 
-      return quota >= 1 ? 'fa-check' : quota <= 0.4 ? 'fa-times' : 'fa-warning';
+      return quota >= 1 ? 'fa-check' : '';
     },
 
     //Returns correct component for the hovercard
