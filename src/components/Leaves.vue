@@ -23,10 +23,12 @@ div(class='calendar')
         button.btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
           i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center An overview of all your leaves
+
         div(v-if='showAllLeaves')
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
-              div.card-header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
+              div.card-header.leave__header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
+
                 div.row
                   div.col-sm-9
                     a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
@@ -51,10 +53,12 @@ div(class='calendar')
         button.btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center Still awaiting approval
+
       div(v-if='showPendingLeaves')
         #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
           .card(:class='getRibbonStyleClass(leave)')
-            div.card-header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+            div.card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+
               div.row
                 div.col-sm-9
                   a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
@@ -64,10 +68,12 @@ div(class='calendar')
                     | {{ leave.status }}
                   
             div.collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
-              div.card-block
-                div
+              div.card-block.row
+                div.col-md-10
                   | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                   | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+                button.btn.btn-danger.col-md-2(@click='cancelPendingLeave(leave)')
+                  i.fa.fa-ban.text-sm-center
 
 
 </template>
@@ -86,8 +92,8 @@ export default {
   data () {
     return {
       leaves: [],
-      showAllLeaves: false,
-      showPendingLeaves: false,
+      showAllLeaves: true,
+      showPendingLeaves: true,
     }
   },
 
@@ -144,7 +150,42 @@ export default {
   filter: { },
 
   methods: {
+    
+    //Displays a toast with message
+    showToast(text) {
+      this.$toast(text, 
+        { 
+          id: 'performance-toast',
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 1000,
+          transition: 'slide-down',
+          mode: 'override'
+        });
+    },
 
+    //Cancels the pending
+    cancelPendingLeave: function(lv) {
+      console.log( lv );
+
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        {
+          path: '/my_leaves/' + lv.id + '/',
+          method: 'DELETE'
+        }
+      ).then((response) => {
+        if(response.status == 200 || response.status == 204) {
+            this.getLeaves();
+            this.showToast('Leave successfully deleted.');
+          } else {
+            console.log(response);
+            this.showToast('Error deleting Leave. Console has more information.');
+          }
+      });
+    },
+
+    //Load all leaves
     getLeaves: function() {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/',
@@ -204,5 +245,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-
+.leave__header {
+  cursor: pointer;
+}
 </style>
