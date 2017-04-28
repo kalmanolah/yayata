@@ -1,5 +1,8 @@
 <template lang="pug">
   div
+    .text-xs-center
+      i.fa.fa-calendar-check-o
+      span &nbsp; {{ today | moment('DD/MM/YYYY') }}
     vue-form-generator(:id='"vfg-" + i', :schema="schema", :model="model", :options="formOptions")
 
     button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm')
@@ -21,18 +24,15 @@ var model = { contract: null };
 export default {
 
   props: {
-    selectedDate: {
-      type: Object,
-      default: moment(),
-    },
-    performance: {
+
+    properties: {
       type: Object,
       default: null,
       validator(value) {
-        console.log(value);
         return (value !== null && value !== undefined && typeof value === 'object')
       }
     }
+
   },
 
   created: function() {
@@ -44,15 +44,20 @@ export default {
 
   computed: {
     today: function() { 
-      return this.selectedDate; 
+      return this.defaultProperties ? this.defaultProperties.date : moment(); 
     },
 
     submitButtonStyle: function() {
       return this.defaultPerformance ? 'col-sm-6' : 'col-sm-12';
     },
 
+    defaultProperties: function() {
+      return this.properties || null;
+    },
+
     defaultPerformance: function() {
-      return this.performance ? this.performance : null;
+      if(this.defaultProperties)
+        return Object.keys(this.defaultProperties).length > 0 ? this.defaultProperties.performance : null;
     },
 
     defaultContract: function() {
@@ -130,7 +135,6 @@ export default {
           &&
           x.year == this.today.year()
         );
-        console.log( timesheet );
 
         if(timesheet) {
           this.submitForm(timesheet.id);
@@ -261,6 +265,7 @@ export default {
             type: "textArea",
             model: "description",
             required: true,
+            max: 255,
 
             styleClasses: ['compact-field', 'col-md-12'],
           },

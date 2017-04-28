@@ -40,58 +40,62 @@ div(class='calendar')
       hr
   
     //- Buttons to toggle what to display
-    div.btn-group.col-sm-12
+    .btn-group.col-sm-12
       button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
       button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
       button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
 
   //- Cards
-  div.calendar-header
-    div.card-group
-      div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
+  .calendar-header
 
-        div.card-header.card-info
-          span.pull-left {{ weekDay | moment('ddd') }}  {{ weekDay | moment('DD/MM') }}
-          //- Standby toggle
-          toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
+    //- Header w days
+    .card-group
+      .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
 
-        //- Content of activityPerformances
-        div.card-block.performance-list
+        .card-header.card-info
+          .pull-left 
+            h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
+            h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
+          .pull-right
+            toggle-button.pull-right(
+              @change='toggleStandby(weekDay)', 
+              :value='getStandbyStatus(weekDay)', 
+              color='#DB4C4C', 
+              :sync='true', 
+              :labels='toggleButtonLabels', 
+              :width='65'
+            )
+
+        .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
+          //- Performance creation is disabled for future activityPerformances
+          hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
+
+            //- Visible text
+            button.btn.btn-success.btn-submit
+              i.fa.fa-plus
+
+          small.text-muted
+            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+          .pull-right.quota__icon
+            i.fa(:class='getDailyQuota(weekDay)')
+          hr
+
+        //- Body of performances
+        .card-block.performance-list
           li.list-group-item.performance-entry(
             v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
             :key='perf.id',
             :class='[list-group, performance-list]'
           )
-            hovercard(:date='weekDay', :performance='perf', @success='onSubmitSuccess')
-              div
-                //- What's default shown
-                .list-group-item-heading {{ findContractName(perf.contract) }}
-                .list-group-item-text 
-                  div {{ perf.description }}
-                  hr
-                  span
-                    small.pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                    small.pull-right {{ perf.duration }} h
-
-              //- When clicked
-              div(slot='content')
-
-        //- Standard 'add' button
-        div.card-block.list-group.performance-list
-          //- Performance creation is disabled for future activityPerformances
-          hovercard(v-if='weekDay < new Date()', :date='weekDay', :performance='perf', @success='onSubmitSuccess')
-
-            //- What's default shown
-            span
-              button.btn.btn-success.btn-submit
-                i.fa.fa-plus
-
-            //- When clicked
-            div(slot='content')
-
-        div.card-footer.text-sm-center
-          small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+            hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+              //- Visible text
+              .list-group-item-heading {{ findContractName(perf.contract) }}
+              .list-group-item-text 
+                div {{ perf.description }}
+                hr
+                small
+                  .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                  .pull-right {{ perf.duration }} h
 
 </template>
 
@@ -101,12 +105,14 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import HoverCard from './tools/HoverCard.vue';
+import PerformanceForm from './forms/PerformanceForm.vue';
 
 export default {
   name: 'week',
 
   components: {
-    hovercard: HoverCard
+    hovercard: HoverCard,
+    performanceform: PerformanceForm,
   },
 
   watch: {
@@ -148,6 +154,27 @@ export default {
   created: function() { },
 
   methods: {
+
+    getDailyQuota: function(day) {
+      var performed = this.getDurationTotal(day);
+      var required = this.getHoursTotal(day);
+
+      var quota = required > 0 ? performed / required : 1;
+
+      return quota >= 1 ? 'fa-check' : quota <= 0.4 ? 'fa-times' : 'fa-warning';
+    },
+
+    //Returns correct component for the hovercard
+    getHoverCardComponent: function(date, perf) {
+
+      return {
+        name: 'PerformanceForm',
+        properties: {
+          performance: perf,
+          date: date
+        }
+      };
+    },
 
     //Get whether user is on standby
     getStandbyStatus: function(day) {
@@ -518,22 +545,6 @@ export default {
 
 <style lang="less" scoped>
 
-.calendar-day-dummy {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.calendar-day-weekend {
-  .card {
-    background: rgba(255, 0, 0, 0.2);
-  }
-}
-
-.calendar-day-current {
-  .card {
-    background: rgba(0, 255, 0, 0.2);
-  }
-}
-
 .performance-list {
   background-color: #f5f5f5;
   font-size: 95%;
@@ -544,29 +555,48 @@ export default {
   .list-group-item-heading {
     font-weight: bold;
   }
-
-  .btn-submit {
-    width: 100%;
-    border-radius: 0;
-  }
 }
 
 
 .calendar-header {
-/*  .card {
-    border: 0px;
+  .card {
+    background-color: #f8f8f8;
   }
+}
 
-  .card-header {
-    border-radius: 0;
-  }*/
+.pre-scrollable {
+  max-height: 55vh;
+  overflow: visible;
 }
 
 .performance-entry {
   padding: 5px;
   margin: 2px;
   position: relative;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
+.card-head-foot {
+  position: relative;
+  padding: 0px;
+  float: none;
+  vertical-align: bottom;
 
+  hr {
+    margin: 2px 6px 8px 6px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .quota__icon {
+    color: rgba(0,0,0,0.5);
+    position: relative;
+    top: 1px;
+    left: -10px;
+  }
+}
 </style>
