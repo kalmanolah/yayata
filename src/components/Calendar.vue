@@ -47,13 +47,13 @@ div(class='calendar')
       router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
         div(class='card card-block')
           p {{ n }}
-            b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top')
+            b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
               i.fa.fa-plane
               div(slot='content')
                 div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
                 div <strong>From: </strong> {{ getLeaveRange(n).leave_start | moment('DD MMMM  HH:mm') }}
                 div <strong>Until: </strong> {{ getLeaveRange(n).leave_end | moment('DD MMMM  HH:mm') }}
-          small.pull-right.tag(v-bind:class='getDailyQuota(n)')
+          small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
             |  {{ getPerformedHours(n) | roundHoursFilter }} /
             | {{ getRequiredHours(n) | roundHoursFilter}}
 
