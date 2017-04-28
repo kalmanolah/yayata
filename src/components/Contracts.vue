@@ -66,7 +66,7 @@ div
                     hr(v-if='contract.type === "ProjectContract"')
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Hours to fill in:</strong>
-                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract | getHoursLeft }} hours
+                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.totalHoursAllocated - contract.total_duration }} hours
                 .col-md-6
                   PieChart(:chart-data='contract.datacollection')
                     
@@ -144,17 +144,6 @@ export default {
       }
     },
 
-    getHoursLeft: function(val) {
-      var output = 0;
-      if(val.project_estimate){
-        val.project_estimate.forEach(estimate => {
-          output += estimate[0]
-        });
-
-        return output - val.total_duration;
-      }
-    }
-
   },
 
   computed: {
@@ -208,8 +197,18 @@ export default {
               if(x.contract === cd.id)
                 totalHours += parseFloat(x.duration);
             });
-
             cd.monthly_duration = totalHours;
+
+            var totalHoursAllocated = 0;
+            var contract = store.getters.contracts.find(c => c.id === cd.id);
+            // Calculate total nuber of hours allocated from project contract.
+            if(contract.type === 'ProjectContract'){
+              contract.project_estimate.forEach(estimate => {
+                totalHoursAllocated += estimate[0];
+              });
+              cd.totalHoursAllocated = totalHoursAllocated;
+            }
+
             cd.total_users = store.getters.contract_users_count;
             
             var contract_users = [];
@@ -283,20 +282,20 @@ export default {
       });
     },
 
+    // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
-      console.log('in projc');
-      
       var data = [];
       var labels = [];
       var total_allocated = 0;
       this.project_estimates.forEach(estimate => {
         if(estimate.project === contract.id){
-          total_allocated += Number(estimate.hours_estimated);
+          total_allocated += estimate.hours_estimated;
           data.push(estimate.hours_estimated);
           labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
         }
       })
 
+      // Should be hours allocated: project_estimates needs refactoring first.
       var hoursToFillIn = total_allocated- contract.total_duration;
       var datacollection = {
         labels: labels,
@@ -316,6 +315,7 @@ export default {
       contract.datacollection = datacollection;
     },
 
+    // Generates a chart based on a support or consultancy contract.
     generateTimeLeftChart: function(contract) {
       var data = [];
       var daysLeft = moment().diff(moment(contract.start_date), 'days');
