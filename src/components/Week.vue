@@ -489,10 +489,11 @@ export default {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_performances/',
         params: {
-          year: this.selectedYear,
+          timesheet__year: this.selectedYear,
           timesheet__month: month,
           day__gte: start,
           day__lte: end,
+          page_size: 200,
         },
       }).then((response) => {
         // this.activityPerformances = this.activityPerformances.concat( response.data.results );
