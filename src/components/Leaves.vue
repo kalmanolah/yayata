@@ -92,7 +92,7 @@ export default {
   data () {
     return {
       leaves: [],
-      showAllLeaves: true,
+      showAllLeaves: false,
       showPendingLeaves: true,
     }
   },
@@ -189,6 +189,9 @@ export default {
     getLeaves: function() {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/',
+        params: {
+          page_size: 100
+        }
       }).then((response) => {
 
         //Converts the start / end datetime from strings to actual JS datetimes
