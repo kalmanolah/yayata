@@ -46,15 +46,8 @@ export default {
   data () {
     return {
       today: moment(),
-      days: {
-        monday: 0,
-        tuesday: 0,
-        wednesday: 0,
-        thursday: 0,
-        friday: 0,
-        saturday: 0,
-        sunday: 0
-      }
+      days: [],
+      leaves: [],
     }
   },
 
@@ -66,6 +59,10 @@ export default {
 
     while(dayOfMonth <= endOfMonth) {
       var weekday = dayOfMonth.format('dddd').toLowerCase();
+
+      if(!this.days[weekday])
+        this.days[weekday] = 0;
+
       this.days[weekday]++;
       dayOfMonth.add(1, 'days');
     }
@@ -74,14 +71,38 @@ export default {
     store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
 
 
+    //Get all leaves for this month
+    //Make param for month's range
+    var startOfMonth = this.today.startOf('month');
+    var endOfMonth = this.today.endOf('month');
+    var range = `${startOfMonth.format('YYYY-MM-DDTHH:mm:ss')},${endOfMonth.format('YYYY-MM-DDTHH:mm:ss')}`;
+
+    store.dispatch(types.NINETOFIVER_API_REQUEST, {
+      path: '/my_leaves/',
+      params: {
+        status: store.getters.leave_statuses[2],
+        leavedate__range: range,
+        page_size: 31,
+      }
+    }).then((response) => {
+
+      response.data.results.forEach(lv => {
+        lv.leavedate_set.forEach(lvd => {
+          lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
+          lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+        });
+      
+        lv['leave_start'] = lv.leavedate_set[0].starts_at;
+        lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+      });
+
+      this.leaves = response.data.results;
+    }, () => {
+      this.loading = false;
+    });
   },
 
   computed: {
-
-    workschedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
-    },
     
     //Calculates amount of hours that should be worked according to the workschedule
     totalHoursRequired: function() {
@@ -90,14 +111,51 @@ export default {
       //Loop over each entry in the schedule array
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
-      if(this.workschedule) {
-        this.workschedule.forEach(wschedule => {
-          for(var ws in wschedule)
-            if(this.days[ws])
-              total += parseFloat(wschedule[ws]) * this.days[ws];
-        });
-      }
+      if(store.getters.work_schedule && this.leaves && store.getters.holidays) {
+        store.getters.work_schedule.forEach(ws => {
+          //Add regular days to total
+          for(var w in ws) {
+            if(this.days[w])
+              total += parseFloat(ws[w]) * this.days[w];
+          }
 
+            //Correcting total with holidays
+            store.getters.holidays.forEach(h => {
+              var date = moment(h.date, 'YYYY-MM-DD');
+
+              if(this.today.month() === date.month())
+                total -= ws[date.format('dddd').toLowerCase()];
+            });
+
+            //Correcting total with leaves
+            this.leaves.forEach(lv => {
+              var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+              var endOfDay = moment(lv.leave_end).hour(17).minute(30);
+              var ld = moment(lv.leave_start).add(1, 'days');
+
+              var startDiff = lv.leave_start.diff(startOfDay, 'hours');
+              var endDiff = endOfDay.diff(lv.leave_end, 'hours');
+
+              //Do not occur on the same day
+              if(lv.leave_start.date() !== lv.leave_end.date()) {
+
+                //Subtract either the hours gone, or the complete day
+                total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
+                total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+
+                //While the leavedate isn't equal to the enddate
+                while(ld.date() !== lv.leave_end.date()) {
+                  total -= ws[ld.format('dddd').toLowerCase()];
+
+                  ld = ld.add(1, 'days');
+                }
+              } else {
+                total -= (startDiff > 0) ? startDiff : 0;
+                total -= (endDiff > 0) ? endDiff : 0;
+              }
+            });
+          });
+      }
 
       return total;
     },

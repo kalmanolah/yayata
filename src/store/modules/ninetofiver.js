@@ -40,6 +40,15 @@ const state = {
       'start': 1,
       'end': 7
     }
+  },
+  days: {
+    monday: 0,
+    tuesday: 0,
+    wednesday: 0,
+    thursday: 0,
+    friday: 0,
+    saturday: 0,
+    sunday: 0
   }
 }
 
@@ -133,6 +142,7 @@ const getters = {
   //Predefined
   leave_statuses: state => state.leave_statuses,
   week_formatting: state => state.week_formatting,
+  days: status => state.days,
 
   //Calculated
   open_timesheet_count: state => { 

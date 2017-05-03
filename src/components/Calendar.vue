@@ -1,9 +1,9 @@
 <template lang="pug">
 div(class='calendar')
-  div(class='row')
-    div(class='col-md-3')
+  .row
+    .col-md-3
     h1(class='col-md-6 text-md-center') {{ months[selectedMonth.getMonth()] }} {{ selectedMonth.getFullYear() }}
-    div(class='col-md-3 text-md-right')
+    .col-md-3.text-md-right
       div(
         class='btn-group'
         role='group'
@@ -23,6 +23,10 @@ div(class='calendar')
         )
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
+    .col-md-4
+    h5.col-md-4.text-md-center
+      small <strong>Total:</strong> {{ totalHoursPerformed }} / {{ totalHoursRequired }}
+    .col-md-4
   hr
 
   //- Day-names
@@ -37,7 +41,7 @@ div(class='calendar')
 
     //- Day-blocks
     div(
-      v-for='n in dayCount'
+      v-for='(n, i) in dayCount'
       class='calendar-day'
       v-bind:class='[{ \
         "calendar-day-weekend": isWeekendDay(n), \
@@ -97,10 +101,8 @@ export default {
 
       var quota = required > 0 ? performed / required : 1;
 
-      return quota >= 1 ? 'tag-success' : quota <= 0.4 ? 'tag-danger' : 'tag-warning';
+      return quota >= 1 ? 'tag-success' : quota <= 0.6 ? 'tag-danger' : 'tag-warning';
     },
-
-
 
     //Get all leaves for this month
     getLeaves: function() {
@@ -113,7 +115,8 @@ export default {
         path: '/my_leaves/',
         params: {
           status: store.getters.leave_statuses[2],
-          leavedate__range: range
+          leavedate__range: range,
+          page_size: 31,
         }
       }).then((response) => {
 
@@ -142,7 +145,8 @@ export default {
         path: '/my_performances/activity/',
         params: {
           timesheet__month: this.selectedMonth.getMonth() + 1,
-          timesheet__year: this.selectedMonth.getFullYear()
+          timesheet__year: this.selectedMonth.getFullYear(),
+          page_size: 700
         }
       }).then((response) => {
         this.performances = response.data.results;
@@ -299,15 +303,7 @@ export default {
       leaves: [],
       performances: [],
 
-      weekDays: [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ],
+      weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
       months: [
         'January',
         'February',
@@ -328,6 +324,111 @@ export default {
   },
 
   computed: {
+
+    days: function() {
+      var daysInWeek = [];
+
+      //Make days-object containing amount of -days in current month
+      var dayOfMonth = moment(this.selectedMonth).startOf('month');
+      var endOfMonth = moment(this.selectedMonth).endOf('month');
+
+      while(dayOfMonth <= endOfMonth) {
+        var weekday = dayOfMonth.format('dddd').toLowerCase();
+
+        if(!daysInWeek[weekday])
+          daysInWeek[weekday] = 0;
+
+        daysInWeek[weekday]++;
+        dayOfMonth.add(1, 'days');
+      }
+
+      return daysInWeek;
+    },
+
+    //Hours required according to workschedules
+    totalHoursRequired: function() {
+      var total = 0;
+
+      if(this.workschedule && this.leaves && store.getters.holidays) {
+        this.workschedule.forEach(ws => {
+
+          //Add regular days to total
+          for(var w in ws) {
+            if(store.getters.days[w] >= 0) 
+              total += parseFloat(ws[w]) * this.days[w];
+          }
+
+          //Correcting total with holidays
+          store.getters.holidays.forEach(h => {
+            var date = moment(h.date, 'YYYY-MM-DD');
+
+            if(this.selectedMonth.getMonth() === date.month())
+              total -= ws[date.format('dddd').toLowerCase()];
+          });
+
+          //Correcting total with leaves
+          this.leaves.forEach(lv => {
+            var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+            var endOfDay = moment(lv.leave_end).hour(17).minute(30);
+            var ld = moment(lv.leave_start).add(1, 'days');
+
+            var startDiff = lv.leave_start.diff(startOfDay, 'hours');
+            var endDiff = endOfDay.diff(lv.leave_end, 'hours');
+
+            //Do not occur on the same day
+            if(lv.leave_start.date() !== lv.leave_end.date()) {
+
+              //Subtract either the hours gone, or the complete day
+              total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
+              total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+
+              //While the leavedate isn't equal to the enddate
+              while(ld.date() !== lv.leave_end.date()) {
+                total -= ws[ld.format('dddd').toLowerCase()];
+
+                ld = ld.add(1, 'days');
+              }
+            } else {
+              total -= (startDiff > 0) ? startDiff : 0;
+              total -= (endDiff > 0) ? endDiff : 0;
+            }
+          });
+        });
+      }
+
+      return total;
+    },
+
+    //Hours already logged
+    totalHoursPerformed: function() {
+      var total = 0;
+
+      if(this.contracts)
+        this.contracts.forEach(x => {
+          total += x.monthly_duration;
+        });
+
+      return total;
+    },
+
+    contracts: function() {
+      if(store.getters.contracts && this.performances) {
+        var contrs = store.getters.contracts;
+        //Calculate total perf duration for each entry
+        contrs.forEach(c => {
+          var total = 0;
+
+          this.performances.forEach(p => {
+            if(p.contract === c.id)
+              total += parseFloat(p.duration);
+          });
+
+          c.monthly_duration = total;
+        });
+
+        return contrs;
+      }
+    },
 
     leaveTypes: function() {
       if(store.getters.leave_types)
