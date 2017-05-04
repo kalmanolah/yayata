@@ -3,41 +3,42 @@ div(
   id='app'
   class='container-fluid'
 )
-  div.row
-    div.col-md-2.sidebar.col-sm-4.hidden-print
-      div.row
-        div.col-md-8.offset-md-2
+  .row
+    .col-md-2.sidebar.col-sm-4.hidden-print
+      .row
+        .col-md-8.offset-md-2
           router-link(
             :to='{ name: "home" }'
           )
-            img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg').logo
-      div.row
-        div.col-md-10.offset-md-1.col-sm-8
+            img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
+      .row
+        .col-md-10.offset-md-1.col-sm-8
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
-              p.small I said hey, what's going on
+              p.small.hidden-md-down All open timesheets
             router-link(:to='{ name: "contracts" }')
               h3 Contracts
-              p.small What am I working on
+              p.small.hidden-md-down What am I working on
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
-              p.small Sickness / Vacation
+              p.small.hidden-md-down Sickness / Vacation
             router-link(:to='{ name: "colleagues" }')
               h3 Colleagues
-              p.small The weirdos I work with
+              p.small.hidden-md-down The weirdos I work with
             router-link(:to='{ name: "companies" }')
               h3 Companies
-              p.small Overview of clients
+              p.small.hidden-md-down Overview of clients
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
-              p.small Get monthly overview
+              p.small.hidden-md-down Monthly overview
 
-    div.col-md-10.offset-sm-3.offset-md-2
-      div.row
+    .col-md-10.offset-sm-3.offset-md-2
+      .row
         navbar
-      div.main-app
+      .main-app
         router-view
+
 </template>
 
 <script>
@@ -93,6 +94,7 @@ export default {
 </script>
 
 <style lang="less">
+
 .container-fluid{
   background: #FAFAFA;
 }
@@ -113,8 +115,12 @@ export default {
 .sidebar nav{
   h3{
     font-weight: 300;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
   margin-top: 30px;
+  margin-left: -10px;
   color: #398BCC;
 }
 
@@ -143,4 +149,19 @@ export default {
   margin-top: 1rem;
 }
 
+/* Small devices (landscape phones, 544px and up) */
+@media (min-width: 544px) {  
+  h3 {font-size:1.25rem;} /*1rem = 16px*/
+}
+ 
+/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
+@media (min-width: 768px) {  
+  h3 {font-size:1.5rem;} /*1rem = 16px*/
+}
+ 
+/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
+@media (min-width: 1200px) {  
+  h3 {font-size:1.75rem;} /*1rem = 16px*/
+}
+ 
 </style>
