@@ -2,6 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
+var DashboardPlugin = require('webpack-dashboard/plugin')     //https://github.com/FormidableLabs/webpack-dashboard
 
 
 module.exports = {
@@ -25,7 +26,8 @@ module.exports = {
       {
         from: './src/static'
       },
-    ])
+    ]),
+    new DashboardPlugin(),
   ],
   module: {
     rules: [
