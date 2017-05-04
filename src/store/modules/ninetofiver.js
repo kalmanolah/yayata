@@ -237,7 +237,7 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
 
-    options.path = '/services/my_user';
+    options.path = '/services/my_user/';
     
     return new Promise((resolve, reject) => {
       store.dispatch(
