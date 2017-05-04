@@ -4,7 +4,7 @@ div
   .row
     .col-md-10.offset-md-1
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
-        | You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+        .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
     .col-md-10.offset-md-1
       .card
