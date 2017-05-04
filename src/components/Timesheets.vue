@@ -6,7 +6,7 @@
       
       br
 
-      div.card
+      div.card.card-top-blue
 
         h3.card-header {{ year }}
         
@@ -47,6 +47,7 @@
         daysInMonth: {},
         quotas: {},
         loaded: {},
+        called: {},
       }
     },
 
@@ -77,14 +78,24 @@
 
       loaded: {
         handler: function(newLoaded) {
+
           for(var l in newLoaded) {
-            if(!newLoaded[l].performances) 
+            if(!this.called[l])
+              this.called[l] = { performances: false, leaves: false };
+
+            if(!newLoaded[l].performances && !this.performances[l] && !this.called[l].performances) {
               this.getPerformancesForTimesheet(l);
-            else if(!newLoaded[l].leaves)
+              this.called[l].performances = true;
+            }
+            else if(!newLoaded[l].leaves && !this.leaves[l] && !this.called[l].leaves) {
               this.getLeavesForTimesheet(l);
-            else 
+              this.called[l].leaves = true;
+            }
+            else if( newLoaded[l].performances && newLoaded[l].leaves && this.called[l].performances && this.called[l].leaves) {
               this.getDaysInMonth(l);
+            }
           }
+
         }, 
         deep: true,   //When the object's nested props need to be watched as well
       },
