@@ -5,6 +5,7 @@ div(class='calendar')
 
       //- Upcoming leave
       h3.text-md-center Upcoming leave
+      p.text-md-center The first one upcoming, or currently active.
       div(v-if='nearestLeave')
         div.list-group-item.text-md-center
           p <strong> {{ nearestLeave.leave_type }} </strong>
@@ -22,7 +23,7 @@ div(class='calendar')
       h3.text-md-center All Leaves
         button.btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
           i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
-      p.text-md-center An overview of all your leaves
+      p.text-md-center An overview of all your leaves.
 
         div(v-if='showAllLeaves')
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
@@ -31,7 +32,9 @@ div(class='calendar')
 
                 div.row
                   div.col-sm-9
-                    a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
+                    a.text-muted(v-if='leave.leave_end < new Date()')
+                      strike <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
+                    a(v-else)
                       | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                   div.col-sm-3
                     span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
@@ -52,7 +55,7 @@ div(class='calendar')
       h3.text-md-center Pending leaves
         button.btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
-      p.text-md-center Still awaiting approval
+      p.text-md-center Still awaiting approval.
 
       div(v-if='showPendingLeaves')
         #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
@@ -61,7 +64,9 @@ div(class='calendar')
 
               div.row
                 div.col-sm-9
-                  a(v-bind:class='leave.leave_end < new Date() ? "text-muted" : ""')
+                  a.text-muted(v-if='leave.leave_end < new Date()')
+                    strike <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
+                  a(v-else)
                     | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                 div.col-sm-3 
                   span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
@@ -166,7 +171,6 @@ export default {
 
     //Cancels the pending
     cancelPendingLeave: function(lv) {
-      console.log( lv );
 
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
