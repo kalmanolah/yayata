@@ -9,8 +9,12 @@ nav(
     data-target='#navbarResponsive'
     aria-controls='navbarResponsive'
     aria-expanded='false'
-    aria-label='Toggle navigation'
+    aria-label='Toggle navigation',
+    @click='clicked = !clicked',
   )
+    i.fa(
+    :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
+    )
   div(
     class='collapse navbar-toggleable-sm'
     id='navbarResponsive'
@@ -41,19 +45,22 @@ nav(
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import store from '../store'
 import * as types from '../store/mutation-types'
 
 export default {
   name: 'navbar',
 
-  computed: mapState({
-    user: state => state.ninetofiver.user
-  }),
+  computed: {
+    user: function() {
+      if(store.getters.user)
+        return store.getters.user;
+    }
+  },
 
   data () {
     return {
+      clicked: false
     }
   }
 }
