@@ -8,8 +8,7 @@
     "build": "cross-env NODE_ENV=production webpack --progress --colors --hide-modules"
   },
   "dependencies": {
-    "vue": "^2.1.7",
-    "vue-link-popover": "^2.0.1"
+    "vue": "^2.1.7"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",
@@ -33,6 +32,7 @@
     "vue-moment": "^2.0.2",
     "vue-resource": "^1.0.3",
     "vue-router": "^2.0.1",
+    "vue-simple-spinner": "^1.2.1",
     "vuex": "^2.0.0",
     "vuex-persistedstate": "^0.3.0",
     "vuex-router-sync": "^3.0.0",

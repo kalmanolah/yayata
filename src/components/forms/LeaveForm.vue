@@ -4,14 +4,17 @@ div
     h4.card-title.text-md-center
       i.fa.fa-plane
       | &nbsp; Request a Leave
+
     .card-block
       vue-form-generator(v-if='upcomingLeaves', :schema="schema", :model="model", :options="formOptions")
+      Spinner(v-if='requestLoading')
 </template>
 
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
+import Spinner from 'vue-simple-spinner';
 import store from '../../store';
 
 var upcoming_leaves = [];
@@ -20,8 +23,13 @@ var model = { end_date: null };
 
 export default {
 
+  components: {
+    Spinner,
+  },
+
   created: function() {
     vm = this;
+    store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
   },
 
   computed: {
@@ -77,6 +85,8 @@ export default {
   data: () => {
     return {
       name: 'LeaveForm',
+
+      requestLoading: false,
 
       model: model,
       
@@ -236,6 +246,8 @@ export default {
             validateBeforeSubmit: true,
             onSubmit: function(model, schema) {
 
+              vm.requestLoading = true;
+
               var s_time = moment(model.start_hour, "HH:mm");
               var s_date = moment(model.start_date).startOf('date');
 
@@ -262,108 +274,114 @@ export default {
                   emulateJSON: true,
                 }
               ).then((lvResponse) => {
-                console.log(lvResponse);
 
-                //Make leavedates and bind them to the leave
-                store.dispatch(
-                  types.NINETOFIVER_API_REQUEST,
-                  {
-                    path: '/services/my_leave_request/',
-                    method: 'POST',
-                    body: {
-                      leave: lvResponse.body.id,
-                      timesheet: 0,
-                      starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
-                      ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
-                    },
-                    emulateJSON: true,
-                  }
-                ).then((lvdResponse) => {
+                if(!lvResponse.status == 201) {
+                  console.log(lvResponse);
+                  vm.requestLoading = false;
+                } else {
 
-                  if(lvdResponse.status == 201) {
-                    vm.$toast('Leave successfully requested.',
-                    { 
-                      id: 'leave-toast',
-                      horizontalPosition: 'right',
-                      verticalPosition: 'top',
-                      duration: 1500,
-                      transition: 'slide-down',
-                      mode: 'override'
-                    });  
-
-                  } else {
-                    console.log(lvdResponse);
-                    vm.$toast('Something went wrong during the request. Check console for more info.',
-                    { 
-                      id: 'leave-toast',
-                      horizontalPosition: 'right',
-                      verticalPosition: 'top',
-                      duration: 1500,
-                      transition: 'slide-down',
-                      mode: 'override'
-                    });
-                  }
-
-                  //Update the leave object's status
+                  //Make leavedates and bind them to the leave
                   store.dispatch(
-                    types.NINETOFIVER_API_REQUEST, 
+                    types.NINETOFIVER_API_REQUEST,
                     {
-                      path: '/my_leaves/' + lvResponse.body.id + '/',
-                      method: 'PATCH',
+                      path: '/services/my_leave_request/',
+                      method: 'POST',
                       body: {
-                        status: store.getters.leave_statuses[0],     //Get 'PENDING'
+                        leave: lvResponse.body.id,
+                        timesheet: 0,
+                        starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
+                        ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
                       },
                       emulateJSON: true,
                     }
-                  );
-                });
+                  ).then((lvdResponse) => {
 
-                //If attachments were added to the leaverequest
-                if(model.attachments) {
-                  var attachIDs = [];
+                    //SUCCESS
+                    if(lvdResponse.status == 201) {
+                      vm.$toast('Leave successfully requested.',
+                      { 
+                        id: 'leave-toast',
+                        horizontalPosition: 'right',
+                        verticalPosition: 'top',
+                        duration: 1500,
+                        transition: 'slide-down',
+                        mode: 'override'
+                      });
 
-                  for(var i = 0; i < model.attachments.length; i++) {
-                    var formData = new FormData();
-                    formData.append('label', model.attachments[i].name)
-                    formData.append('file', model.attachments[i]);
+                      vm.initializeModel();
+                      vm.requestLoading = false;
 
-                    //Make attachment
-                    store.dispatch(
-                      types.NINETOFIVER_API_REQUEST,
-                      {
-                        path: '/my_attachments/',
-                        method: 'POST',
-                        body: formData
-                      }
-                    ).then((attResponse) => {
-                      console.log(attResponse);
+                      //Update the leave object's status
+                      store.dispatch(
+                        types.NINETOFIVER_API_REQUEST, 
+                        {
+                          path: '/my_leaves/' + lvResponse.body.id + '/',
+                          method: 'PATCH',
+                          body: {
+                            status: store.getters.leave_statuses[0],     //Get 'PENDING'
+                          },
+                          emulateJSON: true,
+                        }
+                      );
 
-                      attachIDs.push(attResponse.data.id);
+                      //If attachments were added to the leaverequest
+                      if(model.attachments) {
+                        var attachIDs = [];
 
-                      if(attachIDs.length === model.attachments.length) {
-                        //Make patchcall to my_leaves to link attachment_id
-                        store.dispatch(
-                          types.NINETOFIVER_API_REQUEST,
-                          {
-                            path: '/my_leaves/' + lvResponse.body.id + '/',
-                            method: 'PATCH',
-                            body: {
-                              attachments: attachIDs 
+                        for(var i = 0; i < model.attachments.length; i++) {
+                          var formData = new FormData();
+                          formData.append('label', model.attachments[i].name)
+                          formData.append('file', model.attachments[i]);
+
+                          //Make attachment
+                          store.dispatch(
+                            types.NINETOFIVER_API_REQUEST,
+                            {
+                              path: '/my_attachments/',
+                              method: 'POST',
+                              body: formData
                             }
-                          }
-                        ).then((attUpdateResponse) => {
-                          console.log(attUpdateResponse);
-                        });
+                          ).then((attResponse) => {
+
+                            attachIDs.push(attResponse.data.id);
+
+                            if(attachIDs.length === model.attachments.length) {
+                              //Make patchcall to my_leaves to link attachment_id
+                              store.dispatch(
+                                types.NINETOFIVER_API_REQUEST,
+                                {
+                                  path: '/my_leaves/' + lvResponse.body.id + '/',
+                                  method: 'PATCH',
+                                  body: {
+                                    attachments: attachIDs 
+                                  }
+                                }
+                              );
+                            }      
+                          });
+                        }
                       }
-                      
-                    });
-                  }
+
+                    // ON RIP
+                    } else {
+                      vm.requestLoading = false;
+                      console.log(lvdResponse);
+                      vm.$toast('Something went wrong during the request. Check console for more info.',
+                      { 
+                        id: 'leave-toast',
+                        horizontalPosition: 'right',
+                        verticalPosition: 'top',
+                        duration: 1500,
+                        transition: 'slide-down',
+                        mode: 'override'
+                      });
+                    }
+                  });
                 }
               });
-
             },
 
-            styleClasses: 'col-md-12',
+            styleClasses: ['btn', 'btn-success', 'col-md-12'],
           }
         ]
       },
@@ -376,8 +394,32 @@ export default {
   },
 
   watch: {
+    requestLoading: function(newRequestLoading) {
 
+      console.log( 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' );
+    }
   }
 
 }
 </script>
+
+<style>
+@include animation("400ms rotate linear infinite");
+
+@include keyframes(rotate){
+    0% { @include transform(rotate(0)); }
+    100% { @include transform(rotate(360deg)); }
+}
+
+.loader{
+  margin: 0 0 2em;
+  height: 100px;
+  width: 20%;
+  text-align: center;
+  padding: 1em;
+  margin: 0 auto 1em;
+  display: inline-block;
+  vertical-align: top;
+}
+
+</style>
