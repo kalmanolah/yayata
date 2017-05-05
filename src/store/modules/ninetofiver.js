@@ -534,10 +534,12 @@ const actions = {
       var today = new Date();
 
       options.params = {
-        leavedate__gte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)
+        leavedate__gte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
+        page_size: 50
       };
     } else {
       options.params['leavedate__gte'] = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      options.params['page_size'] = 50;
     }
 
     function leaveSorter(val) {

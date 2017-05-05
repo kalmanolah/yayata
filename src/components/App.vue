@@ -55,31 +55,33 @@ export default {
 
     //Initialize constants
     if (!store.getters.user) 
-      store.dispatch(types.NINETOFIVER_RELOAD_USER);
-    if (!store.getters.holidays) 
-      store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
-    if (!store.getters.leave_types)
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
-    if (!store.getters.performance_types)
-      store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES);
-    if (!store.getters.employment_contract_types)
-      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
-    if (!store.getters.contract_groups)
-      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
-    if (!store.getters.companies)
-      store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
-    if (!store.getters.timesheets)
-      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
-    if (!store.getters.contracts)
-      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
-    if(!store.getters.contract_users)
-      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
-    if(!store.getters.monthly_activity_performances)
-      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
-    if(!store.getters.work_schedule)
-      store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
-    if(!store.getters.upcoming_leaves)
-      store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
+      store.dispatch(types.NINETOFIVER_RELOAD_USER).then(() => {
+        if (!store.getters.holidays) 
+          store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+        if (!store.getters.leave_types)
+          store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
+        if (!store.getters.performance_types)
+          store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES);
+        if (!store.getters.employment_contract_types)
+          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
+        if (!store.getters.contract_groups)
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
+        if (!store.getters.companies)
+          store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
+        if (!store.getters.timesheets)
+          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+        if (!store.getters.contracts)
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+        if(!store.getters.contract_users)
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+        if(!store.getters.monthly_activity_performances)
+          store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+        if(!store.getters.work_schedule)
+          store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
+        if(!store.getters.upcoming_leaves)
+          store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
+
+      });
   },
 
   method: {},
