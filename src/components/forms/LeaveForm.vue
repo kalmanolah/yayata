@@ -7,7 +7,9 @@ div
 
     .card-block
       vue-form-generator(v-if='upcomingLeaves', :schema="schema", :model="model", :options="formOptions")
-      Spinner(v-if='requestLoading')
+      .btn.btn-success.col-md-12(@click='submitLeaveRequest()')
+        Spinner(v-if='requestLoading')
+        i.fa.fa-plus(v-else)
 </template>
 
 <script>
@@ -18,7 +20,6 @@ import Spinner from 'vue-simple-spinner';
 import store from '../../store';
 
 var upcoming_leaves = [];
-var vm;
 var model = { end_date: null };
 
 export default {
@@ -28,7 +29,6 @@ export default {
   },
 
   created: function() {
-    vm = this;
     store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
   },
 
@@ -78,7 +78,150 @@ export default {
       model.end_date = model.start_date;
       model.end_full_day = true;
       model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
-      model.attachments = null;   
+      model.attachments = null;
+    },
+
+    //Shows a toast with a message
+    showToast: function(message) {
+      this.$toast(
+        message,
+        { 
+          id: 'leave-toast',
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 1500,
+          transition: 'slide-down',
+          mode: 'override'
+      });
+    },
+
+    //Submit form manually to get around styling obstructions from VFG-library
+    submitLeaveRequest: function() {
+
+      if( this.model['start_date'] && this.model['end_date'] && this.model['leave_type'] && this.model['description'] ) {
+        this.requestLoading = true;
+
+        var s_time = moment(model.start_hour, "HH:mm");
+        var s_date = moment(model.start_date).startOf('date');
+
+        if(!model.start_full_day)
+          s_date.hours(s_time.hours()).minutes(s_time.minutes());
+
+        var e_time = moment(model.end_hour, "HH:mm");
+        var e_date = moment(model.end_date).endOf('date');
+
+        if(!model.end_full_day)
+          e_date.hours(e_time.hours()).minutes(e_time.minutes());
+
+        //Make leave object
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST, 
+          { 
+            path: '/my_leaves/',
+            method: 'POST',
+            body: {
+              leave_type: model.leave_type,
+              status: store.getters.leave_statuses[3],      //Get 'DRAFT'
+              description: model.description,
+            },
+            emulateJSON: true,
+          }
+        ).then((lvResponse) => {
+
+          if(lvResponse.status == 201) {
+
+            //Make leavedates and bind them to the leave
+            store.dispatch(
+              types.NINETOFIVER_API_REQUEST,
+              {
+                path: '/services/my_leave_request/',
+                method: 'POST',
+                body: {
+                  leave: lvResponse.body.id,
+                  timesheet: 0,
+                  starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
+                  ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
+                },
+                emulateJSON: true,
+              }
+            ).then((lvdResponse) => {
+
+              //SUCCESS
+              if(lvdResponse.status == 201) {
+
+                this.showToast('Leave successfully requested.');
+                this.initializeModel();
+                this.requestLoading = false;
+
+                //Update the leave object's status
+                store.dispatch(
+                  types.NINETOFIVER_API_REQUEST, 
+                  {
+                    path: '/my_leaves/' + lvResponse.body.id + '/',
+                    method: 'PATCH',
+                    body: {
+                      status: store.getters.leave_statuses[0],     //Get 'PENDING'
+                    },
+                    emulateJSON: true,
+                  }
+                );
+
+                //If attachments were added to the leaverequest
+                if(model.attachments) {
+                  var attachIDs = [];
+
+                  for(var i = 0; i < model.attachments.length; i++) {
+                    var formData = new FormData();
+                    formData.append('label', model.attachments[i].name)
+                    formData.append('file', model.attachments[i]);
+
+                    //Make attachment
+                    store.dispatch(
+                      types.NINETOFIVER_API_REQUEST,
+                      {
+                        path: '/my_attachments/',
+                        method: 'POST',
+                        body: formData
+                      }
+                    ).then((attResponse) => {
+
+                      attachIDs.push(attResponse.data.id);
+
+                      if(attachIDs.length === model.attachments.length) {
+                        //Make patchcall to my_leaves to link attachment_id
+                        store.dispatch(
+                          types.NINETOFIVER_API_REQUEST,
+                          {
+                            path: '/my_leaves/' + lvResponse.body.id + '/',
+                            method: 'PATCH',
+                            body: {
+                              attachments: attachIDs 
+                            }
+                          }
+                        );
+                      }      
+                    });
+                  }
+                }
+
+              // Leaverequest did not go through properly
+              } else {
+                this.requestLoading = false;
+                this.showToast('Something went wrong during the request. Check console for more info.');
+                console.log(lvdResponse);
+              }
+
+            });
+          } else {
+            this.requestLoading = false;
+            console.log(lvResponse);
+          }
+        });
+
+      //Model did not properly validate
+      } else {
+        this.showToast('Properly fill out the form please.')
+      }
     }
   },
 
@@ -239,149 +382,6 @@ export default {
             multiple: true,
 
             styleClasses: 'col-md-6',
-          },
-          {
-            //SUBMIT FIELD
-            type: "submit",
-            validateBeforeSubmit: true,
-            onSubmit: function(model, schema) {
-
-              vm.requestLoading = true;
-
-              var s_time = moment(model.start_hour, "HH:mm");
-              var s_date = moment(model.start_date).startOf('date');
-
-              if(!model.start_full_day)
-                s_date.hours(s_time.hours()).minutes(s_time.minutes());
-
-              var e_time = moment(model.end_hour, "HH:mm");
-              var e_date = moment(model.end_date).endOf('date');
-
-              if(!model.end_full_day)
-                e_date.hours(e_time.hours()).minutes(e_time.minutes());
-
-              //Make leave object
-              store.dispatch(
-                types.NINETOFIVER_API_REQUEST, 
-                { 
-                  path: '/my_leaves/',
-                  method: 'POST',
-                  body: {
-                    leave_type: model.leave_type,
-                    status: store.getters.leave_statuses[3],      //Get 'DRAFT'
-                    description: model.description,
-                  },
-                  emulateJSON: true,
-                }
-              ).then((lvResponse) => {
-
-                if(!lvResponse.status == 201) {
-                  console.log(lvResponse);
-                  vm.requestLoading = false;
-                } else {
-
-                  //Make leavedates and bind them to the leave
-                  store.dispatch(
-                    types.NINETOFIVER_API_REQUEST,
-                    {
-                      path: '/services/my_leave_request/',
-                      method: 'POST',
-                      body: {
-                        leave: lvResponse.body.id,
-                        timesheet: 0,
-                        starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
-                        ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
-                      },
-                      emulateJSON: true,
-                    }
-                  ).then((lvdResponse) => {
-
-                    //SUCCESS
-                    if(lvdResponse.status == 201) {
-                      vm.$toast('Leave successfully requested.',
-                      { 
-                        id: 'leave-toast',
-                        horizontalPosition: 'right',
-                        verticalPosition: 'top',
-                        duration: 1500,
-                        transition: 'slide-down',
-                        mode: 'override'
-                      });
-
-                      vm.initializeModel();
-                      vm.requestLoading = false;
-
-                      //Update the leave object's status
-                      store.dispatch(
-                        types.NINETOFIVER_API_REQUEST, 
-                        {
-                          path: '/my_leaves/' + lvResponse.body.id + '/',
-                          method: 'PATCH',
-                          body: {
-                            status: store.getters.leave_statuses[0],     //Get 'PENDING'
-                          },
-                          emulateJSON: true,
-                        }
-                      );
-
-                      //If attachments were added to the leaverequest
-                      if(model.attachments) {
-                        var attachIDs = [];
-
-                        for(var i = 0; i < model.attachments.length; i++) {
-                          var formData = new FormData();
-                          formData.append('label', model.attachments[i].name)
-                          formData.append('file', model.attachments[i]);
-
-                          //Make attachment
-                          store.dispatch(
-                            types.NINETOFIVER_API_REQUEST,
-                            {
-                              path: '/my_attachments/',
-                              method: 'POST',
-                              body: formData
-                            }
-                          ).then((attResponse) => {
-
-                            attachIDs.push(attResponse.data.id);
-
-                            if(attachIDs.length === model.attachments.length) {
-                              //Make patchcall to my_leaves to link attachment_id
-                              store.dispatch(
-                                types.NINETOFIVER_API_REQUEST,
-                                {
-                                  path: '/my_leaves/' + lvResponse.body.id + '/',
-                                  method: 'PATCH',
-                                  body: {
-                                    attachments: attachIDs 
-                                  }
-                                }
-                              );
-                            }      
-                          });
-                        }
-                      }
-
-                    // ON RIP
-                    } else {
-                      vm.requestLoading = false;
-                      console.log(lvdResponse);
-                      vm.$toast('Something went wrong during the request. Check console for more info.',
-                      { 
-                        id: 'leave-toast',
-                        horizontalPosition: 'right',
-                        verticalPosition: 'top',
-                        duration: 1500,
-                        transition: 'slide-down',
-                        mode: 'override'
-                      });
-                    }
-                  });
-                }
-              });
-            },
-
-            styleClasses: ['btn', 'btn-success', 'col-md-12'],
           }
         ]
       },
@@ -393,33 +393,8 @@ export default {
     }
   },
 
-  watch: {
-    requestLoading: function(newRequestLoading) {
-
-      console.log( 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' );
-    }
-  }
-
 }
 </script>
 
 <style>
-@include animation("400ms rotate linear infinite");
-
-@include keyframes(rotate){
-    0% { @include transform(rotate(0)); }
-    100% { @include transform(rotate(360deg)); }
-}
-
-.loader{
-  margin: 0 0 2em;
-  height: 100px;
-  width: 20%;
-  text-align: center;
-  padding: 1em;
-  margin: 0 auto 1em;
-  display: inline-block;
-  vertical-align: top;
-}
-
 </style>
