@@ -1,83 +1,80 @@
 <template lang="pug">
 div(class='calendar')
-  div.row
-    div.col-md-6
+  .row
+    .col-md-6
 
       //- Upcoming leave
       h3.text-md-center Upcoming leave
       p.text-md-center The first one upcoming, or currently active.
-      div(v-if='nearestLeave')
-        div.list-group-item.text-md-center
-          p <strong> {{ nearestLeave.leave_type }} </strong>
-          p {{ nearestLeave.description }}
-          hr
-          div
-            | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-            | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-      div(v-else)
-        p.alert.alert-info No leaves coming up. Are you sure you don't need a break from all that hard work?
+
+      .list-group-item.text-md-center(v-if='nearestLeave')
+        p <strong> {{ nearestLeave.leave_type }} </strong>
+        p {{ nearestLeave.description }}
+        hr
+        div
+          | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+          | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+      p.alert.alert-info(v-else) 
+        | No leaves coming up. Are you sure you don't need a break from all that hard work?
 
       hr
 
       //- All leaves
       h3.text-md-center All Leaves
-        button.btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
+        .btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
           i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center An overview of all your leaves.
 
         div(v-if='showAllLeaves')
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
-              div.card-header.leave__header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
+              .card-header.leave__header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
 
-                div.row
-                  div.col-sm-9
+                .row
+                  .col-sm-9
                     a.text-muted(v-if='leave.leave_end < new Date()')
                       strike <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                     a(v-else)
                       | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                  div.col-sm-3
-                    span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                  .col-sm-3
+                    .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                       | {{ leave.status }}
                     
-              div.collapse(role='tabpanel', v-bind:id='"procCollapse-" + i', v-bind:aria-labelledby='"procHeading-" + i')
-                div.card-block
-                  div
-                    | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-                    | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-    div.col-md-6
-      //- Holidays
+              .collapse(role='tabpanel', v-bind:id='"procCollapse-" + i', v-bind:aria-labelledby='"procHeading-" + i')
+                .card-block
+                  | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                  | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+
+    //- Holidays
+    .col-md-6
       cmpHolidays
 
       hr
 
       //- Pending leaves
       h3.text-md-center Pending leaves
-        button.btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
+        .btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center Still awaiting approval.
 
       div(v-if='showPendingLeaves')
         #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
           .card(:class='getRibbonStyleClass(leave)')
-            div.card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+            .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
 
-              div.row
-                div.col-sm-9
-                  a.text-muted(v-if='leave.leave_end < new Date()')
-                    strike <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                  a(v-else)
-                    | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                div.col-sm-3 
-                  span.tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+              .row
+                .col-sm-9
+                  a  <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
+                .col-sm-3 
+                  .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                     | {{ leave.status }}
                   
-            div.collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
-              div.card-block.row
-                div.col-md-10
+            .collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
+              .card-block.row
+                .col-md-10
                   | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                   | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-                button.btn.btn-danger.col-md-2(@click='cancelPendingLeave(leave)')
+                .btn.btn-danger.col-md-2(@click='cancelPendingLeave(leave)')
                   i.fa.fa-ban.text-sm-center
 
 
@@ -128,8 +125,9 @@ export default {
     },
 
     pendingLeaves: function() {
+      var today = moment();
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0])
+        if(x.status === store.getters.leave_statuses[0] && today.isSameOrBefore(x.leave_end))
           return x;
       });
     },
