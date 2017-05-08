@@ -265,7 +265,8 @@ export default {
             type: "textArea",
             model: "description",
             required: true,
-            max: 255,
+            max: 500,
+            rows: 3,
 
             styleClasses: ['compact-field', 'col-md-12'],
           },

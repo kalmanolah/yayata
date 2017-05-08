@@ -2,29 +2,26 @@
 
 div
   .row
-    .col-md-10.offset-md-1
-      .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
-        .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+    .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
+      .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
-    .col-md-10.offset-md-1
-      .card
-        h4.card-title.text-md-center Timesheets for 
-          router-link(:to='{ name: "calendar_month_redirect" }')
-            | {{ today | moment('MMMM YYYY') }}
-        table.table
-          tbody
-            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
-              td {{ c.customerName }}: {{ c.name }}
-              td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
-            tr
-              td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
-            tr
-              td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+    .card.card-top-blue
+      h4.card-title.text-md-center Timesheets for 
+        router-link(:to='{ name: "calendar_month_redirect" }')
+          | {{ today | moment('MMMM YYYY') }}
+      table.table
+        tbody
+          tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+            td {{ c.customerName }}: {{ c.name }}
+            td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+          tr
+            td <strong>Total</strong>
+            td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
+          tr
+            td <strong>Hours left to fill in</strong>
+            td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
   .row
-    .col-md-10.offset-md-1
-      LeaveForm
+    LeaveForm
 
 </template>
 

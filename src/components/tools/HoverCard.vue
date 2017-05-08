@@ -3,13 +3,10 @@
 
   a.hovercard__text(href='', @click.prevent='togglePopover')
     slot
-
-  transition(:name='fade')
-
-    .hovercard__content(v-if='showpopover') 
-      .hovercard__close-icon.pull-right(@click.prevent='closePopover')
-        .fa.fa-times
-      component(:is='currentForm', :properties='component.properties', @success='throwSuccessEvent')
+  .hovercard__content(v-if='showpopover') 
+    .hovercard__close-icon.pull-right(@click.prevent='closePopover')
+      .fa.fa-times
+    component(:is='currentForm', :properties='component.properties', @success='throwSuccessEvent')
 
 </template>
 
@@ -69,7 +66,9 @@ export default {
 
 </script>
 
-<style>
+<style lang='less'>
+@width: 260px;
+
 .hovercard-enter-active {
   transition: all .3s ease-in-out;
   background: red;
@@ -93,12 +92,6 @@ export default {
   position: relative;
 }
 
-.display__top {
-  /*top: -256px;*/      /* Figure out how to calculate actual position against parent */
-}
-
-.display__bot {}
-
 .hovercard__content {
   /*Style of hidden popover content*/
   background: #fff;
@@ -107,10 +100,8 @@ export default {
   max-width: 100%;
   padding: 10px;
   position: absolute;
-  min-width: 350px;
-  height: 256px;
-  z-index: 10001;
-
+  min-width: @width;
+  z-index: 100;
   /*left: -1vw;        Figure out a correct value */
 }
 
