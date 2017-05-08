@@ -3,16 +3,16 @@ div(
   id='app'
   class='container-fluid'
 )
-  .row
-    .col-md-2.sidebar.col-sm-4.hidden-print
+  .application-wrapper
+    .sidebar-wrapper
       .row
-        .col-md-8.offset-md-2
+        .col-md-12
           router-link(
             :to='{ name: "home" }'
           )
             img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
       .row
-        .col-md-10.offset-md-1.col-sm-8
+        .col-sm-8.offset-xs-1
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
@@ -33,11 +33,10 @@ div(
               h3 Calendar
               p.small.hidden-md-down Monthly overview
 
-    .col-md-10.offset-sm-3.offset-md-2
-      .row
-        navbar
-      .main-app
-        router-view
+    .row
+      navbar
+    .main-app
+      router-view
 
 </template>
 
@@ -100,30 +99,17 @@ export default {
 .container-fluid{
   background: #FAFAFA;
 }
+
 .main-app {
   padding: 2rem 3rem;
 }
-.sidebar{
-  background-color: white;
-  height: 100%;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-}
+
 .logo{
   margin: 0 auto;
   display: block;
-}
-.sidebar nav{
-  h3{
-    font-weight: 300;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  margin-top: 30px;
-  margin-left: -10px;
-  color: #398BCC;
+  max-width: 150px;
+  overflow: hidden;
+  padding-bottom: 30px;
 }
 
 .card-top-blue{
@@ -151,19 +137,22 @@ export default {
   margin-top: 1rem;
 }
 
-/* Small devices (landscape phones, 544px and up) */
-@media (min-width: 544px) {  
-  h3 {font-size:1.25rem;} /*1rem = 16px*/
+.application-wrapper {
+    padding-left: 200px;
 }
- 
-/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
-@media (min-width: 768px) {  
-  h3 {font-size:1.5rem;} /*1rem = 16px*/
+
+.sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 200px;
+    width: 200px;
+    height: 100%;
+    margin-left: -200px;
+    overflow-y: auto;
+    background: white;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
 }
- 
-/* Medium devices (tablets, 768px and up) The navbar toggle appears at this breakpoint */
-@media (min-width: 1200px) {  
-  h3 {font-size:1.75rem;} /*1rem = 16px*/
-}
- 
 </style>
