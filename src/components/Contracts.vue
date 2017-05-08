@@ -3,39 +3,53 @@ div
   h3 My contracts
   p.subtitle Overview of all my contracts
 
-  div.col-md-12.card
-    h5.text-md-center.card-header 
-      | ACTIVE
+  .col-md-12
+    h4.text-md-center ACTIVE
+    hr
 
-    div.col-md-6.card-block(v-for='ac in activeContracts')
-      div.card-title {{ ac.display_label }} <br>
-        small.text-muted {{ ac.companyName }} → {{ ac.customerName }}
-      div.card-text {{ac.description}}
-      div.card-footer
-        div.row
-          small.col-md-7 <strong>Total:</strong> {{ ac.total_duration }} hours
-          small.col-md-5 <strong>This month:</strong> {{ ac.monthly_duration }} hours
-        div.row
-          small.col-md-7 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
-          small.col-md-5 <strong>Users:</strong> {{ ac.total_users }}
+    .card-deck
 
-  hr
+      .card.contract-card.col-md-4(v-for='ac in activeContracts')
 
-  div.col-md-12.card
-    h5.text-md-center.card-header 
-      | INACTIVE
+        .card-block
+          h4.card-title {{ ac.display_label }}
+          small.text-muted {{ ac.companyName }} → {{ ac.customerName }}
 
-    div.col-md-6.card-block(v-for='ic in inactiveContracts')
-      div.card-title {{ ic.display_label }} <br>
-        small.text-muted {{ ic.companyName }} → {{ ic.customerName }}
-      div.card-text {{ic.description}}
-      div.card-footer
-        div.row
-          small.col-md-7 <strong>Total:</strong> {{ ic.total_duration }} hours
-          small.col-md-5 <strong>This month:</strong> {{ ic.monthly_duration }} hours
-        div.row
-          small.col-md-7 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
-          small.col-md-5 <strong>Users:</strong> {{ ic.total_users }}
+          .card-text {{ac.description}}
+
+          hr
+          small
+            .row
+              .col-md-7.col-sm-6 <strong>Total:</strong> {{ ac.total_duration }} hours
+              .col-md-5.col-sm-6 <strong>This month:</strong> {{ ac.monthly_duration }} hours
+            .row
+              .col-md-7.col-sm-6 <strong>Groups:</strong> {{ ac.contract_groups | getContractGroupAsString }}
+              .col-md-5.col-sm-6 <strong>Users:</strong> {{ ac.total_users }}
+
+
+
+  .col-md-12
+    h4.text-md-center INACTIVE
+    hr
+
+    .card-deck
+
+      .card.contract-card(v-for='ic in inactiveContracts')
+
+        .card-block
+          h4.card-title {{ ic.display_label }}
+          small.text-muted {{ ic.companyName }} → {{ ic.customerName }}
+
+          .card-text {{ic.description}}
+
+          hr
+          small
+            .row
+              .col-md-7.col-sm-6 <strong>Total:</strong> {{ ic.total_duration }} hours
+              .col-md-5.col-sm-6 <strong>This month:</strong> {{ ic.monthly_duration }} hours
+            .row
+              .col-md-7.col-sm-6 <strong>Groups:</strong> {{ ic.contract_groups | getContractGroupAsString }}
+              .col-md-5.col-sm-6 <strong>Users:</strong> {{ ic.total_users }}
     
 
 </template>
@@ -132,4 +146,11 @@ export default {
 </script>
 
 <style>
+.contract-card {
+  margin: 5px 10px;
+  .card-block {
+    padding: 0px;
+    text-overflow: ellipsis;
+  }
+}
 </style>
