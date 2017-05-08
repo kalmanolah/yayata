@@ -1,33 +1,20 @@
 <template lang="pug">
-div(class='calendar')
-  div(class='row')
-    div(class='col-sm-4 text-sm-left')
-      div(
-        class='btn-group'
-        role='group'
-        aria-label='Calendar controls'
-      )
-        button(
-          class='btn btn-secondary'
-          type='button'
-          v-on:click.prevent='selectPreviousWeek()'
-        )
-          i(class='fa fa-angle-double-left')
+.calendar
+  .row
+
+    .col-sm-4.text-sm-left
+      .btn-group(role='group' aria-label='Calendar controls')
+        button.btn.btn-secondary(type='button' @click.prevent='selectPreviousWeek()')
+          i.fa.fa-angle-double-left
           |  &nbsp;Previous
-    h1(class='col-sm-4 text-sm-center') {{ selectedYear }} Week {{ selectedWeek }} 
-    div(class='col-sm-4 text-sm-right')
-      div(
-        class='btn-group'
-        role='group'
-        aria-label='Calendar controls'
-      )
-        button(
-          class='btn btn-secondary'
-          type='button'
-          v-on:click.prevent='selectNextWeek()'
-        )
+
+    h1.col-sm-4.text-sm-center {{ selectedYear }} Week {{ selectedWeek }}
+
+    .col-sm-4.text-sm-right
+      .btn-group(role='group' aria-label='Calendar controls')
+        button.btn.btn-secondary(type='button' v-on:click.prevent='selectNextWeek()')
           | Next&nbsp;
-          i(class='fa fa-angle-double-right')
+          i.fa.fa-angle-double-right
       
     //- Getting the months now shown and allowing routing back to where you came from
     span.col-sm-12.text-sm-center
@@ -57,14 +44,24 @@ div(class='calendar')
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
             h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
           .pull-right
-            toggle-button.pull-right(
-              @change='toggleStandby(weekDay)', 
-              :value='getStandbyStatus(weekDay)', 
-              color='#DB4C4C', 
-              :sync='true', 
-              :labels='toggleButtonLabels', 
-              :width='65'
-            )
+            .hidden-md-down
+              toggle-button(
+                @change='toggleStandby(weekDay)', 
+                :value='getStandbyStatus(weekDay)', 
+                color='#DB4C4C', 
+                :sync='true', 
+                :labels='toggleButtonLabels', 
+                :width='65'
+              )
+            .hidden-lg-up
+              toggle-button(
+                @change='toggleStandby(weekDay)', 
+                :value='getStandbyStatus(weekDay)', 
+                color='#DB4C4C', 
+                :sync='true',
+                :width='35'
+              )
+
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Performance creation is disabled for future activityPerformances
@@ -78,7 +75,7 @@ div(class='calendar')
             | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
           .pull-right.quota__icon
             i.fa(:class='getDailyQuota(weekDay)')
-          hr
+          hr.smaller-horizontal-hr.smaller-vertical-hr
 
         //- Body of performances
         .card-block.performance-list
@@ -92,7 +89,7 @@ div(class='calendar')
               .list-group-item-heading {{ findContractName(perf.contract) }}
               .list-group-item-text 
                 div {{ perf.description }}
-                hr
+                hr.smaller-vertical-hr
                 small
                   .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
                   .pull-right {{ perf.duration }} h
@@ -316,7 +313,7 @@ export default {
               emulateJSON: true,
             }
           ).then((spRes) => {
-            if(response.status == 201) {
+            if(spRes.status == 201) {
               this.$toast('User on standby', 
                 { 
                   id: 'standby-toast',
@@ -328,7 +325,7 @@ export default {
                 });
               this.onSubmitSuccess();
             } else {
-              console.log(response);
+              console.log(spRes);
               this.$toast('Something went wrong. Check console for more information', 
                 { 
                   id: 'standby-toast',
@@ -525,13 +522,11 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
+
       activityPerformances: [],
       standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
-      popoverStyle: {
-        'max-width': '400px'
-      },
       toggleButtonLabels: {
         checked: 'On call',
         unchecked: 'Off call'
@@ -578,15 +573,22 @@ export default {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+.smaller-horizontal-hr {
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.smaller-vertical-hr {
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+
 .card-head-foot {
   position: relative;
   padding: 0px;
   float: none;
   vertical-align: bottom;
-
-  hr {
-    margin: 2px 6px 8px 6px;
-  }
 
   .btn-submit {
     width: 100%;
