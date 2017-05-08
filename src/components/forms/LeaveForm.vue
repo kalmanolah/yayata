@@ -8,15 +8,14 @@ div
     .card-block
       vue-form-generator(v-if='upcomingLeaves', :schema="schema", :model="model", :options="formOptions")
       .btn.btn-success.col-md-12(@click='submitLeaveRequest()')
-        Spinner(v-if='requestLoading')
-        i.fa.fa-plus(v-else)
+        i.fa.fa-spinner.fa-pulse.fa-3x.fa-fw(v-if='requestLoading')
+        i.fa.fa-plus.submit-icons(v-else)
 </template>
 
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
-import Spinner from 'vue-simple-spinner';
 import store from '../../store';
 
 var upcoming_leaves = [];
@@ -25,7 +24,6 @@ var model = { end_date: null };
 export default {
 
   components: {
-    Spinner,
   },
 
   created: function() {
@@ -79,6 +77,8 @@ export default {
       model.end_full_day = true;
       model.end_hour = moment('17:30', 'HH:mm').format('HH:mm');
       model.attachments = null;
+      model.description = '';
+      model.leave_type = null;
     },
 
     //Shows a toast with a message
@@ -397,4 +397,7 @@ export default {
 </script>
 
 <style>
+.submit-icons {
+  font-size: 21px;
+}
 </style>
