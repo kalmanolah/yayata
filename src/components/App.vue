@@ -103,13 +103,8 @@ export default {
         vm.$router.push({ name: 'calendar_week', params: { year: date.get('year'), week: date.get('isoWeek') }})
       }
     });
-    console.log(this.$refs);    
   },
-  methods: {
-    goToMonth: function() {
-      console.log(this.date);
-    }
-  },
+  methods: {},
 
   computed: {},
 
