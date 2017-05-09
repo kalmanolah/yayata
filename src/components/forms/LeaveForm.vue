@@ -89,7 +89,7 @@ export default {
           id: 'leave-toast',
           horizontalPosition: 'right',
           verticalPosition: 'top',
-          duration: 1500,
+          duration: 2000,
           transition: 'slide-down',
           mode: 'override'
       });
