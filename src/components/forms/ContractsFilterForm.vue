@@ -10,7 +10,7 @@ div
           button.btn.btn-danger.btn-block(@click='resetForm') 
             <i class="fa fa-refresh" aria-hidden="true"></i> Reset
       hr
-      .pre-scrollable
+      .pre-scrollable.filter-scrollable
         vue-form-generator(:schema="schema", :model="model", :options="formOptions")
         div.active-toggle Contract status
           toggle-button.pull-right(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 

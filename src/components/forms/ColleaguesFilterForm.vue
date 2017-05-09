@@ -10,7 +10,7 @@ div
           button.btn.btn-danger.btn-block(@click='resetForm') 
             <i class="fa fa-refresh" aria-hidden="true"></i> Reset
       hr
-      vue-form-generator.pre-scrollable(:schema="schema", :model="model", :options="formOptions") 
+      vue-form-generator.pre-scrollable.filter-scrollable(:schema="schema", :model="model", :options="formOptions") 
       
 </template>
 <script>
