@@ -12,7 +12,7 @@ div(
           )
             img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg').logo
       div.row
-        div.col-md-10.offset-md-1.col-sm-8
+        div.col-md-10.offset-md-1.col-sm-8.wrapper
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
@@ -32,6 +32,10 @@ div(
             router-link(:to='{ name: "companies" }')
               h3 Companies
               p.small Overview of clients
+        .row
+          .bottom
+            input#datepicker(type='hidden' ref='datepicker')
+            div#container(ref='container')
     div.col-md-10.offset-sm-3.offset-md-2
       div.row
         navbar
@@ -81,19 +85,35 @@ export default {
     if(!store.getters.project_estimates)
       store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
   },
-
+  mounted: function() {
+    console.log(this.$refs);
+    this.picker = new Pikaday({
+      field: this.$refs.datepicker,
+      container: this.$refs.container,
+      firstDay: 1,
+      minDate: new Date(2000, 0, 1),
+      maxDate: new Date(2020, 12, 31),
+      yearRange: [2000, 2020],
+      bound: false,
+      format: 'D MMM YYYY'
+    });
+    console.log(this.$refs);    
+  },
   method: {},
 
   computed: {},
 
   data () {
-    return {}
-  }
+    return {
+      picker: ''
+    }
+  },
 
 }
 </script>
 
 <style lang="less">
+@datepickerHeight: 228px;
 .container-fluid{
   background: #FAFAFA;
 }
@@ -152,5 +172,24 @@ export default {
   position: fixed;
   left: 77vw;
   width: 21vw;
+}
+
+.wrapper{
+  position: relative;
+}
+
+.bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+#container {
+  margin-left: 2rem;
+}
+
+.pika-single {
+  height: @datepickerHeight;
+  border: 0;
 }
 </style>
