@@ -7,41 +7,36 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortBy("all")') All
+          button.btn.btn-secondary(@click='showEditUserForm = !showEditUserForm') Edit
+          button.btn.btn-secondary(type='button' @click='setSortByGroup("all")') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
-              //- button.btn.btn-secondary(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}          
-              a.dropdown-item(v-for='group in groups' @click='setSortBy(group)') {{ group.name }}
+              a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
       .col-md-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
-    .row.card-row(v-if='filtered_users')
-      .col-md-4#accordion(v-for='(user, index) in queryUsers' role='tablist' aria-multiselectable='true') 
-        .card
-          .card-header( v-bind:id='"heading-" + index' role='tab' aria-expanded='false' v-bind:aria-controls='"collapse-" + index')
-            span.user-fullname {{ user.first_name }} {{ user.last_name }}
-            span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
-          .card-block
-            .card-text
-              .row
-                .col-md-2 <strong>Email: </strong>
-                .col-md-10.text-md-right.text-truncate {{ user.email }}
-              .row
-                .col-md-3 <strong>Telephone: </strong>
-                .col-md-9.text-md-right +32 498 348585
-              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
-                .row
-                  .col-md-3 <strong>Birth Date: </strong>
-                  .col-md-9.text-md-right {{ user.birth_date | moment('DD MMMM YYYY') }}
-                .row
-                  .col-md-3 <strong>Gender: </strong>
-                  .col-md-9.text-md-right {{ user.gender | fullGender }}
-                .row
-                  .col-md-3 <strong>Country: </strong>
-                  .col-md-9.text-md-right {{ user.country }}    
-            button.btn.btn-sm.pull-right.toggle-info(data-toggle='collapse' v-bind:data-target='"#collapse-" + index' @click='hideOpen()') More info
+    .row#user-table(v-if='filtered_users')
+      table.table.table-striped
+        thead#user-table-head
+          tr
+            th(@click='setTableSort("first_name")') Name
+            th(@click='setTableSort("email")') Email
+            th(@click='setTableSort("userinfo__birth_date")') Birthdate
+            th(@click='setTableSort("userinfo__country")') Country
+        tbody
+          tr(v-for='(user, index) in queryUsers')
+            td {{ user.first_name }} {{ user.last_name }} 
+              span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
+            td {{ user.email }}
+            td {{ user.birth_date | moment('DD MMMM YYYY') }}
+            td {{ user.country }}
+
+    .row
+      .container
+        EditUserForm.col-md-4(v-bind:user='this.storeUser' v-if='showEditUserForm')
+
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
@@ -61,17 +56,21 @@ import * as types from '../store/mutation-types'
 import store from '../store';
 import Vue from 'vue';
 import ColleaguesFilterForm from './forms/ColleaguesFilterForm.vue';
+import EditUserForm from './forms/EditUserForm.vue';
 
 var data = {
   sortBy: 'all',
+  tableSort: '',
   groupLabel: 'group',
   query: '',
+  showEditUserForm: false
 }
 
 export default {
   name: 'colleagues',
   components: {
-    ColleaguesFilterForm
+    ColleaguesFilterForm,
+    EditUserForm
   },
 
   data () {
@@ -85,6 +84,12 @@ export default {
   },
 
   computed: {
+    storeUser: function() {
+      if(store.getters.user){
+        return store.getters.user;
+      }
+    },
+
     userId: function() {
       return this.$route.params.userId;
     },
@@ -137,11 +142,25 @@ export default {
   },
 
   methods: {
-    hideOpen: function() {
-      $('.collapse').collapse('hide');
+    setTableSort: function(value) {
+      console.log(value);
+      if(this.tableSort === value){
+        this.tableSort = '-' + value;
+      } else {
+        this.tableSort = value;
+      }
+      var options = {
+        path: '/users/',
+        params: {
+          order_by: this.tableSort
+        }
+      }
+      console.log(options)
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
     },
 
-    setSortBy: function(value) {
+    // Sets the group to sort by
+    setSortByGroup: function(value) {
       if(value === store.getters.colleagues_filter) {
         this.sortBy = 'all';
         this.groupLabel = 'group';
@@ -151,6 +170,7 @@ export default {
       }
     },
 
+    // Determines the group tag color
     determineTagColor: function(group_id) {
       var group_name = store.getters.user_groups.find(group => group_id === group.id).name;
       var tempObj = {
@@ -185,21 +205,6 @@ export default {
 <style>
 .dropdown-item:hover {
   cursor: pointer;
-}
-
-.card-row {
-  margin-top: 1rem;
-   display: flex;
-   flex-wrap: wrap;
-}
-
-.card-row > div[class*='col-'] {
-  display: flex;
-
-}
-
-.card {
-  width: 100%;
 }
 
 .tag {
@@ -237,4 +242,20 @@ export default {
   border-radius: 5px;
 }
 
+.fa-pencil-square-o {
+  padding-right: .2rem;
+}
+
+#user-table {
+  margin-top: 1rem;
+}
+
+#user-table-head {
+  cursor: pointer;
+}
+
+#user-table-head>tr>th:hover {
+  background-color: #d2d2d2;
+  border-bottom: 2px solid #d2d2d2;
+}
 </style>
