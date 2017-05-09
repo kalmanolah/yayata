@@ -58,7 +58,7 @@ export default {
           }
         });
 
-        this.initializeModel(today, null);
+        this.initializeModel(today);
         upcoming_leaves = leavedate_arr;
         return store.getters.upcoming_leaves;
       }
@@ -69,7 +69,7 @@ export default {
   methods: {
 
     //Sets up model, needs to be called when upcoming_leaves are fully loaded to set start_- & end_date
-    initializeModel: function(start_date, end_date) {
+    initializeModel: function(start_date) {
       model.start_date = start_date;
       model.start_full_day = true;
       model.start_hour = moment('09:00', 'HH:mm').format('HH:mm');
@@ -150,7 +150,7 @@ export default {
               if(lvdResponse.status == 201) {
 
                 this.showToast('Leave successfully requested.');
-                this.initializeModel();
+                store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
                 this.requestLoading = false;
 
                 //Update the leave object's status
