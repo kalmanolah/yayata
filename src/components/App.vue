@@ -78,6 +78,7 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
     if(!store.getters.contract_users)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+      date: moment()
     if(!store.getters.monthly_activity_performances)
       store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
     if(!store.getters.work_schedule)
@@ -87,6 +88,7 @@ export default {
   },
   mounted: function() {
     console.log(this.$refs);
+    var vm = this;
     this.picker = new Pikaday({
       field: this.$refs.datepicker,
       container: this.$refs.container,
@@ -95,11 +97,19 @@ export default {
       maxDate: new Date(2020, 12, 31),
       yearRange: [2000, 2020],
       bound: false,
-      format: 'D MMM YYYY'
+      format: 'D MMM YYYY',
+      onSelect: function() {
+        var date = this.getMoment();
+        vm.$router.push({ name: 'calendar_week', params: { year: date.get('year'), week: date.get('isoWeek') }})
+      }
     });
     console.log(this.$refs);    
   },
-  method: {},
+  methods: {
+    goToMonth: function() {
+      console.log(this.date);
+    }
+  },
 
   computed: {},
 
@@ -164,7 +174,7 @@ export default {
   margin-top: 1rem;
 }
 
-.pre-scrollable {
+.filter-scrollable {
   max-height: 70vh;
 }
 
