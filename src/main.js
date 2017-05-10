@@ -10,6 +10,7 @@ import VueChartJs from 'vue-chartjs'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
+import Toast from 'vue-easy-toast'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -26,6 +27,7 @@ import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
 
 // Vue.use(Vuex)
+Vue.use(Toast)
 Vue.use(ToggleButton)
 Vue.use(BootstrapVue)
 Vue.use(VueRouter)

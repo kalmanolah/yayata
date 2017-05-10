@@ -27,6 +27,7 @@
     "pug": "^2.0.0-beta6",
     "pug-loader": "^2.3.0",
     "vue-chartjs": "^2.6.1",
+    "vue-clickaway": "^2.1.0",
     "vue-form-generator": "^2.0.0-beta6",
     "vue-js-toggle-button": "^1.0.5",
     "vue-loader": "^9.9.5",
@@ -37,6 +38,7 @@
     "vuex-persistedstate": "^0.3.0",
     "vuex-router-sync": "^3.0.0",
     "webpack": "^2.1.0-beta.28",
+    "webpack-dashboard": "^0.4.0",
     "webpack-dev-server": "^2.1.0-beta.12"
   }
 }

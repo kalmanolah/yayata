@@ -32,6 +32,7 @@ const state = {
   monthly_activity_performances: null,
   work_schedule: null,
   show_extra_info: null,
+  upcoming_leaves: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
@@ -51,6 +52,15 @@ const state = {
       'start': 1,
       'end': 7
     }
+  },
+  days: {
+    monday: 0,
+    tuesday: 0,
+    wednesday: 0,
+    thursday: 0,
+    friday: 0,
+    saturday: 0,
+    sunday: 0
   }
 }
 
@@ -58,6 +68,9 @@ const state = {
 const mutations = {
   [types.NINETOFIVER_SET_USER] (state, { user }) {
     state.user = user;
+  },
+  [types.NINETOFIVER_SET_HOLIDAYS] (state, { holidays }) {
+    state.holidays = holidays;
   },
 
   [types.NINETOFIVER_SET_LEAVE_TYPES] (state, { leave_types }) {
@@ -118,6 +131,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_GRID_DATE] (state, { grid_date }) {
     state.grid_date = grid_date;
+  },
+  [types.NINETOFIVER_SET_UPCOMING_LEAVES] (state, { upcoming_leaves }) {
+    state.upcoming_leaves = upcoming_leaves;
   }
 }
 
@@ -160,9 +176,7 @@ const getters = {
   //User specific
   timesheets: state => state.timesheets,
   contracts: state => {
-    if(!state.contracts || !state.companies )
-      return null;
-    else {
+    if(state.contracts && state.companies ) {
       return state.contracts.map(x => {
         return {
           id: x.id, 
@@ -182,7 +196,7 @@ const getters = {
           end_date: x.ends_at,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
-          total_duration: x.hours_spent
+          total_duration: parseFloat(x.hours_spent)
         };
       });
     }
@@ -232,6 +246,7 @@ const getters = {
       return show;
     }
   },
+  upcoming_leaves: state => state.upcoming_leaves,
 
   //Predefined
   leave_statuses: state => state.leave_statuses,
@@ -239,6 +254,7 @@ const getters = {
   group_names: state => state.group_names,
   contract_types: state => state.contract_types,
   colleagues_filter: state => state.colleagues_filter,
+  days: status => state.days,
 
   //Calculated
   open_timesheet_count: state => { 
@@ -342,6 +358,25 @@ const actions = {
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USER, {
           user: res.data
+        })
+        resolve(res)
+      }, (res) => {
+        reject(res)
+      })
+    })
+  },
+
+  [types.NINETOFIVER_RELOAD_HOLIDAYS] (store, options = {}) {
+
+    options.path = '/holidays/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_HOLIDAYS, {
+          holidays: res.data.results
         })
         resolve(res)
       }, (res) => {
@@ -717,11 +752,11 @@ const actions = {
     if(!options.params) {
       options.params = {
         timesheet__year: new Date().getFullYear(),
-        timesheet__month: new Date().getMonth()
+        timesheet__month: new Date().getMonth() + 1
       };
     } else {
       options.params['timesheet__year'] = new Date().getFullYear();
-      options.params['timesheet__month'] = new Date().getMonth();
+      options.params['timesheet__month'] = new Date().getMonth() + 1;
     }
 
     return new Promise((resolve, reject) => {
@@ -752,6 +787,60 @@ const actions = {
 
         store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
           work_schedule: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+
+
+  [types.NINETOFIVER_RELOAD_UPCOMING_LEAVES] (store, options = {}) {
+
+    options.path = '/my_leaves/';
+
+    if(!options.params) {
+      var today = new Date();
+
+      options.params = {
+        leavedate__gte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
+        page_size: 50
+      };
+    } else {
+      options.params['leavedate__gte'] = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      options.params['page_size'] = 50;
+    }
+
+    function leaveSorter(val) {
+      return val.sort(function(a, b) {
+        a = a['leave_start'].toDate();
+        b = b['leave_end'].toDate();
+
+        return a > b ? -1 : (a < b ? 1 : 0);
+      });      
+    }
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        //Converts the start / end datetime from strings to actual JS datetimes
+        res.data.results.forEach(lv => {
+          lv.leavedate_set.forEach(ld => {
+            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
+            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+          });
+          
+          lv['leave_start'] = lv.leavedate_set[0].starts_at;
+          lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+        });
+
+        store.commit(types.NINETOFIVER_SET_UPCOMING_LEAVES, {
+          upcoming_leaves: leaveSorter(res.data.results).reverse()
         });
         resolve(res);
 

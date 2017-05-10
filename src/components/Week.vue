@@ -1,33 +1,20 @@
 <template lang="pug">
-div(class='calendar')
-  div(class='row')
-    div(class='col-sm-4 text-sm-left')
-      div(
-        class='btn-group'
-        role='group'
-        aria-label='Calendar controls'
-      )
-        button(
-          class='btn btn-secondary'
-          type='button'
-          v-on:click.prevent='selectPreviousWeek()'
-        )
-          i(class='fa fa-angle-double-left')
+.calendar
+  .row
+
+    .col-sm-4.text-sm-left
+      .btn-group(role='group' aria-label='Calendar controls')
+        button.btn.btn-secondary(type='button' @click.prevent='selectPreviousWeek()')
+          i.fa.fa-angle-double-left
           |  &nbsp;Previous
-    h1(class='col-sm-4 text-sm-center') {{ selectedYear }} Week {{ selectedWeek }} 
-    div(class='col-sm-4 text-sm-right')
-      div(
-        class='btn-group'
-        role='group'
-        aria-label='Calendar controls'
-      )
-        button(
-          class='btn btn-secondary'
-          type='button'
-          v-on:click.prevent='selectNextWeek()'
-        )
+
+    h1.col-sm-4.text-sm-center {{ selectedYear }} Week {{ selectedWeek }}
+
+    .col-sm-4.text-sm-right
+      .btn-group(role='group' aria-label='Calendar controls')
+        button.btn.btn-secondary(type='button' v-on:click.prevent='selectNextWeek()')
           | Next&nbsp;
-          i(class='fa fa-angle-double-right')
+          i.fa.fa-angle-double-right
       
     //- Getting the months now shown and allowing routing back to where you came from
     span.col-sm-12.text-sm-center
@@ -37,7 +24,7 @@ div(class='calendar')
         router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
           h3 {{ periodEndMonth | moment('MMMM')}}
 
-  hr
+      hr
   
   //- Buttons to toggle what to display
   .row
@@ -49,36 +36,66 @@ div(class='calendar')
         button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
     //- .col.align-self-end
   //- Cards
-  div.calendar-header
-    div.card-group
-      div.card(v-for='(weekDay, weekIndex) in daysOfWeek')
+  .calendar-header
 
-        div.card-header.card-info
-          span.pull-left {{ weekDay | moment('ddd') }}  {{ weekDay | moment('DD/MM') }}
-          //- Standby toggle
-          toggle-button.pull-right(@change='toggleStandby(weekDay)', :value='getStandbyStatus(weekDay)', color='#DB4C4C', :sync='true', :labels='toggleButtonLabels', :width='65')
+    //- Header w days
+    .card-group
+      .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
 
-        //- Content of activityPerformances
-        div.card-block.list-group.performance-entry(v-for='perf in getDaysPerformances(weekDay.date())' v-bind:key='perf.id')
-          li.list-group-item
-            div.list-group-item-heading
-              | {{ findContractName(perf.contract) }}
-            div.list-group-item-text
-              | <small>{{ perf.duration }} h </small> 
+        .card-header.card-info
+          .pull-left 
+            h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
+            h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
+          .pull-right
+            .hidden-md-down
+              toggle-button(
+                @change='toggleStandby(weekDay)', 
+                :value='getStandbyStatus(weekDay)', 
+                color='#DB4C4C', 
+                :sync='true', 
+                :labels='toggleButtonLabels', 
+                :width='65'
+              )
+            .hidden-lg-up
+              toggle-button(
+                @change='toggleStandby(weekDay)', 
+                :value='getStandbyStatus(weekDay)', 
+                color='#DB4C4C', 
+                :sync='true',
+                :width='35'
+              )
 
-        //- Performance creation    -   disabled for future activityPerformances
-        b-popover(v-if='weekDay < new Date()' title='Create a new entry' triggers='click' placement='top' v-bind:popover-style='popoverStyle')
-          b-btn.btn-success.col-sm-12.fa.fa-plus
-          .text-xs-center.col-lg-12(slot='content' )
-            strong.fa.fa-calendar-check-o
-              | {{ weekDay | moment('DD/MM/YYYY') }} 
-            div
-              PerformanceForm(v-bind:selected-date='weekDay' v-on:success='onSubmitSuccess') 
-  
-        div.card-footer.text-lg-center
+
+        .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
+          //- Performance creation is disabled for future activityPerformances
+          hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
+
+            //- Visible text
+            button.btn.btn-success.btn-submit
+              i.fa.fa-plus
+
           small.text-muted
             | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+          .pull-right.quota__icon
+            i.fa(:class='getDailyQuota(weekDay)')
+          hr.smaller-horizontal-hr.smaller-vertical-hr
 
+        //- Body of performances
+        .card-block.performance-list
+          li.list-group-item.performance-entry(
+            v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+            :key='perf.id',
+            :class='[list-group, performance-list]'
+          )
+            hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+              //- Visible text
+              .list-group-item-heading {{ findContractName(perf.contract) }}
+              .list-group-item-text 
+                div {{ perf.description }}
+                hr.smaller-vertical-hr
+                small
+                  .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                  .pull-right {{ perf.duration }} h
 
 </template>
 
@@ -87,13 +104,15 @@ import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
+import HoverCard from './tools/HoverCard.vue';
 import PerformanceForm from './forms/PerformanceForm.vue';
 
 export default {
   name: 'week',
 
   components: {
-    PerformanceForm: PerformanceForm,
+    hovercard: HoverCard,
+    performanceform: PerformanceForm,
   },
 
   watch: {
@@ -136,6 +155,27 @@ export default {
 
   methods: {
 
+    getDailyQuota: function(day) {
+      var performed = this.getDurationTotal(day);
+      var required = this.getHoursTotal(day);
+
+      var quota = required > 0 ? performed / required : 1;
+
+      return quota >= 1 ? 'fa-check' : '';
+    },
+
+    //Returns correct component for the hovercard
+    getHoverCardComponent: function(date, perf) {
+
+      return {
+        name: 'PerformanceForm',
+        properties: {
+          performance: perf,
+          date: date
+        }
+      };
+    },
+
     //Get whether user is on standby
     getStandbyStatus: function(day) {
       return (this.standbyPerformances.findIndex(x => x.day == day.format('D')) !== -1)
@@ -176,8 +216,29 @@ export default {
             id: standby.id
           }
         }).then((delRes) => {
-          if(delRes.status == 204)
+          if(delRes.status == 204) {
+            this.$toast('User no longer on standby', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });
             this.onSubmitSuccess();
+          } else {
+            console.log( delRes );
+            this.$toast('Something went wrong. Check console for more information', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });  
+          }
         });
     },
 
@@ -204,8 +265,29 @@ export default {
             emulateJSON: true,
           }
         ).then((response) => {
-          if(response.status == 201)
+          if(response.status == 201) {
+            this.$toast('User on standby', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });
             this.onSubmitSuccess();
+          } else {
+            console.log(response);
+            this.$toast('Something went wrong. Check console for more information', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });            
+          }
         });
       } else {
         //Timesheet was not found, so a new one is made for that date
@@ -234,8 +316,29 @@ export default {
               emulateJSON: true,
             }
           ).then((spRes) => {
-            if(response.status == 201)
-            this.onSubmitSuccess();
+            if(spRes.status == 201) {
+              this.$toast('User on standby', 
+                { 
+                  id: 'standby-toast',
+                  horizontalPosition: 'right',
+                  verticalPosition: 'top',
+                  duration: 1000,
+                  transition: 'slide-down',
+                  mode: 'override'
+                });
+              this.onSubmitSuccess();
+            } else {
+              console.log(spRes);
+              this.$toast('Something went wrong. Check console for more information', 
+                { 
+                  id: 'standby-toast',
+                  horizontalPosition: 'right',
+                  verticalPosition: 'top',
+                  duration: 1000,
+                  transition: 'slide-down',
+                  mode: 'override'
+                });
+            }
           });
         });
       }
@@ -243,9 +346,12 @@ export default {
     },
 
     //Sets the popover placement, based on the weekindex and weekformat
-    // setPopoverPlacement: function(val) {
-    //   return (val >= Math.floor((this.currentWeekFormat.end - this.currentWeekFormat.start) / 2) + 1) ? 'left' : 'right';
-    // },
+    setPopoverPlacement: function(val) {
+      var day = val + 1;
+      var range = this.currentWeekFormat.end - this.currentWeekFormat.start + 1;
+
+      return ( day / range >= 0.7 ) ? 'left' : 'right';
+    },
 
     //Set Week format
     setWeekFormat: function(format) {
@@ -257,11 +363,24 @@ export default {
       this.getDaysOfWeek(this.currentWeekFormat);
     },
 
-    //Find the contract that belongs to the contract id
+    //Find the contract's name that belongs to the contract id
     findContractName: function(id) {
       if(store.getters.contracts) {
-        var cont = store.getters.contracts.find(x => x.id == id);
-        return cont.name + ': ' + cont.customerName;
+        return store.getters.contracts.find(x => x.id == id)['name'];
+      }
+    },
+
+    //Find the contract's customerName that belongs to the contract id
+    findCustomerName: function(contractID) {
+      if(store.getters.contracts) {
+        return store.getters.contracts.find(x => x.id == contractID)['customerName'];
+      }
+    },
+
+    //Find the performance_type's name
+    findPerformanceTypeName: function(id) {
+      if(store.getters.performance_types) {
+        return store.getters.performance_types.find(x => x.id == id)['name'];
       }
     },
 
@@ -370,10 +489,11 @@ export default {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_performances/',
         params: {
-          year: this.selectedYear,
+          timesheet__year: this.selectedYear,
           timesheet__month: month,
           day__gte: start,
           day__lte: end,
+          page_size: 200,
         },
       }).then((response) => {
         // this.activityPerformances = this.activityPerformances.concat( response.data.results );
@@ -405,13 +525,11 @@ export default {
     return {
       selectedYear: this.$route.params.year,
       selectedWeek: this.$route.params.week,
+
       activityPerformances: [],
       standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
-      popoverStyle: {
-        'max-width': '400px'
-      },
       toggleButtonLabels: {
         checked: 'On call',
         unchecked: 'Off call'
@@ -426,32 +544,66 @@ export default {
 
 <style lang="less" scoped>
 
-.calendar-day-dummy {
-  background: rgba(0, 0, 0, 0.1);
-}
+.performance-list {
+  background-color: #f5f5f5;
+  font-size: 95%;
+  color: rgb(15,15,15);
+  position: relative;
+  padding: 0px;
 
-.calendar-day-weekend {
-  .card {
-    background: rgba(255, 0, 0, 0.2);
+  .list-group-item-heading {
+    font-weight: bold;
   }
 }
 
-.calendar-day-current {
+
+.calendar-header {
   .card {
-    background: rgba(0, 255, 0, 0.2);
+    background-color: #f8f8f8;
   }
+}
+
+.pre-scrollable {
+  max-height: 55vh;
+  overflow: visible;
 }
 
 .performance-entry {
-  padding: 3px 3px;
-  margin: 5px;
-  font-size: 95%;
+  padding: 5px;
+  margin: 2px;
+  position: relative;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.08);
+}
 
-  li {
-    padding: 3px;
-    margin: 2px;
+.smaller-horizontal-hr {
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.smaller-vertical-hr {
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+
+.card-head-foot {
+  position: relative;
+  padding: 0px;
+  float: none;
+  vertical-align: bottom;
+
+  .btn-submit {
+    width: 100%;
+    border-radius: 0;
   }
 
+  .quota__icon {
+    color: rgba(0,0,0,0.5);
+    position: relative;
+    top: 1px;
+    left: -10px;
+  }
 }
 
 .btn-group-wrap {
