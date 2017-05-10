@@ -4,7 +4,7 @@
   "author": "Kalman Olah <hello+yayata@kalmanolah.net>",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --progress --open --inline --hot",
+    "dev": "webpack-dashboard cross-env NODE_ENV=development webpack-dev-server --progress --open --inline --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --colors --hide-modules"
   },
   "dependencies": {
