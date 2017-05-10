@@ -32,6 +32,9 @@ div(
             router-link(:to='{ name: "companies" }')
               h3 Companies
               p.small Overview of clients
+            router-link(:to='{ name: "leave_overview_grid" }')
+              h3 Overview
+              p.small who is on leave this month
         .row
           .bottom
             input#datepicker(type='hidden' ref='datepicker')
@@ -87,7 +90,6 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
   },
   mounted: function() {
-    console.log(this.$refs);
     var vm = this;
     this.picker = new Pikaday({
       field: this.$refs.datepicker,

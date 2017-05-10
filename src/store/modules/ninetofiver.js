@@ -21,6 +21,8 @@ const state = {
   filtered_contracts: null,
   filtered_users: null,
   project_estimates: null,
+  grid_date: null,
+  leaves: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -86,7 +88,9 @@ const mutations = {
   [types.NINETOFIVER_SET_USERS] (state, { users }) {
     state.users = users;
   },
-
+  [types.NINETOFIVER_SET_LEAVES] (state, { leaves }) {
+    state.leaves = leaves;
+  },
   [types.NINETOFIVER_SET_FILTERED_USERS] (state, { filtered_users }) {
     state.filtered_users = filtered_users;
   },
@@ -111,6 +115,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_WORK_SCHEDULE] (state, { work_schedule }) {
     state.work_schedule = work_schedule;
+  },
+  [types.NINETOFIVER_SET_GRID_DATE] (state, { grid_date }) {
+    state.grid_date = grid_date;
   }
 }
 
@@ -127,7 +134,9 @@ const getters = {
   user_groups: state => state.user_groups,
   companies: state => state.companies,
   users: state => state.users,
+  leaves: state => state.leaves,
   filtered_users: state => state.filtered_users,
+  grid_date: state => state.grid_date,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -527,6 +536,27 @@ const actions = {
     });
 
   },
+
+  [types.NINETOFIVER_RELOAD_LEAVES] (store, options = {}) {
+
+    options.path = '/leaves/'
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_LEAVES, {
+          leaves: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      })
+    });
+
+  },
   
   [types.NINETOFIVER_RELOAD_FILTERED_USERS] (store, options = {}) {
 
@@ -621,6 +651,13 @@ const actions = {
       })
     });
 
+  },
+
+
+  [types.NINETOFIVER_RELOAD_GRID_DATE] (store, options = {}) {
+    store.commit(types.NINETOFIVER_SET_GRID_DATE, {
+       grid_date: moment()
+    });
   },
   
   
