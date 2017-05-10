@@ -7,21 +7,33 @@ div
         | You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
     .col-md-5.offset-md-1
-      .card
-        h4.card-title.text-md-center Timesheets for 
-          router-link(:to='{ name: "calendar_month_redirect" }')
-            | {{ today | moment('MMMM YYYY') }}
-        table.table
-          tbody
-            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
-              td {{ c.customerName }}: {{ c.name }}
-              td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
-            tr
-              td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
-            tr
-              td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+      .row(v-if='birthdays')
+        //- .col-md-5
+        .card
+          h4.card-title.text-md-center Birthdays
+          .cardblock
+            table.table
+              tbody
+                tr(v-for="(user, index) in birthdays")
+                  td
+                    router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
+                    .fa.fa-birthday-cake.pull-right
+      .row
+        .card
+          h4.card-title.text-md-center Timesheets for 
+            router-link(:to='{ name: "calendar_month_redirect" }')
+              | {{ today | moment('MMMM YYYY') }}
+          table.table
+            tbody
+              tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+                td {{ c.customerName }}: {{ c.name }}
+                td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+              tr
+                td <strong>Total</strong>
+                td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
+              tr
+                td <strong>Hours left to fill in</strong>
+                td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
     .col-md-5
       .card
         h4.card-title.text-md-center Absent colleagues
@@ -33,12 +45,12 @@ div
           table.table
             tbody
               tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
-                td {{ leave.user.first_name }} {{ leave.user.last_name }}
+                td
+                  router-link(:to='{ name: "colleagues", params: { userId: leave.user.id }}') {{ leave.user.display_label }}
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
-  .row
-    .col-md-5.offset-md-1
+    .col-md-5
       LeaveForm
 
 </template>
@@ -103,6 +115,13 @@ export default {
     workschedule: function() {
       if(store.getters.work_schedule)
         return store.getters.work_schedule;
+    },
+
+    birthdays: function() {
+      if(store.getters.users){
+        var today = moment().format('MM-DD');
+        return store.getters.users.filter(user => moment(user.birth_date).format('MM-DD') === today);
+      }
     },
     
     //Calculates amount of hours that should be worked according to the workschedule
