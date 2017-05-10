@@ -7,7 +7,6 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(@click='showEditUserForm = !showEditUserForm') Edit
           button.btn.btn-secondary(type='button' @click='setSortByGroup("all")') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
@@ -34,10 +33,6 @@ div
             td {{ user.birth_date | moment('DD MMMM YYYY') }}
             td {{ user.country }}
 
-    .row
-      .container
-        EditUserForm.col-md-4(v-bind:user='this.storeUser' v-if='showEditUserForm')
-
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
@@ -57,21 +52,18 @@ import * as types from '../store/mutation-types'
 import store from '../store';
 import Vue from 'vue';
 import ColleaguesFilterForm from './forms/ColleaguesFilterForm.vue';
-import EditUserForm from './forms/EditUserForm.vue';
 
 var data = {
   sortBy: 'all',
   tableSort: '',
   groupLabel: 'group',
   query: '',
-  showEditUserForm: false
 }
 
 export default {
   name: 'colleagues',
   components: {
     ColleaguesFilterForm,
-    EditUserForm
   },
 
   data () {
