@@ -29,7 +29,8 @@ div
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
               span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
-            td {{ user.email }}
+            td.email-cell(@click='promptCopyEmail(user.email)')
+              span {{ user.email }}
             td {{ user.birth_date | moment('DD MMMM YYYY') }}
             td {{ user.country }}
 
@@ -142,6 +143,10 @@ export default {
   },
 
   methods: {
+    promptCopyEmail: function(email) {
+      window.prompt('copy this: ', email);
+    },
+
     setTableSort: function(value) {
       console.log(value);
       if(this.tableSort === value){
@@ -244,6 +249,15 @@ export default {
 
 .fa-pencil-square-o {
   padding-right: .2rem;
+}
+
+.email-cell {
+  color: #0275d8;
+}
+
+.email-cell>span:hover {
+  cursor: pointer;
+  border-bottom: 1px solid #0275d8;
 }
 
 #user-table {
