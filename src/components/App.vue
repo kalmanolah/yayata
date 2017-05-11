@@ -23,34 +23,27 @@ div(
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small.hidden-md-down Sickness / Vacation
-            router-link(:to='{ name: "colleagues" }')
+            router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small.hidden-md-down The weirdos I work with
+              p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')
               h3 Companies
               p.small.hidden-md-down Overview of clients
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
-
+            router-link(:to='{ name: "leave_overview_grid" }')
+              h3 Overview
+              p.small who is on leave this month
+      .row
+        .bottom
+          input#datepicker(type='hidden' ref='datepicker')
+          div#container(ref='container')
     .row
       navbar
     .main-app
       router-view
 
-              p.small Overview of clients
-            router-link(:to='{ name: "leave_overview_grid" }')
-              h3 Overview
-              p.small who is on leave this month
-        .row
-          .bottom
-            input#datepicker(type='hidden' ref='datepicker')
-            div#container(ref='container')
-    div.col-md-10.offset-sm-3.offset-md-2
-      div.row
-        navbar
-      div.main-app
-        router-view
 </template>
 
 <script>
@@ -92,11 +85,14 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
-
+        if(!store.getters.project_estimates)
+          store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
+        if(!store.getters.users)
+          store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+        if(!store.getters.user_groups)
+          store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
+        date: moment()
       });
-    if(!store.getters.project_estimates)
-      store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
-      date: moment()
   },
   mounted: function() {
     var vm = this;
@@ -130,6 +126,7 @@ export default {
 
 <style lang="less">
 @datepickerHeight: 228px;
+@sidebar-width: 200px;
 .container-fluid{
   background: #FAFAFA;
 }
@@ -192,7 +189,7 @@ export default {
 }
 
 #container {
-  margin-left: 2rem;
+  margin-left: .5rem;
 }
 
 .pika-single {
@@ -200,18 +197,23 @@ export default {
   border: 0;
 }
 
+.pika-lendar {
+  width: 100%;
+}
+
 .application-wrapper {
-    padding-left: 200px;
+    padding-left: @sidebar-width;
 }
 
 .sidebar-wrapper {
     z-index: 1000;
     position: fixed;
-    left: 200px;
-    width: 200px;
+    left: @sidebar-width;
+    width: @sidebar-width;
     height: 100%;
-    margin-left: -200px;
+    margin-left: -@sidebar-width;
     overflow-y: auto;
+    overflow-x: hidden;
     background: white;
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
