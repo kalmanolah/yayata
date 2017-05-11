@@ -311,17 +311,11 @@ export default {
     methods: {
       submitUserFilterForm: function() {
         Object.keys(this.model).filter((key) => {
-          if(key === 'active_days'){
-            this.model[key].forEach( val => {
-              // How do we do this?
-            });
-          }
           if(this.model[key] === '')
             delete this.model[key]
         });
         if(this.model.active_days){
           Object.values(this.model['active_days']).filter((day) => {
-            console.log(day);
             if(day === 'active_monday'){
               this.model.active_monday = 'True';
             } else if (day === 'active_tuesday'){
