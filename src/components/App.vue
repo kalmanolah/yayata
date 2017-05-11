@@ -110,6 +110,15 @@ export default {
         vm.$router.push({ name: 'calendar_week', params: { year: date.get('year'), week: date.get('isoWeek') }})
       }
     });
+
+    // HACK WARING: pikaday added arrowkey support for accessability reasons, this is something we don't want however
+    // as the pikaday is used to navigate. This would mean that whenever the user uses his arrowkeys after using the pikaday
+    // he leaves his current page.
+    // This feature is not not yet optional but will be in the future after the merge request that fixes this is accepted.
+    document.removeEventListener('keydown', this.picker._onKeyChange);
+    document.removeEventListener('keyup', this.picker._onKeyChange);
+    document.removeEventListener('keyleft', this.picker._onKeyChange);
+    document.removeEventListener('keyright', this.picker._onKeyChange);
   },
   methods: {},
 
