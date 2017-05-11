@@ -197,7 +197,7 @@ export default {
   border: 0;
 }
 
-.pika-lendar {
+#container>.pika-single>.pika-lendar {
   width: 100%;
 }
 
