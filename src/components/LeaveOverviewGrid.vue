@@ -116,7 +116,6 @@ div
       if(this.users && this.cu_filter === 'Contract')
         return this.users
       else if (this.users && this.all_contract_users){
-        // cu_filter === contract waarop gefilterd moet worden
         var contract_users = store.getters.contract_users.filter((cu) => cu.contract === this.cu_filter);
         return this.users.filter( user => {
           return contract_users.find(cu => cu.user === user.id)
@@ -144,14 +143,9 @@ div
           var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');
           
           if(moment(date).isBetween(start, end, null, [])){
-            if(leave.leave_type === 2){
-              return 'tag-danger';
-            } else if(leave.leave_type === 1){
-              return 'tag-success'
-            } else if(leave.leave_type === 3){
-              return 'tag-primary'
-            }
-          }
+            var temp = ['tag-primary', 'tag-success', 'tag-danger']
+            return (temp[leave.leave_type]) ? temp[leave.leave_type] : 'tag-primary';
+         }
         }
       }
     },
@@ -174,6 +168,7 @@ div
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options)
     }
   },
+  
   filters: {
     fullMonthString: function(val) {
       return moment().month(val - 1).format('MMMM')
