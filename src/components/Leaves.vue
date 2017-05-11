@@ -20,8 +20,8 @@ div(class='calendar')
       hr
 
       //- All leaves
-      h3.text-md-center All Leaves
-        .btn.btn-default.pull-right(@click='showAllLeaves = !showAllLeaves')
+      h3.text-md-center(@click='showAllLeaves = !showAllLeaves') All Leaves
+        .btn.btn-default.pull-right
           i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center An overview of all your leaves.
 
@@ -29,7 +29,6 @@ div(class='calendar')
           #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
             .card( v-bind:class='getRibbonStyleClass(leave)')
               .card-header.leave__header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
-
                 .row
                   .col-sm-9
                     a.text-muted(v-if='leave.leave_end < new Date()')
@@ -52,12 +51,13 @@ div(class='calendar')
       hr
 
       //- Pending leaves
-      h3.text-md-center Pending leaves
-        .btn.btn-default.pull-right(@click='showPendingLeaves = !showPendingLeaves')
+      h3.text-md-center(@click='showPendingLeaves = !showPendingLeaves') Pending leaves
+        .btn.btn-default.pull-right
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
       p.text-md-center Still awaiting approval.
 
       div(v-if='showPendingLeaves')
+        p.text-md-center(v-if='pendingLeaves.length === 0') <strong>No leaves awaiting approval.</strong> 
         #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
           .card(:class='getRibbonStyleClass(leave)')
             .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
