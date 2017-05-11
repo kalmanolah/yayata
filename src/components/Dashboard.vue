@@ -2,53 +2,55 @@
 
 div
   .row
-    .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
-      .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
-  .row
-    .card.card-top-blue
-      h4.card-title.text-md-center Timesheets for 
-        router-link(:to='{ name: "calendar_month_redirect" }')
-          | {{ today | moment('MMMM YYYY') }}
-      table.table
-        tbody
-          tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
-            td {{ c.customerName }}: {{ c.name }}
-            td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
-          tr
-            td <strong>Total</strong>
-            td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
-          tr
-            td <strong>Hours left to fill in</strong>
-            td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
-  .row
-    LeaveForm
-        //- .col-md-5
-        .card
-          h4.card-title.text-md-center Birthdays
-            table.table
-          .cardblock
-              tbody
-                tr(v-for="(user, index) in birthdays")
-                  td
-                    router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
-                    .fa.fa-birthday-cake.pull-right
-      .row
-    .col-md-5
+    .col-md-12
+      .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
+        .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+    .col-md-6
+      .card
+        h4.card-title.text-md-center Birthdays
+        .card-block
+          table.table
+            tbody
+              tr(v-for="(user, index) in birthdays")
+                td
+                  router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
+                  .fa.fa-birthday-cake.pull-right
+              tr(v-if='birthdays && birthdays.length === 0')
+                td.text-md-center <strong>No rijsttaart today :(</strong>
+      .card.card-top-blue
+        h4.card-title.text-md-center Timesheets for 
+          router-link(:to='{ name: "calendar_month_redirect" }')
+            | {{ today | moment('MMMM YYYY') }}
+        table.table
+          tbody
+            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+              td {{ c.customerName }}: {{ c.name }}
+              td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+            tr
+              td <strong>Total</strong>
+              td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
+            tr
+              td <strong>Hours left to fill in</strong>
+              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+    .col-md-6
       .card
         h4.card-title.text-md-center Absent colleagues
         div.text-md-center
-          | {{ selectedDay | moment('DD MMMM') }}
           i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
-        .cardblock
+          | {{ selectedDay | moment('DD MMMM') }}
           i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+        .card-block
           table.table
             tbody
               tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
                 td
-                  router-link(:to='{ name: "colleagues", params: { userId: leave.user.id }}') {{ leave.user.display_label }}
+                  router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
+      LeaveForm
+  .row
+    .col-md-5
 
 </template>
 
@@ -72,11 +74,11 @@ export default {
       today: moment(),
       days: [],
       leaves: [],
-      today: new Date(),
+      // today: new Date(),
       selectedDay: new Date(),
       earliestLeave: new Date(),
       latestLeave: new Date(),
-      leaves: [],
+      leavesWidget: [],
       leavesSelectedDay: []
     }
   },
@@ -107,8 +109,8 @@ export default {
 
     //Get all leaves for this month
     //Make param for month's range
-    var startOfMonth = this.today.startOf('month');
-    var endOfMonth = this.today.endOf('month');
+    var startOfMonth = moment().startOf('month');
+    var endOfMonth = moment().endOf('month');
     var range = `${startOfMonth.format('YYYY-MM-DDTHH:mm:ss')},${endOfMonth.format('YYYY-MM-DDTHH:mm:ss')}`;
 
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
@@ -118,18 +120,16 @@ export default {
         leavedate__range: range,
         page_size: 31,
       }
-    }).then((response) => {
-
+    }).then((response) => {      
       response.data.results.forEach(lv => {
         lv.leavedate_set.forEach(lvd => {
           lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
           lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
         });
-      
+        
         lv['leave_start'] = lv.leavedate_set[0].starts_at;
         lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
       });
-
       this.leaves = response.data.results;
     }, () => {
       this.loading = false;
@@ -273,6 +273,11 @@ export default {
   },
 
   filters: {
+    getUsername: function(val) {
+      if(store.getters.users){
+        return store.getters.users.find(u => u.id === val).display_label
+      }
+    },
 
     //Calculates amount of days in hours
     //Divides by 8 & sets precision to 1 decimal
@@ -302,16 +307,11 @@ export default {
       // Check if selected day is between the start of the first and last leave of the leaves.
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
         // Selected day is between leaves.
-        this.leaves.filter((lv) => {
+        this.leavesWidget.filter((lv) => {
           if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, lv.leavedate_set[lv.leavedate_set.length - 1].starts_at)
             || lv.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
             this.leavesSelectedDay.push(lv);
-            if(this.users){
-              this.users.forEach(u => {
-                if(u.id == lv.user)
-                  lv.user = u
-              });
-            }
+
             if(this.leave_types){
               this.leave_types.forEach(lt => {
                 if(lt.id == lv.leave_type)
@@ -340,9 +340,9 @@ export default {
         }
       }
       store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((response) => {
-        this.leaves = [];
+        this.leavesWidget = [];
         response.body.results.forEach((leave) => {
-          this.leaves.push(leave);
+          this.leavesWidget.push(leave);
           leave.leavedate_set.forEach(ld => {
             ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
             ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
