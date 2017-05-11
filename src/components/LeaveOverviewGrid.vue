@@ -113,6 +113,7 @@ div
         return store.getters.contract_users
     },
 
+    // Returns the users of a secific contract if specified. 
     contract_users: function() {
       if(this.users && this.cu_filter === 'Contract')
         return this.users
@@ -125,16 +126,20 @@ div
     }
   },
   methods: { 
+
+    // Changes the filter and dropdown label to the selected value.
     showContractUsers: function(contract) {
       this.cu_filter = contract.id;
       this.cu_label = contract.display_label;
     },
 
+    // Determines if the given day is a weekend day and styles it accordingly.
     determineWeekend: function(day) {
       if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5)
         return 'cell-weekend';
     },
 
+    // Determines the color of the cell depending on the leave type.
     determineCellColor: function(user, day) {
       if(this.users && this.leaves){
         var leave = this.leaves.find(l => l.user === user.id);
@@ -150,7 +155,8 @@ div
         }
       }
     },
-
+    
+    // Reloads the grid date to one month later.
     selectNextMonth: function() {
       var options = { 
         params: {
@@ -160,6 +166,7 @@ div
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options)
     },
 
+    // Reloads the grid date to one month earlier.
     selectPreviousMonth: function() {
       var options = { 
         params: {
@@ -171,17 +178,10 @@ div
   },
 
   filters: {
+    // Returns the month as a string
     fullMonthString: function(val) {
       return moment().month(val - 1).format('MMMM')
-    },
-
-    getFullContractName: function(val) {
-      if(val === 'Contract'){
-        return val;
-      } else if(this.contracts) {
-        return this.contracts.find(c => c.id === val).display_label;
-      }
-    },
+    }
   }
   }
 </script>
