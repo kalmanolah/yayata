@@ -690,8 +690,12 @@ const actions = {
 
 
   [types.NINETOFIVER_RELOAD_GRID_DATE] (store, options = {}) {
+    var date = moment()
+    if(options.params){
+      date = options.params.date;
+    }
     store.commit(types.NINETOFIVER_SET_GRID_DATE, {
-       grid_date: moment()
+       grid_date: date
     });
   },
   
