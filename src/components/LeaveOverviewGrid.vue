@@ -38,7 +38,8 @@ div
         th.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
     tbody
       tr( v-for='user in contract_users')
-        td {{ user.display_label }}
+        td 
+          router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
         td.day-cell(v-for='d in 31' v-bind:class='[determineWeekend(d), determineCellColor(user, d)]') &nbsp;
 </template>
 <script>
@@ -168,7 +169,7 @@ div
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options)
     }
   },
-  
+
   filters: {
     fullMonthString: function(val) {
       return moment().month(val - 1).format('MMMM')
