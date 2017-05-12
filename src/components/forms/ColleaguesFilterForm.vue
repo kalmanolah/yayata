@@ -289,13 +289,13 @@ export default {
                       model: "active_days",
                       listBox: true,
                       values: [
-                          { name: "Monday", value: "active_monday" },
-                          { name: "Tuesday", value: "active_tuesday" },
-                          { name: "Wednesday", value: "active_wednesday"},
-                          { name: "Thursday", value: "active_thursday" },
-                          { name: "Friday", value: "active_friday" },
-                          { name: "Saturday", value: "active_saturday" },
-                          { name: "Sunday", value: "actvive_sunday" }
+                          { name: "Monday", value: {active_monday: 'True'} },
+                          { name: "Tuesday", value: { active_tuesday: 'True'}},
+                          { name: "Wednesday", value: { active_wednesday: 'True'}},
+                          { name: "Thursday", value: { active_thursday: 'True'} },
+                          { name: "Friday", value: { active_friday: 'True' } },
+                          { name: "Saturday", value: { active_saturday: 'True' } },
+                          { name: "Sunday", value: { active_saturday: 'True' } }
                       ]    
                    }
                  ]
@@ -314,25 +314,10 @@ export default {
           if(this.model[key] === '')
             delete this.model[key]
         });
-        if(this.model.active_days){
-          Object.values(this.model['active_days']).filter((day) => {
-            if(day === 'active_monday'){
-              this.model.active_monday = 'True';
-            } else if (day === 'active_tuesday'){
-              this.model.active_tuesday = 'True';
-            } else if (day === 'active_wednesday'){
-              this.model.active_wednesday = 'True';
-            } else if (day === 'active_thursday') {
-              this.model.active_thursday = 'True';
-            } else if (day === 'active_friday') {
-              this.model.active_friday = 'True';
-            } else if (day === 'active_saturday') {
-              this.model.active_saturday = 'True';
-            } else {
-              this.model.active_sunday = 'True';
-            }
-          });
-        }
+        this.model.active_days.forEach( (day) => {
+          this.model[Object.keys(day)] = Object.values(day)[0];
+        });
+        
         var options = {
             path: '/users/',
             params: this.model
