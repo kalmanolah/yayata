@@ -96,6 +96,7 @@ export default {
       leaves: [],
       showAllLeaves: false,
       showPendingLeaves: true,
+      loaded: false
     }
   },
 
@@ -104,12 +105,13 @@ export default {
   },
 
   created: function () {
-    
-    //Get most recent data
-    this.getLeaves();
 
   },
-
+  watch: {
+    leaveTypes: function(leaveTypes, newLeaveTypes){
+      this.getLeaves();
+    },
+  },
   computed: {
 
     leaveTypes: function() {
@@ -189,13 +191,16 @@ export default {
 
     //Load all leaves
     getLeaves: function() {
+      console.log('bladfkldfjkfdjdfjkdfjkdf');
+      
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/',
         params: {
           page_size: 100
         }
       }).then((response) => {
-
+        console.log('BLABALBLABLALBA');
+        
         //Converts the start / end datetime from strings to actual JS datetimes
         response.data.results.forEach(lv => {
           lv.leavedate_set.forEach(ld => {
