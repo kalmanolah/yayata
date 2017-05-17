@@ -26,15 +26,9 @@ div(
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
               p.small The weirdos I work with
-            router-link(:to='{ name: "companies" }')
-              h3 Companies
-              p.small.hidden-md-down Overview of clients
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
-            router-link(:to='{ name: "leave_overview_grid" }')
-              h3 Overview
-              p.small who is on leave this month
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
