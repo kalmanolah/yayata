@@ -27,6 +27,7 @@ div
           .card(v-bind:class='getRibbonStyleClass(contract)')
             .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
               div.contract-name {{ contract.name }}
+                span {{ contract.ends_at }}
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
               small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
@@ -200,7 +201,7 @@ export default {
             cd.monthly_duration = totalHours;
 
             var totalHoursAllocated = 0;
-            var contract = store.getters.contracts.find(c => c.id === cd.id);
+            var contract = store.getters.filtered_contracts.find(c => c.id === cd.id);
             // Calculate total nuber of hours allocated from project contract.
             if(contract.type === 'ProjectContract'){
               contract.project_estimate.forEach(estimate => {
