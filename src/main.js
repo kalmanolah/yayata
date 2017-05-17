@@ -13,6 +13,7 @@ import ToggleButton from 'vue-js-toggle-button'
 import Toast from 'vue-easy-toast'
 
 import App from './components/App.vue'
+import Admin from './components/Admin.vue'
 import Auth from './components/Auth.vue'
 import AuthLogin from './components/AuthLogin.vue'
 import AuthLogout from './components/AuthLogout.vue'
@@ -22,7 +23,6 @@ import Week from './components/Week.vue'
 import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
-import LeaveOverviewGrid from './components/LeaveOverviewGrid.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
 
@@ -97,9 +97,9 @@ export const router = new VueRouter({
           component: Contracts,
         },
         {
-          name: 'leave_overview_grid',
-          path: '/overview',
-          component: LeaveOverviewGrid,
+          name: 'admin',
+          path: '/admin',
+          component: Admin,
         }
       ],
     },
