@@ -71,6 +71,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
         if (!store.getters.contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+        if(!store.getters.contract_roles)
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
         if(!store.getters.contract_users)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
         if(!store.getters.monthly_activity_performances)
