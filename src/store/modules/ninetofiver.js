@@ -323,7 +323,32 @@ const actions = {
 
     return new Promise  ((resolve, reject) => {
       Vue.http(opts).then((response) => {
-        resolve(response);
+        // If the results are paginated; get all pages.
+        var next = response.body.next;
+        var results = response.data.results;
+
+        function getNext(next) {
+          return new Promise((resolve, reject) => {
+            opts['url'] = next;
+            Vue.http(opts).then(res => {
+              res.body.results.forEach(el => results.push(el));
+              if(res.body.next){
+                next = res.body.next;
+                getNext(next)
+              } else {
+                resolve();
+              }
+            });
+          });
+        }
+        if(next){
+          getNext(next).then( () => {
+            response.data['results'] = results;
+            resolve(response)
+          });
+        } else {
+          resolve(response);
+        }
       }, (response) => {
 
         // If we get a 401, assume this is due an expired token which
@@ -553,7 +578,7 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_USERS] (store, options = {}) {
 
-    options.path = '/users/'
+    options.path = '/users/';
 
     return new Promise((resolve, reject) => {
       store.dispatch(
@@ -595,8 +620,8 @@ const actions = {
   
   [types.NINETOFIVER_RELOAD_FILTERED_USERS] (store, options = {}) {
 
-    options.path = '/users/'
-
+    options.path = '/users/';
+    
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
@@ -669,7 +694,10 @@ const actions = {
   [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
 
     options.path = '/contracts/';
-
+    if(!options.params){
+      options.params = {
+      }
+    }
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
@@ -729,7 +757,7 @@ const actions = {
   [types.NINETOFIVER_RELOAD_CONTRACT_USERS] (store, options = {}) {
 
     options.path = '/contract_users/';
-
+    
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
@@ -810,11 +838,9 @@ const actions = {
 
       options.params = {
         leavedate__gte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
-        page_size: 50
       };
     } else {
       options.params['leavedate__gte'] = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      options.params['page_size'] = 50;
     }
 
     function leaveSorter(val) {
