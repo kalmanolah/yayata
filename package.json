@@ -28,6 +28,7 @@
     "pug-loader": "^2.3.0",
     "vue-chartjs": "^2.6.1",
     "vue-clickaway": "^2.1.0",
+    "vue-easy-toast": "^1.0.1",    
     "vue-form-generator": "^2.0.0-beta6",
     "vue-js-toggle-button": "^1.0.5",
     "vue-loader": "^9.9.5",
