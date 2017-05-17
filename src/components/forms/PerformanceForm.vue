@@ -40,6 +40,7 @@ export default {
     model.duration = this.defaultPerformance ? this.defaultDuration : 0;
     model.performance_type = this.defaultPerformanceType;
     model.description = this.defaultDescription;
+    model.contract_role = this.defaultContractRole;
   },
 
   computed: {
@@ -66,6 +67,9 @@ export default {
 
     defaultDuration: function() {
       return this.defaultPerformance ? this.defaultPerformance.duration : 0;
+    },
+    defaultContractRole: function() {
+      return this.defaultPerformance ? this.defaultPerformance.contract_role: null;
     },
 
     defaultPerformanceType: function() {
@@ -169,7 +173,8 @@ export default {
         duration: this.model.duration,
         description: this.model.description,
         performance_type: this.model.performance_type,
-        contract: this.model.contract
+        contract: this.model.contract,
+        contract_role: this.model.contract_role
       };
 
       if(this.defaultPerformance)
@@ -211,7 +216,7 @@ export default {
           emulateJSON: true,
         }
       ).then((response) => {
-
+        console.log(response)
         if(response.status == 201) {
           this.$emit('success', response);
           this.showToast('Performance successfully added');
@@ -285,9 +290,26 @@ export default {
                 });
               }
             },
-
+          },
+          {
+            //CONTRACT_ROLE
+            type: "select",
+            model: "contract_role",
+            values: () => {
+              if(store.getters.contract_users && store.getters.user && model.contract){
+                var contract_users = store.getters.contract_users.filter( cu => {
+                  return (cu.user === store.getters.user.id && cu.contract === model.contract)
+                })
+                var contract_roles = [];
+                contract_users.forEach( cu => {
+                  contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
+                });
+                
+                return contract_roles;
+              }
+            },
             styleClasses: ['compact-field', 'col-md-12'],
-          }
+          },
         ]
       },
 
