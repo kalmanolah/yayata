@@ -6,7 +6,7 @@ div
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
         .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
     .col-md-6
-      .card
+      .card.card-top-blue
         h4.card-title.text-md-center Birthdays
         .card-block
           table.table
@@ -33,7 +33,7 @@ div
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
     .col-md-6
-      .card
+      .card.card-top-blue
         h4.card-title.text-md-center Absent colleagues
         div.text-md-center
           i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
