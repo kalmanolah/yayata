@@ -30,7 +30,7 @@ div
               span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
             td.email-cell(@click='promptCopyEmail(user.email)')
               span {{ user.email }}
-            td {{ user.birth_date | moment('DD MMMM YYYY') }}
+            td {{ user.birth_date | moment('DD/MM/YYYY') }}
             td {{ user.country }}
 
     .row(v-if='users && users.length === 0')
