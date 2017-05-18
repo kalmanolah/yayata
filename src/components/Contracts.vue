@@ -26,8 +26,7 @@ div
         div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
           .card(v-bind:class='getRibbonStyleClass(contract)')
             .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
-              div.contract-name {{ contract.name }}
-                span {{ contract.ends_at }}
+              div.contract-name {{ contract.name }} - {{ contract.end_date}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
               small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
