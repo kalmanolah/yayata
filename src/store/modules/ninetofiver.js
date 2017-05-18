@@ -334,7 +334,9 @@ const actions = {
               res.body.results.forEach(el => results.push(el));
               if(res.body.next){
                 next = res.body.next;
-                getNext(next)
+                getNext(next).then( () => {
+                  resolve()
+                })
               } else {
                 resolve();
               }
