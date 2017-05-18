@@ -48,6 +48,18 @@ div
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
+      .card.card-top-blue
+        h4.card-title.text-md-center Holidays
+        .text-md-center
+          i.fa.fa-chevron-left.chevron-l.chevron()
+          | {{ selectedDay | moment('DD MMMM') }}
+          i.fa.fa-chevron-right.chevron-r.chevron()
+        .card-block
+          table.table
+            tbody
+              tr(v-if='holidays' v-for='holiday in holidays')
+                td {{ holiday.name }} [{{ holiday.country }}]
+                td.text.md-right {{ holiday.date }}
       LeaveForm
   .row
     .col-md-5
@@ -137,6 +149,11 @@ export default {
   },
 
   computed: {
+    holidays: function() {
+      if(store.getters.holidays)
+        var today = moment().format('MM-DD');
+        return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === today);
+    },
 
     workschedule: function() {
       if(store.getters.work_schedule)
