@@ -112,6 +112,8 @@ export default {
 
         if(!model.end_full_day)
           e_date.hours(e_time.hours()).minutes(e_time.minutes());
+        
+        model.leave_type = model.leave_type.value.id
 
         //Make leave object
         store.dispatch(
@@ -365,8 +367,13 @@ export default {
             label: "Leavetype",
             required: true,
             values: function() {
-              if(store.getters.leave_types)
-                return store.getters.leave_types;
+              var leave_types = [];
+              if(store.getters.leave_types){
+                store.getters.leave_types.forEach(lt => {
+                  leave_types.push({name: lt.display_label, value: lt});
+                });
+                return leave_types;
+              }
             },
 
             styleClasses: 'col-md-6',
