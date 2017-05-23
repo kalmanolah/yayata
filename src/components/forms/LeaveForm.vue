@@ -8,7 +8,7 @@ div
     .card-block
       vue-form-generator(v-if='upcomingLeaves', :schema="schema", :model="model", :options="formOptions")
       .btn.btn-success.col-md-12(@click='submitLeaveRequest()')
-        i.fa.fa-spinner.fa-pulse.fa-3x.fa-fw(v-if='requestLoading')
+        i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
         i.fa.fa-plus.submit-icons(v-else)
 </template>
 
