@@ -1,8 +1,8 @@
 <template lang="pug">
 div
   .btn-group(role='group')
-    buttn.btn.btn-secondary(@click='currentView="LeaveOverviewGrid"') Leave Overview Grid
-    buttn.btn.btn-secondary(@click='currentView="Contracts"') Contracts
+    button.btn.btn-secondary(@click='currentView="LeaveOverviewGrid"') Leave Overview Grid
+    button.btn.btn-secondary(@click='currentView="Contracts"') Contracts
   component(v-bind:is='currentView')
 </template>
 <script>
