@@ -147,7 +147,7 @@ export default {
                       // Company_internal
                       type: "select",
                       label: "Company",                      
-                      model: "company__internal",
+                      model: "company",
                       required: true,
                       values: function() {
                         if(store.getters.companies)
