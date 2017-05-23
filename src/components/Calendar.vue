@@ -324,6 +324,10 @@ export default {
   },
 
   computed: {
+    user: function() {
+      if(store.getters.user)
+        return store.getters.user
+    },
 
     days: function() {
       var daysInWeek = [];
@@ -359,11 +363,17 @@ export default {
           }
 
           //Correcting total with holidays
-          store.getters.holidays.forEach(h => {
-            var date = moment(h.date, 'YYYY-MM-DD');
+          var startOfMonth = moment().startOf('month');
+          var endOfMonth = moment().endOf('month');
+    
+          store.getters.holidays.forEach(holiday => {
+            if(this.user.country === holiday.country){
+              var date = moment(holiday.date).format('YYYY-MM-DD');
 
-            if(this.selectedMonth.getMonth() === date.month())
-              total -= ws[date.format('dddd').toLowerCase()];
+              if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
+                total -= 8;
+              }
+            }
           });
 
           //Correcting total with leaves
