@@ -58,16 +58,16 @@ div
           .card.card-top-blue
             h4.card-title.text-md-center Holidays
             .text-md-center
-              i.fa.fa-chevron-left.chevron-l.chevron()
+              i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
               | {{ selectedDay | moment('DD MMMM') }}
-              i.fa.fa-chevron-right.chevron-r.chevron()
+              i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater')
             .card-block
               table.table
                 tbody
-                  tr(v-if='holidays' v-for='holiday in holidays')
+                  tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
                     td {{ holiday.name }} [{{ holiday.country }}]
                     td.text.md-right {{ holiday.date }}
-                  tr(v-if='holidays.length === 0')
+                  tr(v-if='holidaysSelectedDay.length === 0')
                     td.text-md-center <strong>No holidays!</strong>
         //- HOLLIDAYS
     .col-md-6
@@ -102,7 +102,8 @@ export default {
       earliestLeave: new Date(),
       latestLeave: new Date(),
       leavesWidget: [],
-      leavesSelectedDay: []
+      leavesSelectedDay: [],
+      holidaysSelectedDay: []
     }
   },
 
@@ -162,8 +163,8 @@ export default {
   computed: {
     holidays: function() {
       if(store.getters.holidays)
-        var today = moment().format('MM-DD');
-        return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === today);
+        // return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD'));
+        return store.getters.holidays
     },
 
     workschedule: function() {
@@ -321,12 +322,23 @@ export default {
   methods: {
     dayEarlier: function() {
       this.selectedDay.subtract(1, 'days');      
-      this.filterLeaves();      
+      this.filterLeaves();
+      this.filterHolidays();      
     },
 
     dayLater: function() {
       this.selectedDay.add(1, 'days');      
       this.filterLeaves();
+      this.filterHolidays();      
+    },
+
+    filterHolidays: function() {
+      this.holidaysSelectedDay = [];
+      this.holidays.filter(holiday => {
+        if(moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD')){
+          this.holidaysSelectedDay.push(holiday)
+        }
+      });
     },
 
     filterLeaves: function() {
