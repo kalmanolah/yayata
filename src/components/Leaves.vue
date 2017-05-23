@@ -191,7 +191,6 @@ export default {
 
     //Load all leaves
     getLeaves: function() {
-      console.log('bladfkldfjkfdjdfjkdfjkdf');
       
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/',
@@ -199,7 +198,6 @@ export default {
           page_size: 100
         }
       }).then((response) => {
-        console.log('BLABALBLABLALBA');
         
         //Converts the start / end datetime from strings to actual JS datetimes
         response.data.results.forEach(lv => {
