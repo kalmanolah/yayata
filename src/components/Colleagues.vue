@@ -8,7 +8,7 @@ div
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
           button.btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
-          button.btn.btn-secondary(v-if='userId !== "all"' type='button' @click='reloadPage()') All
+          button.btn.btn-secondary(v-else type='button' @click='reloadPage()') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
