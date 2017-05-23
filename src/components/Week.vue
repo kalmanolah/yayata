@@ -516,7 +516,7 @@ export default {
         if(this.activityPerformances[i].day == day)
           result.push(this.activityPerformances[i]);
 
-      return result;
+      return result.reverse();
     }
   },
 
