@@ -7,7 +7,8 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortByGroup("all")') All
+          button.btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
+          button.btn.btn-secondary(v-if='userId !== "all"' type='button' @click='reloadPage()') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
@@ -136,7 +137,7 @@ export default {
 
   methods: {
     promptCopyEmail: function(email) {
-      window.prompt('copy this: ', email);
+      window.prompt('here take this: ', email);
     },
 
     setTableSort: function(value) {
@@ -177,6 +178,10 @@ export default {
         [store.getters.group_names[0]]: 'tag-green',
       }
       return (tempObj[group_name]) ? tempObj[group_name] : 'tag-primary';   
+    },
+
+    reloadPage: function() {
+      this.$router.push({ name: 'colleagues', params: { userId: 'all'}})
     }
   },
 
