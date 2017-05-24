@@ -59,8 +59,20 @@ div
   created: function() {
     if(!store.getters.grid_date)
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE)
-    if(!store.getters.leaves)
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES)
+
+    if(!store.getters.leaves){
+      var lowerBoundary = moment().subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss')
+      var upperBoundary = moment().add(1, 'months').format('YYYY-MM-DDTHH:mm:ss')
+      var range = lowerBoundary + ',' + upperBoundary;
+      console.log(range)
+      var options = {
+        params: {
+          leavedate__range: range
+        }
+      }
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options)
+    }
+
     if(!store.getters.filtered_users)
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS)
     if(!store.getters.contract_users)
@@ -163,7 +175,9 @@ div
           date: moment(this.grid_date).add(1, 'month')
         } 
       };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options)
+      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
+        this.reloadLeaves();
+      })
     },
 
     // Reloads the grid date to one month earlier.
@@ -173,7 +187,22 @@ div
           date: moment(this.grid_date).subtract(1, 'month')
         } 
       };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options)
+      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
+        this.reloadLeaves();
+      })
+    },
+
+    reloadLeaves: function() {
+      // take griddate add and subtract 1 month, reload filtered leaves
+      var lowerBoundary = moment(this.grid_date).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+      var upperBoundary = moment(this.grid_date).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+      var range = lowerBoundary + ',' + upperBoundary;
+      var options = {
+        params: {
+          leavedate__range: range
+        }
+      }
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options);
     }
   },
 
