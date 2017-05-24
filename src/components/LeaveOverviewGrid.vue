@@ -2,6 +2,8 @@
 div
   h1(class='col-md-12 text-md-center') {{ grid_month | fullMonthString }} {{ grid_year }}
     .pull-right
+      i.fa.fa-spinner.fa-pulse.fa-fw(v-show='loading')
+      span.sr-only Loading...
       div(
         class='btn-group'
         role='group'
@@ -12,6 +14,11 @@ div
           .dropdown-menu(aria-labelledby='btnGroupDrop')
             a.dropdown-item(@click='cu_label = "Contract"; cu_filter="Contract"') All
             a.dropdown-item(v-for='contract in contracts' @click='showContractUsers(contract)') {{ contract.display_label }}
+        .btn-group(role='group')
+          button.btn.btn-secondary.dropdown-toggle#countryBtnGroup(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ country_label }}
+          .dropdown-menu(aria-labelledby='countryBtnGroup')
+            a.dropdown-item(@click='country_label = "Country"; country_filter="Country"') All
+            a.dropdown-item(v-for='country in countries' @click='showCountryUsers(country)') {{ country }}
         button(
                 class='btn btn-secondary'
                 type='button'
@@ -37,7 +44,7 @@ div
         th(v-for='d in daysInMonth' v-bind:class='determineWeekend(d)') {{ d }}
         th.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
     tbody
-      tr( v-for='user in contract_users')
+      tr(v-if='country_users' v-for='user in country_users')
         td 
           router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
         td.day-cell(v-for='d in 31' v-bind:class='[determineWeekend(d), determineCellColor(user, d)]') &nbsp;
@@ -53,7 +60,11 @@ div
   data() { 
     return {
       cu_filter: 'Contract',
-      cu_label: 'Contract'
+      cu_label: 'Contract',
+      country_label: 'Country',
+      country_filter: 'Country',
+      countries: [],
+      loading: false
     }
   },
   created: function() {
@@ -73,8 +84,16 @@ div
       store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options)
     }
 
-    if(!store.getters.filtered_users)
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS)
+    if(!store.getters.filtered_users){
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS).then( () => {
+        // Get every unique country
+        store.getters.filtered_users.forEach( user => {
+          if(this.countries.indexOf(user.country) === -1){
+            this.countries.push(user.country);
+          }
+        });
+      });
+    }
     if(!store.getters.contract_users)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS)
 },
@@ -135,11 +154,32 @@ div
           return contract_users.find(cu => cu.user === user.id)
         });
       }
+
+    },
+
+    // Returns the users of a specific country if specified.
+    country_users: function() {
+      if(this.contract_users && this.country_filter === 'Country'){
+        return this.contract_users;
+      } else if(this.contract_users) {
+        return this.contract_users.filter( (cu) => {
+          return cu.country === this.country_filter;
+        });
+      } else {
+        console.log('oifjkjfjdjkfdjdfjs');
+        
+      }
     }
   },
   methods: { 
 
-    // Changes the filter and dropdown label to the selected value.
+    // Changes the country filter and dropdown label to the selected value.
+    showCountryUsers: function(country) {
+      this.country_filter = country;
+      this.country_label = country;
+    },
+
+    // Changes the contract filter and dropdown label to the selected value.
     showContractUsers: function(contract) {
       this.cu_filter = contract.id;
       this.cu_label = contract.display_label;
@@ -153,7 +193,7 @@ div
 
     // Determines the color of the cell depending on the leave type.
     determineCellColor: function(user, day) {
-      if(this.users && this.leaves){
+      if(this.country_users && this.leaves){
         var leave = this.leaves.find(l => l.user === user.id);
         if(leave){
           var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
@@ -193,6 +233,7 @@ div
     },
 
     reloadLeaves: function() {
+      this.loading = true;
       // take griddate add and subtract 1 month, reload filtered leaves
       var lowerBoundary = moment(this.grid_date).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
       var upperBoundary = moment(this.grid_date).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
@@ -202,7 +243,7 @@ div
           leavedate__range: range
         }
       }
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options);
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
     }
   },
 
