@@ -161,6 +161,11 @@ export default {
   },
 
   computed: {
+    user: function() {
+      if(store.getters.user)
+        return store.getters.user
+    },
+
     holidays: function() {
       if(store.getters.holidays)
         // return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD'));
@@ -178,7 +183,7 @@ export default {
         return store.getters.users.filter(user => moment(user.birth_date).format('MM-DD') === today);
       }
     },
-    
+
     //Calculates amount of hours that should be worked according to the workschedule
     totalHoursRequired: function() {
       var total = 0;
@@ -194,14 +199,21 @@ export default {
               total += parseFloat(ws[w]) * this.days[w];
           }
 
-            //Correcting total with holidays
-            store.getters.holidays.forEach(h => {
-              var date = moment(h.date, 'YYYY-MM-DD');
+            //Correcting total with holidays 
+            var startOfMonth = moment().startOf('month');
+            var endOfMonth = moment().endOf('month');
+      
+            store.getters.holidays.forEach(holiday => {
+              if(this.user.country === holiday.country){
+                var date = moment(holiday.date).format('YYYY-MM-DD');
 
-              if(this.today.month() === date.month())
-                total -= ws[date.format('dddd').toLowerCase()];
+                if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
+                  total -= 8;
+                  console.log(total)
+                }
+              }
             });
-
+            
             //Correcting total with leaves
             this.leaves.forEach(lv => {
               var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
@@ -335,7 +347,7 @@ export default {
     filterHolidays: function() {
       this.holidaysSelectedDay = [];
       this.holidays.filter(holiday => {
-        if(moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD')){
+        if(moment(holiday.date).format('MM-DD-YYYY') === moment(this.selectedDay).format('MM-DD-YYYY')){
           this.holidaysSelectedDay.push(holiday)
         }
       });
