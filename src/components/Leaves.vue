@@ -105,7 +105,7 @@ export default {
   },
 
   created: function () {
-
+    this.getLeaves();
   },
   watch: {
     leaveTypes: function(leaveTypes, newLeaveTypes){
