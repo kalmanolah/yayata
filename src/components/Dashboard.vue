@@ -35,41 +35,29 @@ div
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
     .col-md-6
-      .row
-        .col-md-6
-          //- ABSENT COLLEAGUES
-          .card.card-top-blue
-            h4.card-title.text-md-center Absent colleagues
-            div.text-md-center
-              i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
-              | {{ selectedDay | moment('DD MMMM') }}
-              i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
-            .card-block
-              table.table
-                tbody
-                  tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
-                    td
-                      router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
-                    td.text-md-right {{ leave.leave_type }}
-                  tr(v-if='sortedLeaves.length === 0')
-                    td.text-md-center <strong>No absent colleagues!</strong>
-        //- HOLIDAYS
-        .col-md-6
-          .card.card-top-blue
-            h4.card-title.text-md-center Holidays
-            .text-md-center
-              i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
-              | {{ selectedDay | moment('DD MMMM') }}
-              i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater')
-            .card-block
-              table.table
-                tbody
-                  tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
-                    td {{ holiday.name }} [{{ holiday.country }}]
-                    td.text.md-right {{ holiday.date }}
-                  tr(v-if='holidaysSelectedDay.length === 0')
-                    td.text-md-center <strong>No holidays!</strong>
-        //- HOLLIDAYS
+      //- ABSENT COLLEAGUES
+      .card.card-top-blue
+        h4.card-title.text-md-center Absent colleagues
+        div.text-md-center
+          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
+          | {{ selectedDay | moment('DD MMMM') }}
+          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+        .card-block
+          table.table
+            tbody
+              tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
+                td
+                  router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
+                td.text-md-right {{ leave.leave_type }}
+              tr(v-if='sortedLeaves.length === 0')
+                td.text-md-center <strong>No absent colleagues!</strong>
+          table.table
+            tbody
+              tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
+                td {{ holiday.name }} [{{ holiday.country }}]
+                td.text.md-right {{ holiday.date }}
+              tr(v-if='holidaysSelectedDay.length === 0')
+                td.text-md-center <strong>No holidays!</strong>
     .col-md-6
       LeaveForm
   .row
