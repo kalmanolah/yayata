@@ -209,7 +209,7 @@ export default {
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).name;
+          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).display_label;
         });
 
         this.leaves = response.data.results
