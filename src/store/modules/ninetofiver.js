@@ -23,6 +23,7 @@ const state = {
   project_estimates: null,
   grid_date: null,
   leaves: null,
+  attachments: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -69,6 +70,11 @@ const mutations = {
   [types.NINETOFIVER_SET_USER] (state, { user }) {
     state.user = user;
   },
+  
+  [types.NINETOFIVER_SET_ATTACHMENTS] (state, { attachments }) {
+    state.attachments = attachments;
+  },
+
   [types.NINETOFIVER_SET_HOLIDAYS] (state, { holidays }) {
     state.holidays = holidays;
   },
@@ -143,6 +149,7 @@ const getters = {
   holidays: state => state.holidays,
 
   leave_types: state => state.leave_types,
+  attachments: state => state.attachments,
   performance_types: state => state.performance_types,
   employment_contract_types: state => state.employment_contract_types,
   contract_groups: state => state.contract_groups,
@@ -193,7 +200,8 @@ const getters = {
           projectName: x.name,
           project_estimate: x.hours_estimated,
           start_date: x.starts_at,
-          end_date: x.ends_at,          
+          end_date: x.ends_at,
+          attachments: x.attachments,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: parseFloat(x.hours_spent)
@@ -222,6 +230,7 @@ const getters = {
           start_date: x.starts_at,
           end_date: x.ends_at,    
           project_estimate: x.hours_estimated,
+          attachments: x.attachments,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: x.hours_spent
@@ -374,6 +383,24 @@ const actions = {
     })
   },
 
+  [types.NINETOFIVER_RELOAD_ATTACHMENTS] (store, options = {}) {
+
+    options.path = '/attachments/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ATTACHMENTS, {
+          attachments: res.data.results
+        })
+        resolve(res)
+      }, (res) => {
+        reject(res)
+      })
+    })
+  },
   [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
 
     options.path = '/services/my_user/';

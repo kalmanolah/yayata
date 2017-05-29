@@ -67,6 +67,12 @@ div
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Hours to fill in:</strong>
                       .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.totalHoursAllocated - contract.total_duration }} hours
+                    hr(v-if='contract.attachments')
+                    .row
+                      .col-md-4 <strong>Attachments</strong>
+                      .col-md-8.text.md-right
+                        div(v-for='attachment in contract.attachments')
+                          a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
                 .col-md-6
                   PieChart(:chart-data='contract.datacollection')
                     
@@ -115,9 +121,17 @@ export default {
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
     }
+    if(!store.getters.attachments){
+      store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
+    }
   },
 
   filters: {
+    urlFilter: function(attachment){
+      // base url is localhost:8080 but files are served from 127.0.0.1:8080
+      return 'http://127.0.0.1:8000' + attachment.file_url;
+    },
+
     //Return array as joined strings
     getContractGroupAsString: function(arr) {
       //If we're provided a value
@@ -193,6 +207,7 @@ export default {
           for(var cd of contract_detail) {
             var totalHours = 0;
 
+            // Get total hours worked on contract
             store.getters.monthly_activity_performances.forEach(x => {
               if(x.contract === cd.id)
                 totalHours += parseFloat(x.duration);
@@ -201,6 +216,7 @@ export default {
 
             var totalHoursAllocated = 0;
             var contract = store.getters.filtered_contracts.find(c => c.id === cd.id);
+
             // Calculate total nuber of hours allocated from project contract.
             if(contract.type === 'ProjectContract'){
               contract.project_estimate.forEach(estimate => {
@@ -211,6 +227,7 @@ export default {
 
             cd.total_users = store.getters.contract_users_count;
             
+            // Get the contract users
             var contract_users = [];
             store.getters.contract_users.forEach((cu) =>{
               if(cu.contract === cd.id){
@@ -218,6 +235,19 @@ export default {
               }
             });
             cd.contract_users = contract_users;
+
+            // If the contract has attachments add them to the contract.
+            var attachments = [];
+            if(contract.attachments.length > 0){
+              store.getters.attachments.forEach(a => {
+                contract.attachments.forEach(ca => {
+                  if(ca === a.id){
+                    attachments.push(a);
+                  }
+                })
+              });
+            }
+            cd.attachments = attachments;
           }
           return contract_detail;
       }
@@ -229,8 +259,11 @@ export default {
         var query = this.query;
         return this.sortedContracts.filter( contract => {
           // Fields to filter on
-          return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
-                || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+          if(contract.name){
+            return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+                  // Not all contracts have a description; this causes an error.
+                  // || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+          }
         });
       }
     },
