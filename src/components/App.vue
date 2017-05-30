@@ -87,6 +87,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_USERS);
         if(!store.getters.user_groups)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
+        if(!store.getters.attachments)
+          store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS);
         date: moment()
       });
   },
