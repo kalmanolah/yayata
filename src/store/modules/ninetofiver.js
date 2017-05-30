@@ -238,6 +238,73 @@ const getters = {
       });
     }
   },
+  // Full contracts: merges contract, activity performances, contract users and attachments.
+  full_contracts: state => {
+    if(!state.filtered_contracts || !state.contract_users || !state.monthly_activity_performances || !state.attachments){
+      return null;
+    } else {
+      return state.filtered_contracts.map((c) => {
+
+        // Calculate total hours allocated to project contract
+        var total_hours_allocated = 0;
+        if(c.type === 'ProjectContract'){
+          if(c.hours_estimated){
+            c.hours_estimated.forEach((estimate) => {
+              total_hours_allocated += estimate[0];
+            });
+          }
+        }
+
+        // Calculate hours left to fill in
+        var hours_left = total_hours_allocated - c.hours_spent;
+
+        // Get the contract users
+        var contract_users = [];
+        state.contract_users.forEach((cu) => {
+          if(cu.contract === c.id){
+            contract_users.push(cu);
+          }
+        });
+
+        // Get attachments if the contract has any
+        var attachments = [];
+        if(c.attachments.length > 0){
+          state.attachments.forEach((a) => {
+            c.attachments.forEach((ca) => {
+              if(ca === a.id){
+                attachments.push(a);
+              }
+            });
+          });
+        }
+
+        return {
+          id: c.id,
+          name: c.label,
+          type: c.type,
+          description: c.description,
+          performance_types: c.performance_types,
+          contract_groups: c.contract_groups,
+          contract_type: c.type,
+          active: c.active,
+          customer: c.customer,
+          company: c.company,
+          projectName: c.name,
+          start_date: c.starts_at,
+          end_date: c.ends_at,    
+          project_estimate: c.hours_estimated,
+          customerName: state.companies.find(com => com.id == c.customer).name,
+          companyName: state.companies.find(com => com.id == c.company).name,
+          // CALCULATED:
+          total_hours_spent: c.hours_spent,
+          total_hours_allocated: total_hours_allocated,
+          contract_users: contract_users,
+          attachments: attachments,
+          hours_left: hours_left
+        }
+      });
+    }
+  },
   contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
   work_schedule: state => state.work_schedule,
