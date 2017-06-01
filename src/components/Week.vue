@@ -155,7 +155,7 @@ export default {
         var timesheet_locations = [];
         this.daysOfWeek.forEach((day) => {
           if(timesheet){
-            var wa = this.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
+            var wa = this.whereabouts.find(w => w.day == day.format('D') && w.timesheet == timesheet.id)
             wa = wa ? wa.location : 'Select whereabout';
           } else {
             var wa = 'Select whereabout';
@@ -210,6 +210,7 @@ export default {
     },
     
     patchWhereabout: function(whereaboutId, location, day, timesheetId) {
+      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/' + whereaboutId + '/',
         method: 'PATCH',
@@ -235,6 +236,7 @@ export default {
     },
 
     createWhereabout: function(location, day, timesheetId) {
+      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/',
         method: 'POST',
@@ -261,14 +263,31 @@ export default {
     // Create new whereabout
     setWhereabout: function(location, day, index) {
       // Get timesheet
-      var timesheet = store.getters.timesheets.find(x => 
-        x.month == (day.month() + 1)
-        &&
-        x.year == day.year()
-      );
-      // Timesheet not found; make a new one
-      if(!timesheet) {
-        this.createNewTimeSheet(day).then( () => {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        filter_future_timesheets: false,
+      }).then( () => {
+        var timesheet = store.getters.timesheets.find(x => 
+          x.month == (day.month() + 1)
+          &&
+          x.year == day.year()
+        );
+        // Timesheet not found; make a new one
+        if(!timesheet) {
+          console.log('no timesheet found.')
+          this.createNewTimeSheet(day).then( (response) => {
+            console.log(response)
+            var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === response.data.id)
+            // Whereabout already exists
+            if(whereabout){
+              this.patchWhereabout(whereabout.id, location, day, response.data.id);
+            // Whereabout does not exist
+            } else {
+              this.createWhereabout(location, day, response.data.id);
+            }
+          });
+        } else {
+          console.log('timesheet found.')
+          console.log(timesheet)
           var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
           // Whereabout already exists
           if(whereabout){
@@ -277,17 +296,8 @@ export default {
           } else {
             this.createWhereabout(location, day, timesheet.id);
           }
-        });
-      } else {
-        var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
-        // Whereabout already exists
-        if(whereabout){
-          this.patchWhereabout(whereabout.id, location, day, timesheet.id);
-        // Whereabout does not exist
-        } else {
-          this.createWhereabout(location, day, timesheet.id);
         }
-      }
+      })
     },
 
     getDailyQuota: function(day) {
@@ -770,9 +780,5 @@ div.btn-group {
 
 .whereaboutDropdown {
   padding-bottom: 5px;
-}
-
-#btnGroupDrop {
-  width: 100%;
 }
 </style>
