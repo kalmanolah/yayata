@@ -68,7 +68,9 @@ export default {
         if (!store.getters.companies)
           store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
         if (!store.getters.timesheets)
-          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+            filter_future_timesheets: true
+          });
         if (!store.getters.contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
         if(!store.getters.contract_roles)
@@ -89,6 +91,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
         if(!store.getters.attachments)
           store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS);
+        if(!store.getters.wherabouts)
+          store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
         date: moment()
       });
   },

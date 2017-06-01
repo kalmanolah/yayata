@@ -43,6 +43,11 @@
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
 
         .card-header.card-info
+          .btn-group(role='group' v-if='whereabouts && timesheet_locations')
+            button.btn.btn-secondary.btn-sm.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
+            .dropdown-menu(aria-labelledby='btnGroupDrop')
+              a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
+          br
           .pull-left 
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
             h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
@@ -119,10 +124,47 @@ export default {
     '$route' (to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
-    }
+    },
   },
 
   computed: {
+    whereabouts: function() {
+      if(store.getters.whereabouts && this.daysOfWeek){
+        var whereabouts = []
+        store.getters.whereabouts.filter((w) => {
+          this.daysOfWeek.forEach((day) => {
+            if(day.format('D') == w.day){
+              whereabouts.push(w);
+            }
+          })
+        });
+        return whereabouts
+      }
+    },
+
+    // Gets the locations of this wee
+    timesheet_locations: function() {
+      if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts){
+        var day = this.daysOfWeek[0];
+        var timesheet = store.getters.timesheets.find(x => 
+          x.month == (day.month() + 1)
+          &&
+          x.year == day.year()
+        );
+
+        var timesheet_locations = [];
+        this.daysOfWeek.forEach((day) => {
+          if(timesheet){
+            var wa = this.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
+            wa = wa ? wa.location : 'Select whereabout';
+          } else {
+            var wa = 'Select whereabout';
+          }
+          timesheet_locations.push(wa);
+        });
+        return timesheet_locations
+      }
+    },
 
     work_schedule: function() {
       if(store.getters.work_schedule)
@@ -151,9 +193,102 @@ export default {
 
   },
 
-  created: function() { },
+  created: function() {
+    this.reloadWhereabouts();
+  },
 
   methods: {
+    reloadWhereabouts: function() {
+      if(store.getters.user){
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+          filter_future_timesheets: false
+        })
+        
+        return store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
+        });
+      }
+    },
+    
+    patchWhereabout: function(whereaboutId, location, day, timesheetId) {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/whereabouts/' + whereaboutId + '/',
+        method: 'PATCH',
+        body: {
+          location: location,
+          day: day.date(),
+          timesheet: timesheetId
+        },
+        emulateJSON: true
+      }).then( () => {
+        this.reloadWhereabouts();
+        this.$toast('Updated whereabout to ' + location + '!', 
+          {
+            id: 'whereabout-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          }
+        );
+      });
+    },
+
+    createWhereabout: function(location, day, timesheetId) {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/whereabouts/',
+        method: 'POST',
+        body: {
+          location: location,
+          day: day.date(),
+          timesheet: timesheetId
+        },
+        emulateJSON: true
+      }).then(() => {
+        this.reloadWhereabouts();
+        this.$toast('Set whereabout to ' + location + '!',
+          { 
+            id: 'whereabout-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          });
+      });
+    },
+
+    // Create new whereabout
+    setWhereabout: function(location, day, index) {
+      // Get timesheet
+      var timesheet = store.getters.timesheets.find(x => 
+        x.month == (day.month() + 1)
+        &&
+        x.year == day.year()
+      );
+      // Timesheet not found; make a new one
+      if(!timesheet) {
+        this.createNewTimeSheet(day).then( () => {
+          var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
+          // Whereabout already exists
+          if(whereabout){
+            this.patchWhereabout(whereabout.id, location, day, timesheet.id);
+          // Whereabout does not exist
+          } else {
+            this.createWhereabout(location, day, timesheet.id);
+          }
+        });
+      } else {
+        var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
+        // Whereabout already exists
+        if(whereabout){
+          this.patchWhereabout(whereabout.id, location, day, timesheet.id);
+        // Whereabout does not exist
+        } else {
+          this.createWhereabout(location, day, timesheet.id);
+        }
+      }
+    },
 
     getDailyQuota: function(day) {
       var performed = this.getDurationTotal(day);
@@ -344,6 +479,18 @@ export default {
       }
 
     },
+    createNewTimeSheet: function(day) {
+      return store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_timesheets/',
+        method: 'POST',
+        body: {
+          month: day.month() + 1,
+          year: day.year(),
+          closed: false
+        },
+        emulateJSON: true,
+      });
+    },
 
     //Sets the popover placement, based on the weekindex and weekformat
     setPopoverPlacement: function(val) {
@@ -533,12 +680,15 @@ export default {
       toggleButtonLabels: {
         checked: 'On call',
         unchecked: 'Off call'
-      }
+      },
+
+      whereabout_locations: store.getters.whereabout_locations,
     }
 
   },
 
-  filters: {  },
+  filters: {
+ },
 }
 </script>
 
@@ -616,5 +766,13 @@ div.btn-group {
     text-align: center;
     width: inherit;
     display: inline-block;
+}
+
+.whereaboutDropdown {
+  padding-bottom: 5px;
+}
+
+#btnGroupDrop {
+  width: 100%;
 }
 </style>

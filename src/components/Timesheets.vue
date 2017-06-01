@@ -72,7 +72,11 @@
       },
     },
 
-    created: () => { },
+    created: () => { 
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        filter_future_timesheets: true
+      })
+    },
 
     watch: {
 

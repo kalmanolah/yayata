@@ -34,11 +34,13 @@ const state = {
   work_schedule: null,
   show_extra_info: null,
   upcoming_leaves: null,
+  whereabouts: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
+  whereabout_locations: ['Brasschaat', 'Gent', 'Home'],
   colleagues_filter: 'all',
   week_formatting: {
     'workweek': {
@@ -140,6 +142,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_UPCOMING_LEAVES] (state, { upcoming_leaves }) {
     state.upcoming_leaves = upcoming_leaves;
+  },
+  [types.NINETOFIVER_SET_WHEREABOUTS] (state, { whereabouts}) {
+    state.whereabouts = whereabouts
   }
 }
 
@@ -148,6 +153,7 @@ const getters = {
   user: state => state.user,
   holidays: state => state.holidays,
 
+  whereabouts: state => state.whereabouts,
   leave_types: state => state.leave_types,
   attachments: state => state.attachments,
   performance_types: state => state.performance_types,
@@ -325,6 +331,7 @@ const getters = {
   upcoming_leaves: state => state.upcoming_leaves,
 
   //Predefined
+  whereabout_locations: state => state.whereabout_locations,
   leave_statuses: state => state.leave_statuses,
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
@@ -765,15 +772,18 @@ const actions = {
         types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
+        var timesheets =res.data.results;
 
-        //Filter out all future timesheets after today's month
-        var today = moment();
-        var timesheets = res.data.results.filter(x => {
-          return ( 
-            x.year < today.year() 
-            || (x.year == today.year() && x.month <= today.month() + 1)
-          )
-        });
+        if(options.filter_future_timesheets){
+          //Filter out all future timesheets after today's month
+          var today = moment();
+          timesheets = res.data.results.filter(x => {
+            return ( 
+              x.year < today.year() 
+              || (x.year == today.year() && x.month <= today.month() + 1)
+            )
+          });
+        }
 
         store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
           timesheets: timesheets
@@ -923,6 +933,28 @@ const actions = {
       });
     });
   },
+
+  [types.NINETOFIVER_RELOAD_WHEREABOUTS] (store, options = {}) {
+
+    options.path = '/whereabouts/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_WHEREABOUTS, {
+          whereabouts: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+
 
 
   [types.NINETOFIVER_RELOAD_UPCOMING_LEAVES] (store, options = {}) {
