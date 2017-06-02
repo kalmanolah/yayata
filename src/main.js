@@ -6,6 +6,7 @@ import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
+import VueChartJs from 'vue-chartjs'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
@@ -21,7 +22,7 @@ import Week from './components/Week.vue'
 import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
-
+import LeaveOverviewGrid from './components/LeaveOverviewGrid.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
 
@@ -33,6 +34,7 @@ Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
+Vue.use(VueChartJs)
 
 export const cfg_file_path = '/cfg/config.json'
 
@@ -71,7 +73,7 @@ export const router = new VueRouter({
         },
         {
           name: 'colleagues',
-          path: '/colleagues',
+          path: '/colleagues/:userId',
           component: Colleagues,
         },
         {
@@ -93,6 +95,11 @@ export const router = new VueRouter({
           name: 'contracts',
           path: '/contracts',
           component: Contracts,
+        },
+        {
+          name: 'leave_overview_grid',
+          path: '/overview',
+          component: LeaveOverviewGrid,
         }
       ],
     },

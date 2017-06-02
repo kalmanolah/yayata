@@ -23,16 +23,22 @@ div(
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small.hidden-md-down Sickness / Vacation
-            router-link(:to='{ name: "colleagues" }')
+            router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small.hidden-md-down The weirdos I work with
+              p.small The weirdos I work with
             router-link(:to='{ name: "companies" }')
               h3 Companies
               p.small.hidden-md-down Overview of clients
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
-
+            router-link(:to='{ name: "leave_overview_grid" }')
+              h3 Overview
+              p.small who is on leave this month
+      .row
+        .bottom
+          input#datepicker(type='hidden' ref='datepicker')
+          div#container(ref='container')
     .row
       navbar
     .main-app
@@ -79,23 +85,57 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
-
+        if(!store.getters.project_estimates)
+          store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
+        if(!store.getters.users)
+          store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+        if(!store.getters.user_groups)
+          store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
+        date: moment()
       });
   },
+  mounted: function() {
+    var vm = this;
+    this.picker = new Pikaday({
+      field: this.$refs.datepicker,
+      container: this.$refs.container,
+      firstDay: 1,
+      minDate: new Date(2000, 0, 1),
+      maxDate: new Date(2020, 12, 31),
+      yearRange: [2000, 2020],
+      bound: false,
+      format: 'D MMM YYYY',
+      onSelect: function() {
+        var date = this.getMoment();
+        vm.$router.push({ name: 'calendar_week', params: { year: date.get('year'), week: date.get('isoWeek') }})
+      }
+    });
 
-  method: {},
+    // HACK WARING: pikaday added arrowkey support for accessability reasons, this is something we don't want however
+    // as the pikaday is used to navigate. This would mean that whenever the user uses his arrowkeys after using the pikaday
+    // he leaves his current page.
+    // This feature is not not yet optional but will be in the future after the merge request that fixes this is accepted.
+    document.removeEventListener('keydown', this.picker._onKeyChange);
+    document.removeEventListener('keyup', this.picker._onKeyChange);
+    document.removeEventListener('keyleft', this.picker._onKeyChange);
+    document.removeEventListener('keyright', this.picker._onKeyChange);
+  },
+  methods: {},
 
   computed: {},
 
   data () {
-    return {}
-  }
+    return {
+      picker: ''
+    }
+  },
 
 }
 </script>
 
 <style lang="less">
-
+@datepickerHeight: 228px;
+@sidebar-width: 200px;
 .container-fluid{
   background: #FAFAFA;
 }
@@ -137,18 +177,52 @@ export default {
   margin-top: 1rem;
 }
 
+.filter-scrollable {
+  max-height: 70vh;
+}
+
+.fixed {
+  position: fixed;
+  left: 77vw;
+  width: 21vw;
+}
+
+.wrapper{
+  position: relative;
+}
+
+.bottom {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+#container {
+  margin-left: .5rem;
+}
+
+.pika-single {
+  height: @datepickerHeight;
+  border: 0;
+}
+
+#container>.pika-single>.pika-lendar {
+  width: 100%;
+}
+
 .application-wrapper {
-    padding-left: 200px;
+    padding-left: @sidebar-width;
 }
 
 .sidebar-wrapper {
     z-index: 1000;
     position: fixed;
-    left: 200px;
-    width: 200px;
+    left: @sidebar-width;
+    width: @sidebar-width;
     height: 100%;
-    margin-left: -200px;
+    margin-left: -@sidebar-width;
     overflow-y: auto;
+    overflow-x: hidden;
     background: white;
     -webkit-transition: all 0.5s ease;
     -moz-transition: all 0.5s ease;
