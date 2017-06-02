@@ -25,7 +25,7 @@ div
                 v-on:click.prevent='selectPreviousMonth()'
               )
                 i(class='fa fa-angle-double-left')
-                |  &nbsp;Previous
+                | Previous&nbsp;
         button(
           class='btn btn-secondary'
           type='button'
@@ -33,10 +33,62 @@ div
         )
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
-  .tag.tag-success sickness
-  .tag.tag-primary 4/5
-  .tag.tag-danger Holliday
-  .tag.cell-weekend Weekend
+
+  toggle-button(
+            @change='toggleSwitch("home")', 
+            :value='showHome', 
+            color='#ff4444', 
+            :sync='true', 
+            :labels={
+              checked: 'Home',
+              unchecked: 'Home'
+            }, 
+            :width='65'
+          )
+  toggle-button(
+            @change='toggleSwitch("sickness")', 
+            :value='showSickness', 
+            color='#ffbb33', 
+            :sync='true', 
+            :labels={
+              checked: 'Sickness',
+              unchecked: 'Sickness'
+            }, 
+            :width='75'
+          )
+  toggle-button(
+            @change='toggleSwitch("45")',
+            :value='show45', 
+            color='#33b5e5', 
+            :sync='true', 
+            :labels={
+              checked: '4/5',
+              unchecked: '4/5'
+            }, 
+            :width='45'
+          )
+  toggle-button(
+            @change='toggleSwitch("leave")', 
+            :value='showLeave', 
+            color='#00c851', 
+            :sync='true', 
+            :labels={
+              checked: 'Leave',
+              unchecked: 'Leave'
+            }, 
+            :width='65'
+          )
+  toggle-button(
+            @change='toggleSwitch("weekend")', 
+            :value='showWeekend', 
+            color='#37474f', 
+            :sync='true', 
+            :labels={
+              checked: 'Weekend',
+              unchecked: 'Weekend'
+            }, 
+            :width='75'
+          )
   table.table.table-bordered
     thead
       tr
@@ -44,7 +96,7 @@ div
         th(v-for='d in daysInMonth' v-bind:class='determineWeekend(d)') {{ d }}
         th.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
     tbody
-      tr(v-if='country_users' v-for='user in country_users')
+      tr(v-if='country_users && leaves' v-for='user in country_users')
         td 
           router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
         td.day-cell(v-for='d in 31' v-bind:class='[determineWeekend(d), determineCellColor(user, d)]') &nbsp;
@@ -64,40 +116,47 @@ div
       country_label: 'Country',
       country_filter: 'Country',
       countries: [],
-      loading: false
+      loading: true,
+      showHome: true,
+      showSickness: true,
+      show45: true,
+      showLeave: true,
+      showWeekend: true
     }
   },
+
+  beforeRouteEnter (to, from, next) {
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => next())
+  },
+
+  beforeCreate: function() {
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS)
+  },
+
   created: function() {
     if(!store.getters.grid_date)
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE)
 
-    if(!store.getters.leaves){
-      var lowerBoundary = moment().subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss')
-      var upperBoundary = moment().add(1, 'months').format('YYYY-MM-DDTHH:mm:ss')
-      var range = lowerBoundary + ',' + upperBoundary;
-      console.log(range)
-      var options = {
-        params: {
-          leavedate__range: range
+    this.reloadLeaves();
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => {
+      // Get every unique country
+      store.getters.users.forEach( user => {
+        if(this.countries.indexOf(user.country) === -1){
+          this.countries.push(user.country);
         }
-      }
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options)
-    }
-
-    if(!store.getters.filtered_users){
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS).then( () => {
-        // Get every unique country
-        store.getters.filtered_users.forEach( user => {
-          if(this.countries.indexOf(user.country) === -1){
-            this.countries.push(user.country);
-          }
-        });
       });
-    }
+      this.loading = false;
+    });
+
     if(!store.getters.contract_users)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS)
-},
+  },
   computed: {
+    whereabouts: function() {
+      if(store.getters.whereabouts)
+        return store.getters.whereabouts
+    },
+
     contracts: function() {
       if(store.getters.contracts)
         return store.getters.contracts
@@ -125,12 +184,12 @@ div
     },
 
     users: function() {
-      if(store.getters.filtered_users){
+      if(store.getters.users && !this.loading){
         this.contractUsers = [];
-        store.getters.filtered_users.forEach(user => {
+        store.getters.users.forEach(user => {
           this.contractUsers.push(user);
         });
-        return store.getters.filtered_users
+        return store.getters.users
       }
     },
 
@@ -161,17 +220,27 @@ div
     country_users: function() {
       if(this.contract_users && this.country_filter === 'Country'){
         return this.contract_users;
-      } else if(this.contract_users) {
+      } else if(this.contract_users && this.leaves) {
         return this.contract_users.filter( (cu) => {
           return cu.country === this.country_filter;
         });
-      } else {
-        console.log('oifjkjfjdjkfdjdfjs');
-        
-      }
+      } 
     }
   },
-  methods: { 
+  methods: {
+    // Toggles the visibility of cells
+    toggleSwitch: function(switchToggle) {
+      if(switchToggle === "home")
+        this.showHome = !this.showHome;
+      else if(switchToggle === "sickness")
+        this.showSickness = !this.showSickness;
+      else if(switchToggle === "45")
+        this.show45 = !this.show45;
+      else if(switchToggle === "leave")
+        this.showLeave = !this.showLeave;
+      else if(switchToggle === "weekend")
+        this.showWeekend = !this.showWeekend;
+    },
 
     // Changes the country filter and dropdown label to the selected value.
     showCountryUsers: function(country) {
@@ -187,13 +256,13 @@ div
 
     // Determines if the given day is a weekend day and styles it accordingly.
     determineWeekend: function(day) {
-      if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5)
+      if(this.showWeekend && moment().month(this.grid_month - 1).date(day).isoWeekday() > 5)
         return 'cell-weekend';
     },
 
     // Determines the color of the cell depending on the leave type.
     determineCellColor: function(user, day) {
-      if(this.country_users && this.leaves){
+      if(this.country_users && this.leaves && this.grid_month && this.grid_year){
         var leave = this.leaves.find(l => l.user === user.id);
         if(leave){
           var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
@@ -201,9 +270,32 @@ div
           var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');
           
           if(moment(date).isBetween(start, end, null, [])){
-            var temp = ['tag-primary', 'tag-success', 'tag-danger']
-            return (temp[leave.leave_type]) ? temp[leave.leave_type] : 'tag-primary';
+            var temp = [
+              'cell-sickness',
+              'cell-leave',
+              'cell-45',
+            ]
+            // LeavetypeIds are not 0 indexed so we subtract 1 to get the right value
+            var cellClass = (temp[leave.leave_type - 1]) ? temp[leave.leave_type - 1] : 'cell-leave';
+
+            if(cellClass === 'cell-sickness' && this.showSickness)
+              return cellClass;
+            else if(cellClass === 'cell-leave' && this.showLeave)
+              return cellClass;
+            else if(cellClass === 'cell-45' && this.show45)
+              return cellClass;
          }
+        }
+
+        var timesheet = store.getters.timesheets.find((ts) => ts.month === this.grid_month && ts.user === user.id)
+        if(timesheet){
+          var whereabout = this.whereabouts.find((w) => {
+            return w.day === day && timesheet.id === w.timesheet
+          });
+          if(whereabout && this.showHome){
+            if(whereabout.location === 'Home')
+              return 'cell-home';
+          }
         }
       }
     },
@@ -243,7 +335,20 @@ div
           leavedate__range: range
         }
       }
+      this.reloadWhereabouts(lowerBoundary, upperBoundary)
       store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
+    },
+
+    reloadWhereabouts: function(lowerBoundary, upperBoundary) {
+      var lowerMonth = moment(lowerBoundary).format('MM');
+      var upperMonth = moment(upperBoundary).format('MM');
+      store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
+        params: {
+          timesheet__month__gte: lowerMonth,
+          timesheet__month__lte: upperMonth,
+          timesheet__year: this.grid_year
+        }
+      });     
     }
   },
 
@@ -256,8 +361,35 @@ div
   }
 </script>
 <style lang='less'>
+@danger: #ff4444;
+@warining: #ffbb33;
+@info: #33b5e5;
+@success: #00c851;
+@neutral: #e0e0e0;
+
+.cell-home {
+  background-color: @danger;
+}
+
+.cell-sickness{
+  background-color: @warining;
+}
+
+.cell-45{
+  background-color: @info;
+}
+
+.cell-leave{
+  background-color: @success;
+}
+
+
 .cell-weekend {
-  background-color: rgba(150, 150, 150, 0.25);
+  background-color: @neutral;
+}
+
+.vue-js-switch {
+  margin-left: 3px;
 }
 
 .nextMonth {
