@@ -29,7 +29,7 @@ div(class='calendar')
               td <strong>{{ leave.leave_type }}</strong> 
                 .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
                   | {{ leave.status }}
-              td.text-md-right {{ leave.leave_start | moment('DD MMMM YYYY - HH:mm') }}  → {{ leave.leave_start | moment('DD MMMM YYYY - HH:mm') }}
+              td.text-md-right {{ leave.leave_start | moment('DD MMMM YYYY - HH:mm') }}  → {{ leave.leave_end | moment('DD MMMM YYYY - HH:mm') }}
 
     //- Holidays
     .col-md-6
