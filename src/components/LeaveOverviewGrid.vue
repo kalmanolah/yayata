@@ -89,12 +89,12 @@ div
             }, 
             :width='75'
           )
-  table.table.table-bordered
+  table.table.table-bordered.table-sm
     thead
       tr
-        th Name
-        th(v-for='d in daysInMonth' v-bind:class='determineWeekend(d)') {{ d }}
-        th.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
+        th.overviewgrid Name
+        th.overviewgrid(v-for='d in daysInMonth' v-bind:class='determineWeekend(d)') {{ d }}
+        th.overviewgrid.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
     tbody
       tr(v-if='country_users && leaves' v-for='user in country_users')
         td 
@@ -382,6 +382,9 @@ div
 @success: #00c851;
 @neutral: #e0e0e0;
 
+th.overviewgrid {
+  max-width: 15px;
+}
 .cell-home {
   background-color: @danger;
 }
