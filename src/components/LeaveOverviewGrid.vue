@@ -262,31 +262,45 @@ div
 
     // Determines the color of the cell depending on the leave type.
     determineCellColor: function(user, day) {
+      var cellClassR = '';
       if(this.country_users && this.leaves && this.grid_month && this.grid_year){
-        var leave = this.leaves.find(l => l.user === user.id);
-        if(leave){
-          var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
-          var end = moment(leave.leavedate_set[leave.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD');
-          var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');
-          
-          if(moment(date).isBetween(start, end, null, [])){
-            var temp = [
-              'cell-sickness',
-              'cell-leave',
-              'cell-45',
-            ]
-            // LeavetypeIds are not 0 indexed so we subtract 1 to get the right value
-            var cellClass = (temp[leave.leave_type - 1]) ? temp[leave.leave_type - 1] : 'cell-leave';
+        // var leave = this.leaves.find(l => l.user === user.id);
+        var allLeaves = this.leaves.filter(l => l.user === user.id);
+        if(allLeaves){
+          // Loop over all leaves of user and check leave type.
+          allLeaves.forEach((leave) => {
+            var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
+            var end = moment(leave.leavedate_set[leave.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD');
+            var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');          
+            if(moment(date).isBetween(start, end, null, [])){
+              var temp = [
+                'cell-sickness',
+                'cell-leave',
+                'cell-45',
+                'cell-paid-leave',
+                'cell-sick-leave',
+                'cell-klein-verlet',
+              ]
+              // LeavetypeIds are not 0 indexed so we subtract 1 to get the right value
+              var cellClass = (temp[leave.leave_type - 1]) ? temp[leave.leave_type - 1] : 'cell-leave';
 
-            if(cellClass === 'cell-sickness' && this.showSickness)
-              return cellClass;
-            else if(cellClass === 'cell-leave' && this.showLeave)
-              return cellClass;
-            else if(cellClass === 'cell-45' && this.show45)
-              return cellClass;
-         }
+              if(cellClass === 'cell-sickness' && this.showSickness){
+                cellClassR = cellClass;
+              } else if(cellClass === 'cell-leave' && this.showLeave){
+                cellClassR = cellClass;
+              } else if(cellClass === 'cell-45' && this.show45){
+                cellClassR = cellClass;
+              } else if(cellClass === 'cell-paid-leave' && this.showLeave) {
+                cellClassR = cellClass;
+              } else if(cellClass === 'cell-sick-leave' && this.showSickness) {
+                cellClassR = cellClass;
+              } else if(cellClass === 'cell-klein-verlet' && this.showLeave) {
+                cellClassR = cellClass;
+              }
+              
+          }
+         })
         }
-
         var timesheet = store.getters.timesheets.find((ts) => ts.month === this.grid_month && ts.user === user.id)
         if(timesheet){
           var whereabout = this.whereabouts.find((w) => {
@@ -294,9 +308,10 @@ div
           });
           if(whereabout && this.showHome){
             if(whereabout.location === 'Home')
-              return 'cell-home';
+              cellClassR = 'cell-home';
           }
         }
+        return cellClassR;
       }
     },
     
@@ -383,7 +398,17 @@ div
   background-color: @success;
 }
 
+.cell-paid-leave {
+  background-color: @success;
+}
 
+.cell-klein-verlet {
+  background-color: @success;
+}
+
+.cell-sick-leave {
+  background-color: @warining;
+}
 .cell-weekend {
   background-color: @neutral;
 }
