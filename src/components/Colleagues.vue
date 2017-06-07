@@ -140,8 +140,8 @@ export default {
       window.prompt('here take this: ', email);
     },
 
+    // Sorts the table
     setTableSort: function(value) {
-      console.log(value);
       if(this.tableSort === value){
         this.tableSort = '-' + value;
       } else {
