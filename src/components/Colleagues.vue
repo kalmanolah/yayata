@@ -22,9 +22,13 @@ div
         thead#user-table-head
           tr
             th(@click='setTableSort("first_name")') Name
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("email")') Email
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__birth_date")') Birthdate
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__country")') Country
+              .pull-right.fa.fa-sort(aria-hidden='true')
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
