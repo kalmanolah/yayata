@@ -126,8 +126,15 @@ export default {
 
     //Validates the form & sends data according to its value
     validateForm: function() {
+      // Check if the selected contract is a projectcontract
+      this.isProjectContract = (store.getters.contracts.find(c => c.id === this.model.contract).contract_type === 'ProjectContract') ? true : false;
+
+      // if the selected contract is not a project contract, give contract_role an empty value so we don't trip the validation.
+      if(!this.isProjectContract){
+        this.model.contract_role = '';
+      }
       var modelValidationCheck = Object.keys(this.model).every(x => {
-        return this.model[x] != null;
+          return this.model[x] != null;
       });
 
       if( !modelValidationCheck || this.model.duration <= 0) {
@@ -167,15 +174,27 @@ export default {
 
     //Submits the form & makes correct call based on data
     submitForm: function(timesheetID) {
-      var body = {
-        timesheet: timesheetID,
-        day: this.today.date(),
-        duration: this.model.duration,
-        description: this.model.description,
-        performance_type: this.model.performance_type,
-        contract: this.model.contract,
-        contract_role: this.model.contract_role
-      };
+      var body = {};
+      if(this.isProjectContract){
+        body = {
+          timesheet: timesheetID,
+          day: this.today.date(),
+          duration: this.model.duration,
+          description: this.model.description,
+          performance_type: this.model.performance_type,
+          contract: this.model.contract,
+          contract_role: this.model.contract_role
+        };
+      } else {
+        body = {
+          timesheet: timesheetID,
+          day: this.today.date(),
+          duration: this.model.duration,
+          description: this.model.description,
+          performance_type: this.model.performance_type,
+          contract: this.model.contract,
+        };
+      }
 
       if(this.defaultPerformance)
         this.patchRequest(this.defaultPerformance['id'], body);
@@ -232,7 +251,7 @@ export default {
   data: () => {
     return {
       name: 'PerformanceForm',
-
+      isProjectContract: false,
       model: model,
 
       schema: {
@@ -295,6 +314,7 @@ export default {
             //CONTRACT_ROLE
             type: "select",
             model: "contract_role",
+            required: false,
             values: () => {
               if(store.getters.contract_users && store.getters.user && model.contract){
                 var contract_users = store.getters.contract_users.filter( cu => {
