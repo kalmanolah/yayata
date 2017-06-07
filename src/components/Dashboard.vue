@@ -55,7 +55,7 @@ div
             tbody
               tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
                 td {{ holiday.name }} [{{ holiday.country }}]
-                td.text.md-right {{ holiday.date }}
+                td.text-md-right {{ holiday.date }}
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-md-center <strong>No holidays!</strong>
     .col-md-6
