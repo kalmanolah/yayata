@@ -37,7 +37,7 @@ div
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
-        h1.text-md-center.notice No colleagues found!
+        .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
   .col-md-3.fixed
     .row
@@ -236,16 +236,6 @@ export default {
 
 .toggle-info {
   margin-top: .3rem;
-}
-
-.notice {
-  background-color: #fff;
-  border: 1px solid black;
-  border-radius: 5px;
-}
-
-.fa-pencil-square-o {
-  padding-right: .2rem;
 }
 
 .email-cell {
