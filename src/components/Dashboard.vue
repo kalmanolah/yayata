@@ -96,6 +96,8 @@ export default {
   },
 
   created: function () {
+    // Reload the users in the store which may have been changed by the colleagues filter
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS);
     this.earliestLeave = moment();
     this.latestLeave = moment();
     this.selectedDay = moment();
@@ -197,7 +199,6 @@ export default {
 
                 if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
                   total -= 8;
-                  console.log(total)
                 }
               }
             });
