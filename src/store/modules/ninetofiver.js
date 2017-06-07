@@ -192,8 +192,8 @@ const getters = {
     if(state.contracts && state.companies ) {
       return state.contracts.map(x => {
         return {
-          id: x.id, 
-          name: x.label, 
+          id: x.id,
+          name: x.label,
           type: x.type,
           display_label: x.display_label,
           description: x.description,
@@ -340,20 +340,20 @@ const getters = {
   days: status => state.days,
 
   //Calculated
-  open_timesheet_count: state => { 
-    if(state.timesheets) 
-      return state.timesheets.length; 
+  open_timesheet_count: state => {
+    if(state.timesheets)
+      return state.timesheets.length;
   },
   contract_users_count: state => {
     if(state.contract_users)
       return state.contract_users.length;
   }
-  
+
 }
 
 // actions
 const actions = {
- 
+
   [types.NINETOFIVER_API_REQUEST] (store, options = {}, ) {
 
     var oauth2State = store.rootState.oauth2
@@ -395,7 +395,7 @@ const actions = {
           })
         }
 
-        opts.headers.authorization = `${oauth2State.token.tokenType} ${oauth2State.token.accessToken}`
+        opts.headers.Authorization = `${oauth2State.token.tokenType} ${oauth2State.token.accessToken}`
       }
     }
 
@@ -478,10 +478,10 @@ const actions = {
   [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
 
     options.path = '/services/my_user/';
-    
+
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_USER, {
@@ -497,10 +497,10 @@ const actions = {
   [types.NINETOFIVER_RELOAD_HOLIDAYS] (store, options = {}) {
 
     options.path = '/holidays/';
-    
+
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
         store.commit(types.NINETOFIVER_SET_HOLIDAYS, {
@@ -520,7 +520,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -545,7 +545,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -570,7 +570,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -595,7 +595,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -663,7 +663,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -806,7 +806,7 @@ const actions = {
     }
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -919,7 +919,7 @@ const actions = {
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -977,12 +977,12 @@ const actions = {
         b = b['leave_end'].toDate();
 
         return a > b ? -1 : (a < b ? 1 : 0);
-      });      
+      });
     }
 
     return new Promise((resolve, reject) => {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
 
@@ -992,7 +992,7 @@ const actions = {
             ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
             ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
           });
-          
+
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
         });
@@ -1007,7 +1007,7 @@ const actions = {
       });
     });
   }
-  
+
 }
 
 export default {

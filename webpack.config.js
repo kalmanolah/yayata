@@ -2,7 +2,7 @@ var path = require('path')
 var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
-var DashboardPlugin = require('webpack-dashboard/plugin')     //https://github.com/FormidableLabs/webpack-dashboard
+var DashboardPlugin = require('webpack-dashboard/plugin')
 
 
 module.exports = {
@@ -26,8 +26,7 @@ module.exports = {
       {
         from: './src/static'
       },
-    ]),
-    new DashboardPlugin(),
+    ])
   ],
   module: {
     rules: [
@@ -80,6 +79,12 @@ module.exports = {
     noInfo: true
   },
   devtool: '#eval-source-map'
+}
+
+if (process.env.NODE_ENV !== 'production') {
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new DashboardPlugin()
+  ])
 }
 
 if (process.env.NODE_ENV === 'production') {
