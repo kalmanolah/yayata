@@ -41,13 +41,11 @@
     //- Header w days
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
-
+        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations')
+          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
+          .dropdown-menu(aria-labelledby='btnGroupDrop')
+            a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
         .card-header.card-info
-          .btn-group(role='group' v-if='whereabouts && timesheet_locations')
-            button.btn.btn-secondary.btn-sm.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
-            .dropdown-menu(aria-labelledby='btnGroupDrop')
-              a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
-          br
           .pull-left 
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
             h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
@@ -778,7 +776,8 @@ div.btn-group {
     display: inline-block;
 }
 
-.whereaboutDropdown {
-  padding-bottom: 5px;
+.whereabout {
+  width: 100%
 }
+
 </style>
