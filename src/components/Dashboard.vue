@@ -120,7 +120,6 @@ export default {
     //Reload to get most recent data
     store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
 
-
     //Get all leaves for this month
     //Make param for month's range
     var startOfMonth = moment().startOf('month');
@@ -132,7 +131,6 @@ export default {
       params: {
         status: store.getters.leave_statuses[2],
         leavedate__range: range,
-        page_size: 31,
       }
     }).then((response) => {      
       response.data.results.forEach(lv => {
@@ -148,11 +146,22 @@ export default {
     }, () => {
       this.loading = false;
     });
+
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
   },
 
   computed: {
     user: function() {
       if(store.getters.user)
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+          params: {
+            contractuser__user__id: store.getters.user.id
+          }
+        });
         return store.getters.user
     },
 
@@ -271,8 +280,9 @@ export default {
     },
 
     contracts: function() {
-      if(store.getters.contracts && store.getters.monthly_activity_performances) {
-        var active_contrs = store.getters.contracts.filter(x => x.active === true);
+      if(store.getters.filtered_contracts && store.getters.monthly_activity_performances && this.user) {
+        var active_contrs = store.getters.filtered_contracts.filter(x => x.active === true);
+        console.log(active_contrs)
 
         //For each entry, calculate the total performances duration
         active_contrs.forEach(c => {
@@ -285,9 +295,9 @@ export default {
 
           c.monthly_duration = total;
         });
-
+        
         return active_contrs;
-      }
+      };
     },
 
     users: function() {
