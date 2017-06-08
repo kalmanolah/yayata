@@ -25,7 +25,7 @@ div(
               p.small.hidden-md-down Sickness / Vacation
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small The weirdos I work with
+              p.small.hidden-md-down The weirdos I work with
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
@@ -137,7 +137,7 @@ export default {
 
 <style lang="less">
 @datepickerHeight: 228px;
-@sidebar-width: 200px;
+@sidebar-width: 250px;
 .container-fluid{
   background: #FAFAFA;
 }
