@@ -140,7 +140,7 @@ export default {
       }
     },
 
-    // Gets the locations of this wee
+    // Gets the locations of this week
     timesheet_locations: function() {
       if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts){
         var day = this.daysOfWeek[0];
@@ -244,17 +244,28 @@ export default {
           timesheet: timesheetId
         },
         emulateJSON: true
-      }).then(() => {
-        this.reloadWhereabouts();
-        this.$toast('Set whereabout to ' + location + '!',
-          { 
-            id: 'whereabout-toast',
+      }).then((res) => {
+        if(res){
+          this.reloadWhereabouts();
+          this.$toast('Set whereabout to ' + location + '!',
+            { 
+              id: 'whereabout-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1000,
+              transition: 'slide-down',
+              mode: 'override'
+            });
+        } else {
+          this.$toast('Something went wrong, check the console for more info.', {
+            id: 'wherabout-toast',
             horizontalPosition: 'right',
             verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
+            duration: 2000,
+            transition: 'slide-dorn',
             mode: 'override'
           });
+        }
       });
     },
 
@@ -271,9 +282,7 @@ export default {
         );
         // Timesheet not found; make a new one
         if(!timesheet) {
-          console.log('no timesheet found.')
           this.createNewTimeSheet(day).then( (response) => {
-            console.log(response)
             var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === response.data.id)
             // Whereabout already exists
             if(whereabout){
@@ -284,8 +293,6 @@ export default {
             }
           });
         } else {
-          console.log('timesheet found.')
-          console.log(timesheet)
           var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
           // Whereabout already exists
           if(whereabout){
