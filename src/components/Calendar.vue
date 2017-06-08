@@ -93,12 +93,14 @@ export default {
 
   watch: {
     '$route' (to, from) {
-      if(to.params.year && to.params.month)
+      if(to.params.year && to.params.month){
         this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1);
-      this.getPerformances();
-      this.getLeaves();
+        this.getPerformances();
+        this.getLeaves();
+      }
     },
 
+    // Watches selected user from parent component.
     userId: function(oldUserid, newUserId) {
       this.getPerformances();
       this.getLeaves();
@@ -109,6 +111,7 @@ export default {
       this.getLeaves();
     },
 
+    // Watches selected month from parent component.
     selectedMonthProp: function(oldSelectedMonthProp, newSelectedMonthProp){
       this.selectedMonth = newSelectedMonthProp;
       this.getPerformances();
@@ -117,6 +120,8 @@ export default {
   },
 
   created: function () {
+    this.getPerformances();
+    this.getLeaves();
   },
 
   methods: {
@@ -354,11 +359,11 @@ export default {
         'December',
       ],
 
-      // selectedMonth: new Date(this.$route.params.year, this.$route.params.month - 1, 1),
     }
   },
 
   computed: {
+    // If no userId prop is passed get the details of the current user.
     user: function() {
       if(!this.userId && store.getters.user) {
         return store.getters.user;
