@@ -680,9 +680,13 @@ const actions = {
   },
 
   [types.NINETOFIVER_RELOAD_USERS] (store, options = {}) {
-
+    
     options.path = '/users/';
-
+    if(!options.params) {
+      options.params = {
+        order_by: 'first_name'
+      }
+    }
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
