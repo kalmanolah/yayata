@@ -115,9 +115,7 @@ export default {
   },
 
   created: function () {
-    if(!store.getters.filtered_contracts){
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
-    }
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
     }
