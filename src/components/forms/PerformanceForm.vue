@@ -41,6 +41,13 @@ export default {
     model.performance_type = this.defaultPerformanceType;
     model.description = this.defaultDescription;
     model.contract_role = this.defaultContractRole;
+
+    // Reload filtered contracts so that the user only sees contracts he's working on.
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
   },
 
   computed: {
@@ -262,8 +269,8 @@ export default {
             model: "contract",
 
             values: function() {
-              if(store.getters.contracts) {
-                var activeContracts = store.getters.contracts.filter(x => { return x.active === true });
+              if(store.getters.filtered_contracts) {
+                var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
 
                 return activeContracts.map(x => {
                   return { id: x.id, name: x.name +  ' → ' + x.customerName }
