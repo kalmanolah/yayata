@@ -125,24 +125,12 @@ div
     }
   },
 
-  beforeRouteEnter (to, from, next) {
-    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => next())
-  },
-
-  beforeCreate: function() {
-    store.dispatch(types.NINETOFIVER_RELOAD_USERS)
-  },
-
-  created: function() {
+ created: function() {
     if(!store.getters.grid_date)
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE)
 
     this.reloadLeaves();
-    store.dispatch(types.NINETOFIVER_RELOAD_USERS, {
-      params: {
-        order_by: 'first_name'
-      }
-    }).then( () => {
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => {
       // Get every unique country
       store.getters.users.forEach( user => {
         if(this.countries.indexOf(user.country) === -1){

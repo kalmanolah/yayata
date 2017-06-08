@@ -2,12 +2,13 @@
 div(class='calendar')
   .row
     .col-md-3
-    h1(class='col-md-6 text-md-center') {{ months[selectedMonth.getMonth()] }} {{ selectedMonth.getFullYear() }}
+    h1(class='col-md-6 text-md-center') {{ selectedMonth | moment('MMMM') }} {{ selectedMonth | moment('YYYY') }}
     .col-md-3.text-md-right
       div(
         class='btn-group'
         role='group'
         aria-label='Calendar controls'
+        v-if='!userId'
       )
         button(
           class='btn btn-secondary'
@@ -48,7 +49,20 @@ div(class='calendar')
         "calendar-day-current": isCurrentDay(n), \
       }, determineLeaveStyle(n)]'
     )
-      router-link(:to='{name: "calendar_week", params: { year: selectedMonth.getFullYear(), week: getWeekNumber(n) } }')
+      template(v-if='!userId')
+        router-link(:to='{name: "calendar_week", params: { year: year, week: getWeekNumber(n) } }')
+          div(class='card card-block')
+            p {{ n }}
+              b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
+                i.fa.fa-plane
+                div(slot='content')
+                  div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
+                  div <strong>From: </strong> {{ getLeaveRange(n).leave_start | moment('DD MMMM  HH:mm') }}
+                  div <strong>Until: </strong> {{ getLeaveRange(n).leave_end | moment('DD MMMM  HH:mm') }}
+            small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
+              |  {{ getPerformedHours(n) | roundHoursFilter }} /
+              | {{ getRequiredHours(n) | roundHoursFilter}}
+      template(v-else)
         div(class='card card-block')
           p {{ n }}
             b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
@@ -69,27 +83,40 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 
-var daysInMonth = (d) => {
-  return  new Date(d.getYear(), d.getMonth() + 1, 0).getDate()
-}
-
 export default {
   name: 'calendar',
 
+  props: [
+    'userId',
+    'selectedMonthProp'
+  ],
+
   watch: {
     '$route' (to, from) {
-      this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1);
+      if(to.params.year && to.params.month)
+        this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1);
+      this.getPerformances();
+      this.getLeaves();
+    },
+
+    userId: function(oldUserid, newUserId) {
+      this.getPerformances();
+      this.getLeaves();
+    },
+    
+    user: function(oldUser, newUser) {
+      this.getPerformances();
+      this.getLeaves();
+    },
+
+    selectedMonthProp: function(oldSelectedMonthProp, newSelectedMonthProp){
+      this.selectedMonth = newSelectedMonthProp;
       this.getPerformances();
       this.getLeaves();
     }
   },
 
   created: function () {
-    
-    //Get most recent data
-    this.getPerformances();
-    this.getLeaves();
-
   },
 
   methods: {
@@ -110,13 +137,13 @@ export default {
       var startOfMonth = moment(this.selectedMonth).startOf('month');
       var endOfMonth = moment(this.selectedMonth).endOf('month');
       var range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
-
+      
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
+        path: '/leaves/',
         params: {
+          user_id: this.user.id,
           status: store.getters.leave_statuses[2],
           leavedate__range: range,
-          page_size: 31,
         }
       }).then((response) => {
 
@@ -141,12 +168,14 @@ export default {
 
     //Get all performances for this month
     getPerformances: function() {
+      var month = moment(this.selectedMonth).month() + 1;
+      var year = moment(this.selectedMonth).year();
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/activity/',
+        path: '/performances/',
         params: {
-          timesheet__month: this.selectedMonth.getMonth() + 1,
-          timesheet__year: this.selectedMonth.getFullYear(),
-          page_size: 700
+          timesheet__user_id: this.user.id,
+          timesheet__month: month,
+          timesheet__year: year,
         }
       }).then((response) => {
         this.performances = response.data.results;
@@ -242,8 +271,8 @@ export default {
 
       if (
         (day == now.getDate()) &&
-        (now.getMonth() == this.selectedMonth.getMonth()) &&
-        (now.getFullYear() == this.selectedMonth.getFullYear())
+        (now.getMonth() == moment(this.selectedMonth).month()) &&
+        (now.getFullYear() == moment(this.selectedMonth).year())
       ) {
         return true;
       }
@@ -252,20 +281,26 @@ export default {
     },
 
     setSelectedMonth: function (year, month) {
-      this.$router.push({
-        name: 'calendar_month',
-        params: {
-          year: year,
-          month: month,
-        },
-      })
+      if(!this.userId){
+        this.$router.push({
+          name: 'calendar_month',
+          params: {
+            year: year,
+            month: month,
+          },
+        })
 
-      // this.selectedMonth = new Date(year, month - 1, 1)
+        this.selectedMonth = new Date(year, month - 1, 1)
+      } else {
+        this.selectedMonth = moment(year, month, 1).format('YYYY-MM-DD');
+        this.getPerformances();
+        this.getLeaves();
+      }
     },
 
     selectNextMonth: function () {
-      var year = this.selectedMonth.getFullYear(),
-      month = this.selectedMonth.getMonth() + 1 + 1
+      var year = moment(this.selectedMonth).year(),
+      month = moment(this.selectedMonth).month() + 1 + 1
 
       if (month == 13) {
         month = 1
@@ -276,9 +311,9 @@ export default {
     },
 
     selectPreviousMonth: function () {
-      var year = this.selectedMonth.getFullYear(),
-      month = this.selectedMonth.getMonth() + 1 - 1
-
+      var year = moment(this.selectedMonth).year(),
+      month = moment(this.selectedMonth).month() + 1 - 1
+      
       if (month == 0) {
         month = 12
         year -= 1
@@ -290,8 +325,8 @@ export default {
     getWeekNumber: function(val) {
       return moment({ 
         day: val, 
-        month: this.selectedMonth.getMonth(),
-        year: this.selectedMonth.getFullYear()
+        month: moment(this.selectedMonth).month(),
+        year: moment(this.selectedMonth).year()
       }).isoWeek();
     }
 
@@ -302,7 +337,7 @@ export default {
     return {
       leaves: [],
       performances: [],
-
+      selectedMonth: moment().format('YYYY-MM-DD'),
       weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
       months: [
         'January',
@@ -319,14 +354,22 @@ export default {
         'December',
       ],
 
-      selectedMonth: new Date(this.$route.params.year, this.$route.params.month - 1, 1),
+      // selectedMonth: new Date(this.$route.params.year, this.$route.params.month - 1, 1),
     }
   },
 
   computed: {
     user: function() {
-      if(store.getters.user)
-        return store.getters.user
+      if(!this.userId && store.getters.user) {
+        return store.getters.user;
+      } else if(this.userId && store.getters.users) {
+        return store.getters.users.find(u => u.id === this.userId);
+      }
+    },
+
+    year: function() {
+      if(this.selectedMonth)
+        return moment(this.selectedMonth).year();
     },
 
     days: function() {
@@ -451,7 +494,7 @@ export default {
     },
 
     dayOffset: (vm) => {
-      var dow = vm.selectedMonth.getDay()
+      var dow = moment(vm.selectedMonth).day()
 
       if (dow == 0) {
         dow = 7
@@ -461,7 +504,8 @@ export default {
     },
 
     dayCount: (vm) => {
-      return daysInMonth(vm.selectedMonth)
+      // return daysInMonth(vm.selectedMonth)
+      return moment(vm.selectedMonth).daysInMonth()
     }
 
   },
