@@ -180,10 +180,7 @@ export default {
     getLeaves: function() {
       
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
-        params: {
-          page_size: 100
-        }
+        path: '/my_leaves/'
       }).then((response) => {
         
         //Converts the start / end datetime from strings to actual JS datetimes
