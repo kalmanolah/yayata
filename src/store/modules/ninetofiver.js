@@ -35,6 +35,7 @@ const state = {
   show_extra_info: null,
   upcoming_leaves: null,
   whereabouts: null,
+  employment_contracts: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
@@ -145,6 +146,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_WHEREABOUTS] (state, { whereabouts}) {
     state.whereabouts = whereabouts
+  },
+  [types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS] (state, { employment_contracts}) {
+    state.employment_contracts = employment_contracts
   }
 }
 
@@ -166,6 +170,7 @@ const getters = {
   leaves: state => state.leaves,
   filtered_users: state => state.filtered_users,
   grid_date: state => state.grid_date,
+  employment_contracts: state => state.employment_contracts,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -965,7 +970,26 @@ const actions = {
     });
   },
 
+  [types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS] (store, options = {}) {
 
+    options.path = '/employment_contracts/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS, {
+          employment_contracts: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
 
   [types.NINETOFIVER_RELOAD_UPCOMING_LEAVES] (store, options = {}) {
 

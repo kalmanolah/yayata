@@ -93,10 +93,11 @@ export default {
 
   watch: {
     '$route' (to, from) {
-      if(to.params.year && to.params.month){
+      if(this.$route.params.year && this.$route.params.month){
         this.selectedMonth = new Date(to.params.year, to.params.month - 1, 1);
         this.getPerformances();
         this.getLeaves();
+        this.reloadEmploymentContracts()
       }
     },
 
@@ -104,27 +105,42 @@ export default {
     userId: function(oldUserid, newUserId) {
       this.getPerformances();
       this.getLeaves();
+      this.reloadEmploymentContracts()
     },
     
     user: function(oldUser, newUser) {
       this.getPerformances();
       this.getLeaves();
+      this.reloadEmploymentContracts()
     },
 
     // Watches selected month from parent component.
     selectedMonthProp: function(oldSelectedMonthProp, newSelectedMonthProp){
-      this.selectedMonth = newSelectedMonthProp;
+      moment(oldSelectedMonthProp).subtract(1, 'months'); 
+      this.selectedMonth = oldSelectedMonthProp;
       this.getPerformances();
       this.getLeaves();
+      this.reloadEmploymentContracts()
     }
   },
 
   created: function () {
     this.getPerformances();
     this.getLeaves();
+    this.reloadEmploymentContracts()
   },
 
   methods: {
+    reloadEmploymentContracts: function() {
+      var ec_user = this.userId ? this.userId : this.user.id;
+      var today = moment(this.selectedMonth).format('YYYY-MM-DD');
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+        params: {
+          user: ec_user,
+          ended_at__gte: today
+        }
+      });
+    },
 
     //Return style based on quota
     getDailyQuota: function(day) {
@@ -195,7 +211,6 @@ export default {
 
       if(this.workschedule) {
         var date = moment(this.selectedMonth).date(day);
-
         this.workschedule.forEach(x => {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
         });        
@@ -342,7 +357,7 @@ export default {
     return {
       leaves: [],
       performances: [],
-      selectedMonth: moment().format('YYYY-MM-DD'),
+      selectedMonth: moment().startOf('month').format('YYYY-MM-DD'),
       weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
       months: [
         'January',
@@ -400,6 +415,7 @@ export default {
     //Hours required according to workschedules
     totalHoursRequired: function() {
       var total = 0;
+      // Get workschedule from active contracts
 
       if(this.workschedule && this.leaves && store.getters.holidays) {
         this.workschedule.forEach(ws => {
@@ -493,18 +509,28 @@ export default {
         return store.getters.leave_types;
     },
 
+    employment_contracts: function() {
+      if(store.getters.employment_contracts)
+        return store.getters.employment_contracts
+    },
+
     workschedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
+      if(store.getters.work_schedule && this.employment_contracts){
+        var workschedules = [];
+        this.employment_contracts.forEach( (ec) => {
+          var workschedule = store.getters.work_schedule.find(ws => ws.id === ec.work_schedule)
+          workschedules.push(workschedule)
+        });
+        return workschedules;
+      }
     },
 
     dayOffset: (vm) => {
+      console.log(vm.selectedMonth)
       var dow = moment(vm.selectedMonth).day()
-
       if (dow == 0) {
         dow = 7
       }
-
       return dow - 1
     },
 
