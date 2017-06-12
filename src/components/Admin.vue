@@ -39,7 +39,7 @@ data() {
   return {
     currentView: 'LeaveOverviewGrid',
     selected: 1,
-    month: moment().format('YYYY-MM-DD'),
+    month: moment().startOf('month').format('YYYY-MM-DD')
   }
 },
 
@@ -68,11 +68,11 @@ computed: {
 
 methods: {
   selectNextMonth: function() {
-    this.month = moment(this.month).add(1, 'months');
+    this.month = moment(this.month).add(1, 'months').format('YYYY-MM-DD');
   },
 
   selectPreviousMonth: function() {
-    this.month = moment(this.month).subtract(1, 'months');
+    this.month = moment(this.month).subtract(1, 'months').format('YYYY-MM-DD');
   }
  }
 }
