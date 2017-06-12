@@ -26,8 +26,15 @@ export default {
 
   computed: {
     holidays: function() {
-      if(store.getters.holidays)
-        return store.getters.holidays;
+      if(store.getters.holidays){
+        var today = moment().format('MM-DD')
+        return store.getters.holidays.filter( holiday => {
+          var date = moment(holiday.date).format('MM-DD');
+          if(moment(date).isSameOrAfter(today)){
+            return holiday
+          }
+        });
+      }
     }
   },
 

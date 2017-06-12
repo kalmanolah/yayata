@@ -23,6 +23,7 @@ const state = {
   project_estimates: null,
   grid_date: null,
   leaves: null,
+  attachments: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -33,11 +34,14 @@ const state = {
   work_schedule: null,
   show_extra_info: null,
   upcoming_leaves: null,
+  whereabouts: null,
+  employment_contracts: null,
 
   //Predefined
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
+  whereabout_locations: ['Brasschaat', 'Gent', 'Home'],
   colleagues_filter: 'all',
   week_formatting: {
     'workweek': {
@@ -69,6 +73,11 @@ const mutations = {
   [types.NINETOFIVER_SET_USER] (state, { user }) {
     state.user = user;
   },
+  
+  [types.NINETOFIVER_SET_ATTACHMENTS] (state, { attachments }) {
+    state.attachments = attachments;
+  },
+
   [types.NINETOFIVER_SET_HOLIDAYS] (state, { holidays }) {
     state.holidays = holidays;
   },
@@ -134,6 +143,12 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_UPCOMING_LEAVES] (state, { upcoming_leaves }) {
     state.upcoming_leaves = upcoming_leaves;
+  },
+  [types.NINETOFIVER_SET_WHEREABOUTS] (state, { whereabouts}) {
+    state.whereabouts = whereabouts
+  },
+  [types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS] (state, { employment_contracts}) {
+    state.employment_contracts = employment_contracts
   }
 }
 
@@ -142,7 +157,9 @@ const getters = {
   user: state => state.user,
   holidays: state => state.holidays,
 
+  whereabouts: state => state.whereabouts,
   leave_types: state => state.leave_types,
+  attachments: state => state.attachments,
   performance_types: state => state.performance_types,
   employment_contract_types: state => state.employment_contract_types,
   contract_groups: state => state.contract_groups,
@@ -153,6 +170,7 @@ const getters = {
   leaves: state => state.leaves,
   filtered_users: state => state.filtered_users,
   grid_date: state => state.grid_date,
+  employment_contracts: state => state.employment_contracts,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -193,11 +211,108 @@ const getters = {
           projectName: x.name,
           project_estimate: x.hours_estimated,
           start_date: x.starts_at,
-          end_date: x.ends_at,          
+          end_date: x.ends_at,
+          attachments: x.attachments,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,
           total_duration: parseFloat(x.hours_spent)
         };
+      });
+    }
+  },
+  filtered_contracts: state => {
+    if(!state.filtered_contracts || !state.companies )
+      return null;
+    else {
+      return state.filtered_contracts.map(x => {
+        return {
+          id: x.id, 
+          name: x.label, 
+          type: x.type,
+          display_label: x.display_label,
+          description: x.description,
+          performance_types: x.performance_types,
+          contract_groups: x.contract_groups,
+          contract_type: x.type,
+          active: x.active,
+          customer: x.customer,
+          company: x.company,
+          projectName: x.name,
+          start_date: x.starts_at,
+          end_date: x.ends_at,    
+          project_estimate: x.hours_estimated,
+          attachments: x.attachments,          
+          customerName: state.companies.find(com => com.id == x.customer).name,
+          companyName: state.companies.find(com => com.id == x.company).name,
+          total_duration: x.hours_spent
+        };
+      });
+    }
+  },
+  // Full contracts: merges contract, activity performances, contract users and attachments.
+  full_contracts: state => {
+    if(!state.filtered_contracts || !state.contract_users || !state.monthly_activity_performances || !state.attachments){
+      return null;
+    } else {
+      return state.filtered_contracts.map((c) => {
+
+        // Calculate total hours allocated to project contract
+        var total_hours_allocated = 0;
+        if(c.type === 'ProjectContract'){
+          if(c.hours_estimated){
+            c.hours_estimated.forEach((estimate) => {
+              total_hours_allocated += estimate[0];
+            });
+          }
+        }
+
+        // Calculate hours left to fill in
+        var hours_left = total_hours_allocated - c.hours_spent;
+
+        // Get the contract users
+        var contract_users = [];
+        state.contract_users.forEach((cu) => {
+          if(cu.contract === c.id){
+            contract_users.push(cu);
+          }
+        });
+
+        // Get attachments if the contract has any
+        var attachments = [];
+        if(c.attachments.length > 0){
+          state.attachments.forEach((a) => {
+            c.attachments.forEach((ca) => {
+              if(ca === a.id){
+                attachments.push(a);
+              }
+            });
+          });
+        }
+
+        return {
+          id: c.id,
+          name: c.label,
+          type: c.type,
+          description: c.description,
+          performance_types: c.performance_types,
+          contract_groups: c.contract_groups,
+          contract_type: c.type,
+          active: c.active,
+          customer: c.customer,
+          company: c.company,
+          projectName: c.name,
+          start_date: c.starts_at,
+          end_date: c.ends_at,    
+          project_estimate: c.hours_estimated,
+          customerName: state.companies.find(com => com.id == c.customer).name,
+          companyName: state.companies.find(com => com.id == c.company).name,
+          // CALCULATED:
+          total_hours_spent: c.hours_spent,
+          total_hours_allocated: total_hours_allocated,
+          contract_users: contract_users,
+          attachments: attachments,
+          hours_left: hours_left
+        }
       });
     }
   },
@@ -221,6 +336,7 @@ const getters = {
   upcoming_leaves: state => state.upcoming_leaves,
 
   //Predefined
+  whereabout_locations: state => state.whereabout_locations,
   leave_statuses: state => state.leave_statuses,
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
@@ -295,7 +411,34 @@ const actions = {
 
     return new Promise  ((resolve, reject) => {
       Vue.http(opts).then((response) => {
-        resolve(response);
+        // If the results are paginated; get all pages.
+        var next = response.body.next;
+        var results = response.data.results;
+
+        function getNext(next) {
+          return new Promise((resolve, reject) => {
+            opts['url'] = next;
+            Vue.http(opts).then(res => {
+              res.body.results.forEach(el => results.push(el));
+              if(res.body.next){
+                next = res.body.next;
+                getNext(next).then( () => {
+                  resolve()
+                })
+              } else {
+                resolve();
+              }
+            });
+          });
+        }
+        if(next){
+          getNext(next).then( () => {
+            response.data['results'] = results;
+            resolve(response)
+          });
+        } else {
+          resolve(response);
+        }
       }, (response) => {
 
         // If we get a 401, assume this is due an expired token which
@@ -319,6 +462,24 @@ const actions = {
     })
   },
 
+  [types.NINETOFIVER_RELOAD_ATTACHMENTS] (store, options = {}) {
+
+    options.path = '/attachments/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ATTACHMENTS, {
+          attachments: res.data.results
+        })
+        resolve(res)
+      }, (res) => {
+        reject(res)
+      })
+    })
+  },
   [types.NINETOFIVER_RELOAD_USER] (store, options = {}) {
 
     options.path = '/services/my_user/';
@@ -524,9 +685,13 @@ const actions = {
   },
 
   [types.NINETOFIVER_RELOAD_USERS] (store, options = {}) {
-
-    options.path = '/users/'
-
+    
+    options.path = '/users/';
+    if(!options.params) {
+      options.params = {
+        order_by: 'first_name'
+      }
+    }
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
@@ -567,7 +732,13 @@ const actions = {
   
   [types.NINETOFIVER_RELOAD_FILTERED_USERS] (store, options = {}) {
 
-    options.path = '/users/'
+    options.path = '/users/';
+    
+    if(!options.params){
+      options.params = {
+        order_by: 'first_name'
+      }
+    }
 
     return new Promise((resolve, reject) => {
       store.dispatch(
@@ -616,15 +787,18 @@ const actions = {
         types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
+        var timesheets =res.data.results;
 
-        //Filter out all future timesheets after today's month
-        var today = moment();
-        var timesheets = res.data.results.filter(x => {
-          return (
-            x.year < today.year()
-            || (x.year == today.year() && x.month <= today.month() + 1)
-          )
-        });
+        if(options.filter_future_timesheets){
+          //Filter out all future timesheets after today's month
+          var today = moment();
+          timesheets = res.data.results.filter(x => {
+            return ( 
+              x.year < today.year() 
+              || (x.year == today.year() && x.month <= today.month() + 1)
+            )
+          });
+        }
 
         store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
           timesheets: timesheets
@@ -641,7 +815,10 @@ const actions = {
   [types.NINETOFIVER_RELOAD_CONTRACTS] (store, options = {}) {
 
     options.path = '/contracts/';
-
+    if(!options.params){
+      options.params = {
+      }
+    }
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
@@ -701,7 +878,7 @@ const actions = {
   [types.NINETOFIVER_RELOAD_CONTRACT_USERS] (store, options = {}) {
 
     options.path = '/contract_users/';
-
+    
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
@@ -772,6 +949,47 @@ const actions = {
     });
   },
 
+  [types.NINETOFIVER_RELOAD_WHEREABOUTS] (store, options = {}) {
+
+    options.path = '/whereabouts/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_WHEREABOUTS, {
+          whereabouts: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+
+  [types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS] (store, options = {}) {
+
+    options.path = '/employment_contracts/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS, {
+          employment_contracts: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
 
   [types.NINETOFIVER_RELOAD_UPCOMING_LEAVES] (store, options = {}) {
 
@@ -782,11 +1000,9 @@ const actions = {
 
       options.params = {
         leavedate__gte: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
-        page_size: 50
       };
     } else {
       options.params['leavedate__gte'] = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      options.params['page_size'] = 50;
     }
 
     function leaveSorter(val) {

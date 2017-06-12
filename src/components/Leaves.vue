@@ -20,29 +20,16 @@ div(class='calendar')
       hr
 
       //- All leaves
-      h3.text-md-center(@click='showAllLeaves = !showAllLeaves') All Leaves
-        .btn.btn-default.pull-right
-          i.fa(v-bind:class='[showAllLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
+      h3.text-md-center All Leaves
       p.text-md-center An overview of all your leaves.
-
-        div(v-if='showAllLeaves')
-          #accordion(v-for='(leave, i) in sortLeaves(processedLeaves)' role='tablist', aria-multiselectable='true')
-            .card( v-bind:class='getRibbonStyleClass(leave)')
-              .card-header.leave__header(role='tab', v-bind:id='"procHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"procCollapse-" + i', v-bind:href='"#procCollapse-" + i')
-                .row
-                  .col-sm-9
-                    a.text-muted(v-if='leave.leave_end < new Date()')
-                      strike <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                    a(v-else)
-                      | <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                  .col-sm-3
-                    .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
-                      | {{ leave.status }}
-                    
-              .collapse(role='tabpanel', v-bind:id='"procCollapse-" + i', v-bind:aria-labelledby='"procHeading-" + i')
-                .card-block
-                  | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-                  | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+      .card.card-top-blue
+        table.table
+          tbody
+            tr(v-for='leave in sortLeaves(processedLeaves)')
+              td <strong>{{ leave.leave_type }}</strong> 
+                .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                  | {{ leave.status }}
+              td.text-md-right {{ leave.leave_start | moment('DD MMMM YYYY - HH:mm') }}  → {{ leave.leave_end | moment('DD MMMM YYYY - HH:mm') }}
 
     //- Holidays
     .col-md-6
@@ -105,7 +92,7 @@ export default {
   },
 
   created: function () {
-
+    this.getLeaves();
   },
   watch: {
     leaveTypes: function(leaveTypes, newLeaveTypes){
@@ -191,15 +178,10 @@ export default {
 
     //Load all leaves
     getLeaves: function() {
-      console.log('bladfkldfjkfdjdfjkdfjkdf');
       
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
-        params: {
-          page_size: 100
-        }
+        path: '/my_leaves/'
       }).then((response) => {
-        console.log('BLABALBLABLALBA');
         
         //Converts the start / end datetime from strings to actual JS datetimes
         response.data.results.forEach(lv => {
@@ -211,7 +193,7 @@ export default {
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).name;
+          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).display_label;
         });
 
         this.leaves = response.data.results

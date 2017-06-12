@@ -7,7 +7,8 @@ div
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortByGroup("all")') All
+          button.btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
+          button.btn.btn-secondary(v-else type='button' @click='reloadPage()') All
           .btn-group(role='group')
             button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
@@ -21,22 +22,26 @@ div
         thead#user-table-head
           tr
             th(@click='setTableSort("first_name")') Name
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("email")') Email
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__birth_date")') Birthdate
+              .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__country")') Country
+              .pull-right.fa.fa-sort(aria-hidden='true')
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
               span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
             td.email-cell(@click='promptCopyEmail(user.email)')
               span {{ user.email }}
-            td {{ user.birth_date | moment('DD MMMM YYYY') }}
+            td {{ user.birth_date | moment('DD/MM/YYYY') }}
             td {{ user.country }}
 
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
-        h1.text-md-center.notice No colleagues found!
+        .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
   .col-md-3.fixed
     .row
@@ -136,11 +141,11 @@ export default {
 
   methods: {
     promptCopyEmail: function(email) {
-      window.prompt('copy this: ', email);
+      window.prompt('here take this: ', email);
     },
 
+    // Sorts the table
     setTableSort: function(value) {
-      console.log(value);
       if(this.tableSort === value){
         this.tableSort = '-' + value;
       } else {
@@ -177,6 +182,10 @@ export default {
         [store.getters.group_names[0]]: 'tag-green',
       }
       return (tempObj[group_name]) ? tempObj[group_name] : 'tag-primary';   
+    },
+
+    reloadPage: function() {
+      this.$router.push({ name: 'colleagues', params: { userId: 'all'}})
     }
   },
 
@@ -231,16 +240,6 @@ export default {
 
 .toggle-info {
   margin-top: .3rem;
-}
-
-.notice {
-  background-color: #fff;
-  border: 1px solid black;
-  border-radius: 5px;
-}
-
-.fa-pencil-square-o {
-  padding-right: .2rem;
 }
 
 .email-cell {

@@ -40,6 +40,14 @@ export default {
     model.duration = this.defaultPerformance ? this.defaultDuration : 0;
     model.performance_type = this.defaultPerformanceType;
     model.description = this.defaultDescription;
+    model.contract_role = this.defaultContractRole;
+
+    // Reload filtered contracts so that the user only sees contracts he's working on.
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
   },
 
   computed: {
@@ -66,6 +74,9 @@ export default {
 
     defaultDuration: function() {
       return this.defaultPerformance ? this.defaultPerformance.duration : 0;
+    },
+    defaultContractRole: function() {
+      return this.defaultPerformance ? this.defaultPerformance.contract_role: null;
     },
 
     defaultPerformanceType: function() {
@@ -122,8 +133,15 @@ export default {
 
     //Validates the form & sends data according to its value
     validateForm: function() {
+      // Check if the selected contract is a projectcontract
+      this.isProjectContract = (store.getters.contracts.find(c => c.id === this.model.contract).contract_type === 'ProjectContract') ? true : false;
+
+      // if the selected contract is not a project contract, give contract_role an empty value so we don't trip the validation.
+      if(!this.isProjectContract){
+        this.model.contract_role = '';
+      }
       var modelValidationCheck = Object.keys(this.model).every(x => {
-        return this.model[x] != null;
+          return this.model[x] != null;
       });
 
       if( !modelValidationCheck || this.model.duration <= 0) {
@@ -163,14 +181,27 @@ export default {
 
     //Submits the form & makes correct call based on data
     submitForm: function(timesheetID) {
-      var body = {
-        timesheet: timesheetID,
-        day: this.today.date(),
-        duration: this.model.duration,
-        description: this.model.description,
-        performance_type: this.model.performance_type,
-        contract: this.model.contract
-      };
+      var body = {};
+      if(this.isProjectContract){
+        body = {
+          timesheet: timesheetID,
+          day: this.today.date(),
+          duration: this.model.duration,
+          description: this.model.description,
+          performance_type: this.model.performance_type,
+          contract: this.model.contract,
+          contract_role: this.model.contract_role
+        };
+      } else {
+        body = {
+          timesheet: timesheetID,
+          day: this.today.date(),
+          duration: this.model.duration,
+          description: this.model.description,
+          performance_type: this.model.performance_type,
+          contract: this.model.contract,
+        };
+      }
 
       if(this.defaultPerformance)
         this.patchRequest(this.defaultPerformance['id'], body);
@@ -211,7 +242,7 @@ export default {
           emulateJSON: true,
         }
       ).then((response) => {
-
+        console.log(response)
         if(response.status == 201) {
           this.$emit('success', response);
           this.showToast('Performance successfully added');
@@ -227,7 +258,7 @@ export default {
   data: () => {
     return {
       name: 'PerformanceForm',
-
+      isProjectContract: false,
       model: model,
 
       schema: {
@@ -238,8 +269,8 @@ export default {
             model: "contract",
 
             values: function() {
-              if(store.getters.contracts) {
-                var activeContracts = store.getters.contracts.filter(x => { return x.active === true });
+              if(store.getters.filtered_contracts) {
+                var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
 
                 return activeContracts.map(x => {
                   return { id: x.id, name: x.name +  ' → ' + x.customerName }
@@ -285,9 +316,27 @@ export default {
                 });
               }
             },
-
+          },
+          {
+            //CONTRACT_ROLE
+            type: "select",
+            model: "contract_role",
+            required: false,
+            values: () => {
+              if(store.getters.contract_users && store.getters.user && model.contract){
+                var contract_users = store.getters.contract_users.filter( cu => {
+                  return (cu.user === store.getters.user.id && cu.contract === model.contract)
+                })
+                var contract_roles = [];
+                contract_users.forEach( cu => {
+                  contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
+                });
+                
+                return contract_roles;
+              }
+            },
             styleClasses: ['compact-field', 'col-md-12'],
-          }
+          },
         ]
       },
 

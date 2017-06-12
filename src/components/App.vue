@@ -25,16 +25,10 @@ div(
               p.small.hidden-md-down Sickness / Vacation
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small The weirdos I work with
-            router-link(:to='{ name: "companies" }')
-              h3 Companies
-              p.small.hidden-md-down Overview of clients
+              p.small.hidden-md-down The weirdos I work with
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
-            router-link(:to='{ name: "leave_overview_grid" }')
-              h3 Overview
-              p.small who is on leave this month
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
@@ -74,9 +68,13 @@ export default {
         if (!store.getters.companies)
           store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
         if (!store.getters.timesheets)
-          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+            filter_future_timesheets: true
+          });
         if (!store.getters.contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+        if(!store.getters.contract_roles)
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
         if(!store.getters.contract_users)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
         if(!store.getters.monthly_activity_performances)
@@ -91,6 +89,12 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_USERS);
         if(!store.getters.user_groups)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
+        if(!store.getters.attachments)
+          store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS);
+        if(!store.getters.wherabouts)
+          store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
+        if(!store.getters.employment_contracts)
+          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS)
         date: moment()
       });
   },
@@ -135,7 +139,7 @@ export default {
 
 <style lang="less">
 @datepickerHeight: 228px;
-@sidebar-width: 200px;
+@sidebar-width: 250px;
 .container-fluid{
   background: #FAFAFA;
 }

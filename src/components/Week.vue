@@ -41,7 +41,10 @@
     //- Header w days
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
-
+        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations')
+          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
+          .dropdown-menu(aria-labelledby='btnGroupDrop')
+            a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
         .card-header.card-info
           .pull-left 
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
@@ -119,10 +122,47 @@ export default {
     '$route' (to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
-    }
+    },
   },
 
   computed: {
+    whereabouts: function() {
+      if(store.getters.whereabouts && this.daysOfWeek){
+        var whereabouts = []
+        store.getters.whereabouts.filter((w) => {
+          this.daysOfWeek.forEach((day) => {
+            if(day.format('D') == w.day){
+              whereabouts.push(w);
+            }
+          })
+        });
+        return whereabouts
+      }
+    },
+
+    // Gets the locations of this week
+    timesheet_locations: function() {
+      if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts){
+        var day = this.daysOfWeek[0];
+        var timesheet = store.getters.timesheets.find(x => 
+          x.month == (day.month() + 1)
+          &&
+          x.year == day.year()
+        );
+
+        var timesheet_locations = [];
+        this.daysOfWeek.forEach((day) => {
+          if(timesheet){
+            var wa = this.whereabouts.find(w => w.day == day.format('D') && w.timesheet == timesheet.id)
+            wa = wa ? wa.location : 'Select whereabout';
+          } else {
+            var wa = 'Select whereabout';
+          }
+          timesheet_locations.push(wa);
+        });
+        return timesheet_locations
+      }
+    },
 
     work_schedule: function() {
       if(store.getters.work_schedule)
@@ -151,9 +191,119 @@ export default {
 
   },
 
-  created: function() { },
+  created: function() {
+    this.reloadWhereabouts();
+  },
 
   methods: {
+    reloadWhereabouts: function() {
+      if(store.getters.user){
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+          filter_future_timesheets: false
+        })
+        
+        return store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
+        });
+      }
+    },
+    
+    patchWhereabout: function(whereaboutId, location, day, timesheetId) {
+      console.log(timesheetId)
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/whereabouts/' + whereaboutId + '/',
+        method: 'PATCH',
+        body: {
+          location: location,
+          day: day.date(),
+          timesheet: timesheetId
+        },
+        emulateJSON: true
+      }).then( () => {
+        this.reloadWhereabouts();
+        this.$toast('Updated whereabout to ' + location + '!', 
+          {
+            id: 'whereabout-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          }
+        );
+      });
+    },
+
+    createWhereabout: function(location, day, timesheetId) {
+      console.log(timesheetId)
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/whereabouts/',
+        method: 'POST',
+        body: {
+          location: location,
+          day: day.date(),
+          timesheet: timesheetId
+        },
+        emulateJSON: true
+      }).then((res) => {
+        if(res){
+          this.reloadWhereabouts();
+          this.$toast('Set whereabout to ' + location + '!',
+            { 
+              id: 'whereabout-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1000,
+              transition: 'slide-down',
+              mode: 'override'
+            });
+        } else {
+          this.$toast('Something went wrong, check the console for more info.', {
+            id: 'wherabout-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 2000,
+            transition: 'slide-dorn',
+            mode: 'override'
+          });
+        }
+      });
+    },
+
+    // Create new whereabout
+    setWhereabout: function(location, day, index) {
+      // Get timesheet
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        filter_future_timesheets: false,
+      }).then( () => {
+        var timesheet = store.getters.timesheets.find(x => 
+          x.month == (day.month() + 1)
+          &&
+          x.year == day.year()
+        );
+        // Timesheet not found; make a new one
+        if(!timesheet) {
+          this.createNewTimeSheet(day).then( (response) => {
+            var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === response.data.id)
+            // Whereabout already exists
+            if(whereabout){
+              this.patchWhereabout(whereabout.id, location, day, response.data.id);
+            // Whereabout does not exist
+            } else {
+              this.createWhereabout(location, day, response.data.id);
+            }
+          });
+        } else {
+          var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
+          // Whereabout already exists
+          if(whereabout){
+            this.patchWhereabout(whereabout.id, location, day, timesheet.id);
+          // Whereabout does not exist
+          } else {
+            this.createWhereabout(location, day, timesheet.id);
+          }
+        }
+      })
+    },
 
     getDailyQuota: function(day) {
       var performed = this.getDurationTotal(day);
@@ -344,6 +494,18 @@ export default {
       }
 
     },
+    createNewTimeSheet: function(day) {
+      return store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_timesheets/',
+        method: 'POST',
+        body: {
+          month: day.month() + 1,
+          year: day.year(),
+          closed: false
+        },
+        emulateJSON: true,
+      });
+    },
 
     //Sets the popover placement, based on the weekindex and weekformat
     setPopoverPlacement: function(val) {
@@ -493,7 +655,6 @@ export default {
           timesheet__month: month,
           day__gte: start,
           day__lte: end,
-          page_size: 200,
         },
       }).then((response) => {
         // this.activityPerformances = this.activityPerformances.concat( response.data.results );
@@ -516,7 +677,7 @@ export default {
         if(this.activityPerformances[i].day == day)
           result.push(this.activityPerformances[i]);
 
-      return result;
+      return result.reverse();
     }
   },
 
@@ -533,12 +694,15 @@ export default {
       toggleButtonLabels: {
         checked: 'On call',
         unchecked: 'Off call'
-      }
+      },
+
+      whereabout_locations: store.getters.whereabout_locations,
     }
 
   },
 
-  filters: {  },
+  filters: {
+ },
 }
 </script>
 
@@ -617,4 +781,9 @@ div.btn-group {
     width: inherit;
     display: inline-block;
 }
+
+.whereabout {
+  width: 100%
+}
+
 </style>

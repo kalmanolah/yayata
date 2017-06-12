@@ -314,9 +314,11 @@ export default {
           if(this.model[key] === '')
             delete this.model[key]
         });
-        this.model.active_days.forEach( (day) => {
-          this.model[Object.keys(day)] = Object.values(day)[0];
-        });
+        if(this.model.acvtive_days){
+          this.model.active_days.forEach( (day) => {
+            this.model[Object.keys(day)] = Object.values(day)[0];
+          });
+        }
         
         var options = {
             path: '/users/',

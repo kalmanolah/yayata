@@ -72,7 +72,11 @@
       },
     },
 
-    created: () => { },
+    created: () => { 
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        filter_future_timesheets: true
+      })
+    },
 
     watch: {
 
@@ -111,7 +115,6 @@
           path: '/my_performances/activity/',
           params: {
             timesheet: ts,
-            page_size: 500
           }
         }).then((response) => {
           this.$set(this.performances, ts, response.data.results);
@@ -129,7 +132,6 @@
           params: {
             status: store.getters.leave_statuses[2],
             leavedate__timesheet: ts,
-            page_size: 31,
           }
         }).then((response) => {
 

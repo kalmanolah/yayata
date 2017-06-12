@@ -6,7 +6,8 @@ div
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
         .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
     .col-md-6
-      .card
+      //- BIRTHDAYS
+      .card.card-top-blue
         h4.card-title.text-md-center Birthdays
         .card-block
           table.table
@@ -17,6 +18,7 @@ div
                   .fa.fa-birthday-cake.pull-right
               tr(v-if='birthdays && birthdays.length === 0')
                 td.text-md-center <strong>No rijsttaart today :(</strong>
+      //- TIMESHEETS
       .card.card-top-blue
         h4.card-title.text-md-center Timesheets for 
           router-link(:to='{ name: "calendar_month_redirect" }')
@@ -33,7 +35,8 @@ div
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
     .col-md-6
-      .card
+      //- ABSENT COLLEAGUES
+      .card.card-top-blue
         h4.card-title.text-md-center Absent colleagues
         div.text-md-center
           i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
@@ -48,6 +51,14 @@ div
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
                 td.text-md-center <strong>No absent colleagues!</strong>
+          table.table
+            tbody
+              tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
+                td {{ holiday.name }} [{{ holiday.country }}]
+                td.text-md-right {{ holiday.date }}
+              tr(v-if='holidaysSelectedDay.length === 0')
+                td.text-md-center <strong>No holidays!</strong>
+    .col-md-6
       LeaveForm
   .row
     .col-md-5
@@ -79,11 +90,14 @@ export default {
       earliestLeave: new Date(),
       latestLeave: new Date(),
       leavesWidget: [],
-      leavesSelectedDay: []
+      leavesSelectedDay: [],
+      holidaysSelectedDay: []
     }
   },
 
   created: function () {
+    // Reload the users in the store which may have been changed by the colleagues filter
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS);
     this.earliestLeave = moment();
     this.latestLeave = moment();
     this.selectedDay = moment();
@@ -106,7 +120,6 @@ export default {
     //Reload to get most recent data
     store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
 
-
     //Get all leaves for this month
     //Make param for month's range
     var startOfMonth = moment().startOf('month');
@@ -118,7 +131,6 @@ export default {
       params: {
         status: store.getters.leave_statuses[2],
         leavedate__range: range,
-        page_size: 31,
       }
     }).then((response) => {      
       response.data.results.forEach(lv => {
@@ -134,9 +146,30 @@ export default {
     }, () => {
       this.loading = false;
     });
+
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
   },
 
   computed: {
+    user: function() {
+      if(store.getters.user)
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+          params: {
+            contractuser__user__id: store.getters.user.id
+          }
+        });
+        return store.getters.user
+    },
+
+    holidays: function() {
+      if(store.getters.holidays)
+        // return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD'));
+        return store.getters.holidays
+    },
 
     workschedule: function() {
       if(store.getters.work_schedule)
@@ -149,7 +182,7 @@ export default {
         return store.getters.users.filter(user => moment(user.birth_date).format('MM-DD') === today);
       }
     },
-    
+
     //Calculates amount of hours that should be worked according to the workschedule
     totalHoursRequired: function() {
       var total = 0;
@@ -157,22 +190,35 @@ export default {
       //Loop over each entry in the schedule array
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
-      if(store.getters.work_schedule && this.leaves && store.getters.holidays) {
-        store.getters.work_schedule.forEach(ws => {
+      if(store.getters.work_schedule && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
+        var work_schedules = [];
+        store.getters.employment_contracts.forEach( (ec) => {
+          var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
+          if(work_schedule){
+            work_schedules.push(work_schedule);
+          }
+        });
+        work_schedules.forEach(ws => {
           //Add regular days to total
           for(var w in ws) {
             if(this.days[w])
               total += parseFloat(ws[w]) * this.days[w];
           }
 
-            //Correcting total with holidays
-            store.getters.holidays.forEach(h => {
-              var date = moment(h.date, 'YYYY-MM-DD');
+            //Correcting total with holidays 
+            var startOfMonth = moment().startOf('month');
+            var endOfMonth = moment().endOf('month');
+      
+            store.getters.holidays.forEach(holiday => {
+              if(this.user.country === holiday.country){
+                var date = moment(holiday.date).format('YYYY-MM-DD');
 
-              if(this.today.month() === date.month())
-                total -= ws[date.format('dddd').toLowerCase()];
+                if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
+                  total -= 8;
+                }
+              }
             });
-
+            
             //Correcting total with leaves
             this.leaves.forEach(lv => {
               var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
@@ -241,8 +287,9 @@ export default {
     },
 
     contracts: function() {
-      if(store.getters.contracts && store.getters.monthly_activity_performances) {
-        var active_contrs = store.getters.contracts.filter(x => x.active === true);
+      if(store.getters.filtered_contracts && store.getters.monthly_activity_performances && this.user) {
+        var active_contrs = store.getters.filtered_contracts.filter(x => x.active === true);
+        console.log(active_contrs)
 
         //For each entry, calculate the total performances duration
         active_contrs.forEach(c => {
@@ -255,9 +302,9 @@ export default {
 
           c.monthly_duration = total;
         });
-
+        
         return active_contrs;
-      }
+      };
     },
 
     users: function() {
@@ -293,12 +340,23 @@ export default {
   methods: {
     dayEarlier: function() {
       this.selectedDay.subtract(1, 'days');      
-      this.filterLeaves();      
+      this.filterLeaves();
+      this.filterHolidays();      
     },
 
     dayLater: function() {
       this.selectedDay.add(1, 'days');      
       this.filterLeaves();
+      this.filterHolidays();      
+    },
+
+    filterHolidays: function() {
+      this.holidaysSelectedDay = [];
+      this.holidays.filter(holiday => {
+        if(moment(holiday.date).format('MM-DD-YYYY') === moment(this.selectedDay).format('MM-DD-YYYY')){
+          this.holidaysSelectedDay.push(holiday)
+        }
+      });
     },
 
     filterLeaves: function() {

@@ -26,7 +26,7 @@ div
         div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
           .card(v-bind:class='getRibbonStyleClass(contract)')
             .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
-              div.contract-name {{ contract.name }}
+              div.contract-name {{ contract.name }} - {{ contract.end_date}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
               small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
@@ -54,8 +54,8 @@ div
                     div(v-if='contract.type !== "SupportContract"')
                       hr
                       .row
-                        .col-md-5 <strong>Total hours allocated:</strong>
-                        .col-md-7.text-md-right {{ contract.total_duration }} hours
+                        .col-md-5 <strong>Total hours spent:</strong>
+                        .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
                     hr
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Project estimates:</strong>
@@ -66,7 +66,13 @@ div
                     hr(v-if='contract.type === "ProjectContract"')
                     .row(v-if='contract.type === "ProjectContract"')
                       .col-md-4 <strong>Hours to fill in:</strong>
-                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.totalHoursAllocated - contract.total_duration }} hours
+                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.hours_left }} hours
+                    hr(v-if='contract.attachments')
+                    .row
+                      .col-md-4 <strong>Attachments</strong>
+                      .col-md-8.text.md-right
+                        div(v-for='attachment in contract.attachments')
+                          a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
                 .col-md-6
                   PieChart(:chart-data='contract.datacollection')
                     
@@ -109,15 +115,21 @@ export default {
   },
 
   created: function () {
-    if(!store.getters.filtered_contracts){
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
-    }
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
+    }
+    if(!store.getters.attachments){
+      store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
     }
   },
 
   filters: {
+    urlFilter: function(attachment){
+      // base url is localhost:8080 but files are served from 127.0.0.1:8080
+      return 'http://127.0.0.1:8000' + attachment.file_url;
+    },
+
     //Return array as joined strings
     getContractGroupAsString: function(arr) {
       //If we're provided a value
@@ -147,6 +159,25 @@ export default {
   },
 
   computed: {
+    //Gets the full contracts containing attachtments, contractusers, hours estimated and allocated. 
+    fullContracts: function() {
+      if(store.getters.full_contracts){
+        // Get each unique customerName
+        store.getters.filtered_contracts.forEach((contract) => {
+          if(this.customers.indexOf(contract.customerName) === -1){
+            this.customers.push(contract.customerName);
+          }
+        });
+        // Get each unique contractType
+        store.getters.filtered_contracts.forEach((contract) => {
+          if(this.contractTypes.indexOf(contract.type) === -1){
+            this.contractTypes.push(contract.type);
+          }
+        });
+        return store.getters.full_contracts;
+      }
+    },
+
     user_groups: function() {
       if(store.getters.user){
         return store.getters.user.groups;
@@ -169,57 +200,7 @@ export default {
    //Gets the contracts from the store
     filtered_contracts: function() {
       if(store.getters.filtered_contracts) {
-        // Get each unique customerName
-        store.getters.filtered_contracts.forEach((contract) => {
-          if(this.customers.indexOf(contract.customerName) === -1){
-            this.customers.push(contract.customerName);
-          }
-        });
-        // Get each unique contractType
-        store.getters.filtered_contracts.forEach((contract) => {
-          if(this.contractTypes.indexOf(contract.type) === -1){
-            this.contractTypes.push(contract.type);
-          }
-        });
         return store.getters.filtered_contracts;
-      }
-    },
-
-    //Stores extra information about the contracts
-    contract_detail: function() {
-      if(this.filtered_contracts && store.getters.monthly_activity_performances && store.getters.contract_users) {
-          var contract_detail = this.filtered_contracts.map(x => { return {id: x.id}});
-
-          for(var cd of contract_detail) {
-            var totalHours = 0;
-
-            store.getters.monthly_activity_performances.forEach(x => {
-              if(x.contract === cd.id)
-                totalHours += parseFloat(x.duration);
-            });
-            cd.monthly_duration = totalHours;
-
-            var totalHoursAllocated = 0;
-            var contract = store.getters.contracts.find(c => c.id === cd.id);
-            // Calculate total nuber of hours allocated from project contract.
-            if(contract.type === 'ProjectContract'){
-              contract.project_estimate.forEach(estimate => {
-                totalHoursAllocated += estimate[0];
-              });
-              cd.totalHoursAllocated = totalHoursAllocated;
-            }
-
-            cd.total_users = store.getters.contract_users_count;
-            
-            var contract_users = [];
-            store.getters.contract_users.forEach((cu) =>{
-              if(cu.contract === cd.id){
-                contract_users.push(cu);
-              }
-            });
-            cd.contract_users = contract_users;
-          }
-          return contract_detail;
       }
     },
 
@@ -229,8 +210,11 @@ export default {
         var query = this.query;
         return this.sortedContracts.filter( contract => {
           // Fields to filter on
-          return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
-                || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+          if(contract.name){
+            return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+                  // Not all contracts have a description; this causes an error.
+                  // || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+          }
         });
       }
     },
@@ -251,15 +235,6 @@ export default {
       }
     },
 
-    //Gets the contracts currently still active
-    fullContracts: function() {
-      if(this.filtered_contracts && this.contract_detail)
-        //First filter for active contracts
-        //Then find the corresponding contract_detail
-       return this.filtered_contracts.map(c => {
-          return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
-        });
-    },
 
     //Gets the contracts currently unactive
     inactiveContracts: function() {
@@ -396,18 +371,8 @@ export default {
       }
     },
 
-    HoursLeft: function(contract) {
-      var output = 0;
-      if(contract.project_estimate){
-        contract.project_estimate.forEach(estimate => {
-          output += estimate[0]
-        });
-      }
-      return output -= contract.total_duration;
-    },
-
     getStyleClassHoursLeft: function(contract){
-      return this.HoursLeft(contract) >= 0 ? 'text-success' : 'text-danger'
+      return contract.hours_left >= 0 ? 'text-success' : 'text-danger'
     },
   }
 }
