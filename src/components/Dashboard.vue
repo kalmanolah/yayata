@@ -162,6 +162,11 @@ export default {
             contractuser__user__id: store.getters.user.id
           }
         });
+        store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+          params: {
+            user: store.getters.user.id
+          }
+        });
         return store.getters.user
     },
 
@@ -191,6 +196,7 @@ export default {
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
       if(store.getters.work_schedule && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
+        console.log(this.leaves);
         var work_schedules = [];
         store.getters.employment_contracts.forEach( (ec) => {
           var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
@@ -289,7 +295,6 @@ export default {
     contracts: function() {
       if(store.getters.filtered_contracts && store.getters.monthly_activity_performances && this.user) {
         var active_contrs = store.getters.filtered_contracts.filter(x => x.active === true);
-        console.log(active_contrs)
 
         //For each entry, calculate the total performances duration
         active_contrs.forEach(c => {
