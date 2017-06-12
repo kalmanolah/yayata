@@ -165,8 +165,16 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
+      if(store.getters.work_schedule && store.getters.user && store.getters.employment_contracts){
+        var work_schedules = [];
+        store.getters.employment_contracts.forEach((ec) => {
+          var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
+          if(work_schedule){
+            work_schedules.push(work_schedule);
+          }
+        });
+        return work_schedules
+      }
     },
 
     //Get the month corresponding with the start of the week
@@ -193,6 +201,11 @@ export default {
 
   created: function() {
     this.reloadWhereabouts();
+    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
   },
 
   methods: {
