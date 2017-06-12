@@ -128,8 +128,8 @@ export default {
     this.getPerformances();
     this.getLeaves();
     this.reloadEmploymentContracts()
+    // If there are route params set the selected month to these params.
     if(this.$route.params.year && this.$route.params.month){
-      console.log('route params found')
       this.selectedMonth = moment(this.$route.params.year + '-' + this.$route.params.month + '-' +  '1', 'YYYY-MM-DD');
     }
   },
@@ -530,7 +530,6 @@ export default {
     },
 
     dayOffset: (vm) => {
-      console.log(vm.selectedMonth)
       var dow = moment(vm.selectedMonth).day()
       if (dow == 0) {
         dow = 7

@@ -157,7 +157,6 @@ export default {
           order_by: this.tableSort
         }
       }
-      console.log(options)
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
     },
 

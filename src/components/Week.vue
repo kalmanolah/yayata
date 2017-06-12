@@ -221,7 +221,6 @@ export default {
     },
     
     patchWhereabout: function(whereaboutId, location, day, timesheetId) {
-      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/' + whereaboutId + '/',
         method: 'PATCH',
@@ -247,7 +246,6 @@ export default {
     },
 
     createWhereabout: function(location, day, timesheetId) {
-      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/',
         method: 'POST',
