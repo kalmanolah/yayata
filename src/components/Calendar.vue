@@ -128,6 +128,10 @@ export default {
     this.getPerformances();
     this.getLeaves();
     this.reloadEmploymentContracts()
+    if(this.$route.params.year && this.$route.params.month){
+      console.log('route params found')
+      this.selectedMonth = moment(this.$route.params.year + '-' + this.$route.params.month + '-' +  '1', 'YYYY-MM-DD');
+    }
   },
 
   methods: {
