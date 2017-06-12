@@ -93,6 +93,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS);
         if(!store.getters.wherabouts)
           store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
+        if(!store.getters.employment_contracts)
+          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS)
         date: moment()
       });
   },
