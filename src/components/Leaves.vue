@@ -205,8 +205,8 @@ export default {
     //Sorts the leaves from furthest in the future to furthest  in the past
     sortLeaves: function(val) {
       return val.sort(function(a, b) {
-        a = a.leave_start.toDate();
-        b = b.leave_start.toDate();
+        a = moment(a.leave_start);
+        b = moment(b.leave_start);
 
         return a > b ? -1 : (a < b ? 1 : 0);
       });
