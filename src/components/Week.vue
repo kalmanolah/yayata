@@ -42,7 +42,7 @@
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
         .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations')
-          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
+          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
           .dropdown-menu(aria-labelledby='btnGroupDrop')
             a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
         .card-header.card-info
@@ -57,7 +57,8 @@
                 color='#DB4C4C', 
                 :sync='true', 
                 :labels='toggleButtonLabels', 
-                :width='65'
+                :width='65',
+                :disabled='!timesheet || timesheet.status === store.getters.timesheet_locations[2]'
               )
             .hidden-lg-up
               toggle-button(
@@ -65,40 +66,59 @@
                 :value='getStandbyStatus(weekDay)', 
                 color='#DB4C4C', 
                 :sync='true',
-                :width='35'
+                :width='35',
+                :disabled='!timesheet'
               )
 
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
-          //- Performance creation is disabled for future activityPerformances
-          hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
+          //- Check if timesheet status is active
+          template(v-if='timesheet && timesheet.status === store.getters.timesheet_statuses[1]')
+            //- Performance creation is disabled for future activityPerformances
+            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
 
-            //- Visible text
-            button.btn.btn-success.btn-submit
-              i.fa.fa-plus
-
-          small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
-          .pull-right.quota__icon
-            i.fa(:class='getDailyQuota(weekDay)')
-          hr.smaller-horizontal-hr.smaller-vertical-hr
-
-        //- Body of performances
-        .card-block.performance-list
-          li.list-group-item.performance-entry(
-            v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
-            :key='perf.id',
-            :class='[list-group, performance-list]'
-          )
-            hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
               //- Visible text
+              button.btn.btn-success.btn-submit
+                i.fa.fa-plus
+
+            small.text-muted
+              | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+            .pull-right.quota__icon
+              i.fa(:class='getDailyQuota(weekDay)')
+            hr.smaller-horizontal-hr.smaller-vertical-hr
+
+          //- Body of performances
+          //- Check if timesheet status status is active
+          template( v-if='timesheet && timesheet.status === store.getters.timesheet_locations[1]')
+            .card-block.performance-list
+              li.list-group-item.performance-entry(
+                v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+                :key='perf.id',
+                :class='[list-group, performance-list]'
+              )
+                hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+                  //- Visible text
+                  .list-group-item-heading {{ findContractName(perf.contract) }}
+                  .list-group-item-text 
+                    div {{ perf.description }}
+                    hr.smaller-vertical-hr
+                    small
+                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                      .pull-right {{ perf.duration }} h
+          template(v-else)
+            .card-block.performance-list
+            li.list-group-item.performance-entry.disabled(
+              v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+              :key='perf.id',
+              :class='[list-group, performance-list]'
+            )
               .list-group-item-heading {{ findContractName(perf.contract) }}
-              .list-group-item-text 
-                div {{ perf.description }}
-                hr.smaller-vertical-hr
-                small
-                  .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                  .pull-right {{ perf.duration }} h
+                .list-group-item-text 
+                  div {{ perf.description }}
+                  hr.smaller-vertical-hr
+                  small
+                    .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                    .pull-right {{ perf.duration }} h
 
 </template>
 
@@ -126,6 +146,15 @@ export default {
   },
 
   computed: {
+    timesheet: function() {
+      if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
+        var month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+        return store.getters.timesheets.find((ts) => {
+          return ts.year === this.selectedYear && ts.month === month;
+        });
+      }
+    },
+
     whereabouts: function() {
       if(store.getters.whereabouts && this.daysOfWeek){
         var whereabouts = []
@@ -209,6 +238,11 @@ export default {
   },
 
   methods: {
+    getWhereaboutClass: function() {
+      // Check if status is active
+      return (this.timesheet && this.timesheet.status === store.getters.timesheet_statuses[1]) ? '' : 'disabled';
+    },
+
     reloadWhereabouts: function() {
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
@@ -749,6 +783,10 @@ export default {
   position: relative;
   border-width: 1px;
   border-color: rgba(0, 0, 0, 0.08);
+}
+
+.performance-entry.disabled {
+  height: 80px;
 }
 
 .smaller-horizontal-hr {
