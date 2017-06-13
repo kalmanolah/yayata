@@ -38,6 +38,7 @@ const state = {
   employment_contracts: null,
 
   //Predefined
+  timesheet_statuses: ['CLOSED', 'ACTIVE', 'PENDING'],
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
@@ -338,6 +339,7 @@ const getters = {
   //Predefined
   whereabout_locations: state => state.whereabout_locations,
   leave_statuses: state => state.leave_statuses,
+  timesheet_statuses: state => state.timesheet_statuses,
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
   contract_types: state => state.contract_types,
