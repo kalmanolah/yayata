@@ -38,9 +38,9 @@ export default {
   created: function() {
     model.contract = this.defaultContract;
     model.duration = this.defaultPerformance ? this.defaultDuration : 0;
-    model.performance_type = this.defaultPerformanceType;
+    model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
-    model.contract_role = this.defaultContractRole;
+    model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
 
     // Reload filtered contracts so that the user only sees contracts he's working on.
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
@@ -252,7 +252,6 @@ export default {
         }
       });
     }
-
   },
 
   data: () => {
