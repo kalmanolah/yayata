@@ -58,7 +58,7 @@
                 :sync='true', 
                 :labels='toggleButtonLabels', 
                 :width='65',
-                :disabled='!timesheet || timesheet.status === store.getters.timesheet_locations[2]'
+                :disabled='!timesheet || !timesheetActive'
               )
             .hidden-lg-up
               toggle-button(
@@ -67,13 +67,13 @@
                 color='#DB4C4C', 
                 :sync='true',
                 :width='35',
-                :disabled='!timesheet'
+                :disabled='!timesheet || !timesheetActive'
               )
 
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
-          template(v-if='timesheet && timesheet.status === store.getters.timesheet_statuses[1]')
+          template(v-if='timesheet && timesheetActive')
             //- Performance creation is disabled for future activityPerformances
             hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
 
@@ -89,7 +89,7 @@
 
           //- Body of performances
           //- Check if timesheet status status is active
-          template( v-if='timesheet && timesheet.status === store.getters.timesheet_locations[1]')
+          template( v-if='timesheet && timesheetActive')
             .card-block.performance-list
               li.list-group-item.performance-entry(
                 v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
@@ -146,6 +146,12 @@ export default {
   },
 
   computed: {
+    timesheetActive: function() {
+      if(this.timesheet){
+        return this.timesheet.status === store.getters.timesheet_statuses[1];
+      }
+    },
+
     timesheet: function() {
       if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
         var month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
@@ -240,7 +246,7 @@ export default {
   methods: {
     getWhereaboutClass: function() {
       // Check if status is active
-      return (this.timesheet && this.timesheet.status === store.getters.timesheet_statuses[1]) ? '' : 'disabled';
+      return (this.timesheet && this.timesheetActive) ? '' : 'disabled';
     },
 
     reloadWhereabouts: function() {
