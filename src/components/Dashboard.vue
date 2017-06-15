@@ -177,8 +177,8 @@ export default {
     },
 
     workschedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
+      if(store.getters.user_work_schedule)
+        return store.getters.user_work_schedule;
     },
 
     birthdays: function() {

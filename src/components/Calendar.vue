@@ -111,7 +111,7 @@ export default {
     user: function(oldUser, newUser) {
       this.getPerformances();
       this.getLeaves();
-      this.reloadEmploymentContracts()
+      this.reloadEmploymentContracts();
     },
 
     // Watches selected month from parent component.
@@ -129,6 +129,7 @@ export default {
     this.getLeaves();
     this.reloadEmploymentContracts()
     // If there are route params set the selected month to these params.
+
     if(this.$route.params.year && this.$route.params.month){
       this.selectedMonth = moment(this.$route.params.year + '-' + this.$route.params.month + '-' +  '1', 'YYYY-MM-DD');
     }
@@ -212,7 +213,6 @@ export default {
     //Get hours required per day
     getRequiredHours: function(day) {
       var total = 0;
-
       if(this.workschedule) {
         var date = moment(this.selectedMonth).date(day);
         this.workschedule.forEach(x => {
@@ -423,7 +423,6 @@ export default {
 
       if(this.workschedule && this.leaves && store.getters.holidays) {
         this.workschedule.forEach(ws => {
-
           //Add regular days to total
           for(var w in ws) {
             if(store.getters.days[w] >= 0) 
@@ -519,13 +518,10 @@ export default {
     },
 
     workschedule: function() {
-      if(store.getters.work_schedule && this.employment_contracts){
-        var workschedules = [];
-        this.employment_contracts.forEach( (ec) => {
-          var workschedule = store.getters.work_schedule.find(ws => ws.id === ec.work_schedule)
-          workschedules.push(workschedule)
+      if(store.getters.work_schedules && this.employment_contracts){
+        return store.getters.work_schedules.filter((ws) => {
+          return this.employment_contracts.find((ec) => ec.work_schedule === ws.id);
         });
-        return workschedules;
       }
     },
 

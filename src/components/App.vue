@@ -79,8 +79,10 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
         if(!store.getters.monthly_activity_performances)
           store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+        if(!store.getters.user_work_schedule)
+          store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
         if(!store.getters.work_schedule)
-          store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULE);
+          store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULES);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
         if(!store.getters.project_estimates)
@@ -94,7 +96,11 @@ export default {
         if(!store.getters.wherabouts)
           store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
         if(!store.getters.employment_contracts)
-          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS)
+          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+            params: {
+              ended_at__gte: moment().format('YYYY-MM-DD')
+            }
+          })
         date: moment()
       });
   },

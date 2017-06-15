@@ -24,6 +24,7 @@ const state = {
   grid_date: null,
   leaves: null,
   attachments: null,
+  work_schedules: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -31,7 +32,7 @@ const state = {
   contract_durations: null,
   contract_users: null,
   monthly_activity_performances: null,
-  work_schedule: null,
+  user_work_schedule: null,
   show_extra_info: null,
   upcoming_leaves: null,
   whereabouts: null,
@@ -136,8 +137,11 @@ const mutations = {
   [types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES] (state, { monthly_activity_performances }) {
     state.monthly_activity_performances = monthly_activity_performances;
   },
-  [types.NINETOFIVER_SET_WORK_SCHEDULE] (state, { work_schedule }) {
-    state.work_schedule = work_schedule;
+  [types.NINETOFIVER_SET_WORK_SCHEDULES] (state, { work_schedules }) {
+    state.work_schedules = work_schedules;
+  },
+  [types.NINETOFIVER_SET_USER_WORK_SCHEDULE] (state, { work_schedule }) {
+    state.user_work_schedule = work_schedule;
   },
   [types.NINETOFIVER_SET_GRID_DATE] (state, { grid_date }) {
     state.grid_date = grid_date;
@@ -319,7 +323,8 @@ const getters = {
   },
   contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
-  work_schedule: state => state.work_schedule,
+  work_schedules: state => state.work_schedules,
+  user_work_schedule: state => state.user_work_schedule,
   show_extra_info: state => {
     if(!state.user){
       return null;
@@ -929,8 +934,27 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_WORK_SCHEDULES] (store, options = {}) {
 
-  [types.NINETOFIVER_RELOAD_WORK_SCHEDULE] (store, options = {}) {
+    options.path = '/work_schedules/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_WORK_SCHEDULES, {
+          work_schedules: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+  [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE] (store, options = {}) {
 
     options.path = '/my_workschedules/';
 
@@ -940,7 +964,7 @@ const actions = {
         options
       ).then((res) => {
 
-        store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
+        store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
           work_schedule: res.data.results
         });
         resolve(res);
