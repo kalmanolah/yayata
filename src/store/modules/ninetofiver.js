@@ -25,6 +25,7 @@ const state = {
   leaves: null,
   attachments: null,
   work_schedules: null,
+  calendar_selected_month: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -154,6 +155,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS] (state, { employment_contracts}) {
     state.employment_contracts = employment_contracts
+  },
+  [types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH] (state, { selected_month }) {
+    state.calendar_selected_month = selected_month 
   }
 }
 
@@ -175,6 +179,7 @@ const getters = {
   leaves: state => state.leaves,
   filtered_users: state => state.filtered_users,
   grid_date: state => state.grid_date,
+  calendar_selected_month: state => state.calendar_selected_month,
   employment_contracts: state => state.employment_contracts,
   project_estimates: state => {
     if(!state.project_estimates)
@@ -844,6 +849,17 @@ const actions = {
 
   },
 
+
+  [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
+    var days = moment().date();
+    var date = moment().subtract(days - 1,'days');
+    if(options.params){
+      date = options.params.date;
+    }
+    store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
+       selected_month: date
+    });
+  },
 
   [types.NINETOFIVER_RELOAD_GRID_DATE] (store, options = {}) {
     var date = moment()

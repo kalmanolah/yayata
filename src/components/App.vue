@@ -55,6 +55,8 @@ export default {
     //Initialize constants
     if (!store.getters.user) 
       store.dispatch(types.NINETOFIVER_RELOAD_USER).then(() => {
+        if(!store.getters.calendar_selected_month)
+          store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH);
         if (!store.getters.holidays) 
           store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
         if (!store.getters.leave_types)
