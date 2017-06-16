@@ -226,7 +226,7 @@ export default {
 
       if(this.performances) {
         this.performances.forEach(x => {
-          if(x.day === day)
+          if(x.duration && x.day === day)
             total += parseFloat(x.duration);
         });
       }
@@ -537,9 +537,9 @@ export default {
       return dow - 1
     },
 
-    dayCount: (vm) => {
-      // return daysInMonth(vm.selectedMonth)
-      return moment(vm.selectedMonth).daysInMonth()
+    dayCount: function() {
+      var days = moment(this.selected_month).endOf('month').date();
+      return days;
     }
 
   },
