@@ -29,6 +29,8 @@ div
               .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__country")') Country
               .pull-right.fa.fa-sort(aria-hidden='true')
+            th(@click='setTableSort("userinfo__join_date")') Joindate
+              .pull-right.fa.fa-sort(aria-hidden='true')
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
@@ -37,6 +39,7 @@ div
               span {{ user.email }}
             td {{ user.birth_date | moment('DD/MM/YYYY') }}
             td {{ user.country }}
+            td {{ user.join_date | moment('DD/MM/YYYY') }}
 
     .row(v-if='users && users.length === 0')
       .col-md-3
