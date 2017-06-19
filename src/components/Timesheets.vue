@@ -82,6 +82,20 @@
           return ts;
         }
       },
+
+    work_schedule: function() {
+      if(store.getters.work_schedules && store.getters.user && store.getters.employment_contracts){
+        var work_schedules = [];
+        store.getters.employment_contracts.forEach((ec) => {
+          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
+          if(work_schedule){
+            work_schedules.push(work_schedule);
+          }
+        });
+        return work_schedules
+      }
+    },
+
     },
 
     created: () => { 
@@ -259,10 +273,10 @@
 
       //Calculate required hours for a certain timesheet
       getRequiredHours: function(timesheet) {
-        if(store.getters.work_schedule && this.leaves[timesheet.id] && this.daysInMonth[timesheet.id] && store.getters.holidays) {
+        if(this.work_schedule && this.leaves[timesheet.id] && this.daysInMonth[timesheet.id] && store.getters.holidays) {
           var total = 0;
 
-          store.getters.work_schedule.forEach(ws => {
+          this.work_schedule.forEach(ws => {
 
             //Add regular days to total
             for(var w in ws)
