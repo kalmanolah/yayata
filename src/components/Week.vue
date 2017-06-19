@@ -200,10 +200,10 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedule && store.getters.user && store.getters.employment_contracts){
+      if(store.getters.work_schedules && store.getters.user && store.getters.employment_contracts){
         var work_schedules = [];
         store.getters.employment_contracts.forEach((ec) => {
-          var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
+          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
           if(work_schedule){
             work_schedules.push(work_schedule);
           }
