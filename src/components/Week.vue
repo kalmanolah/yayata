@@ -41,7 +41,7 @@
     //- Header w days
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
-        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations')
+        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations && timesheet')
           button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
           .dropdown-menu(aria-labelledby='btnGroupDrop')
             a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
@@ -159,6 +159,14 @@ export default {
           return ts.year === this.selectedYear && ts.month === month;
         });
       }
+    },
+
+    selectedYear: function() {
+      return this.$route.params.year * 1;
+    },
+
+    selectedWeek: function() {
+      return this.$route.params.week * 1;
     },
 
     whereabouts: function() {
@@ -735,8 +743,8 @@ export default {
   data () {
 
     return {
-      selectedYear: this.$route.params.year,
-      selectedWeek: this.$route.params.week,
+      // selectedYear: this.$route.params.year,
+      // selectedWeek: this.$route.params.week,
 
       activityPerformances: [],
       standbyPerformances: [],
