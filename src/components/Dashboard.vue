@@ -24,8 +24,8 @@ div
           router-link(:to='{ name: "calendar_month_redirect" }')
             | {{ today | moment('MMMM YYYY') }}
         table.table
-          tbody
-            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+          tbody(v-if='contracts && user')
+            tr(v-for="(c, index) in contracts")              
               td {{ c.customerName }}: {{ c.name }}
               td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr
@@ -146,17 +146,18 @@ export default {
     }, () => {
       this.loading = false;
     });
-
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-      params: {
-        contractuser__user__id: store.getters.user.id
-      }
-    });
+    if(store.getters.user) {
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+        params: {
+          contractuser__user__id: store.getters.user.id
+        }
+      });
+    }
   },
 
   computed: {
     user: function() {
-      if(store.getters.user)
+      if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
           params: {
             contractuser__user__id: store.getters.user.id
@@ -168,6 +169,7 @@ export default {
           }
         });
         return store.getters.user
+      }
     },
 
     holidays: function() {

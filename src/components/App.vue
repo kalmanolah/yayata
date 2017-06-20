@@ -75,6 +75,13 @@ export default {
           });
         if (!store.getters.contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+        if (!store.getters.filtered_contracts){
+          store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+            params: {
+              contractuser__user__id: store.getters.user.id
+            }
+          });
+        }
         if(!store.getters.contract_roles)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
         if(!store.getters.contract_users)
