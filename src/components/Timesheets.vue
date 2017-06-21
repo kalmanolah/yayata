@@ -101,7 +101,13 @@
     created: () => { 
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
         filter_future_timesheets: true
-      })
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS,  {
+        params: {
+          user: store.getters.user.id,
+          ended_at__gte: moment().format('YYYY-MM-DD')
+        }
+      });
     },
 
     watch: {
