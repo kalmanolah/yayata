@@ -59,7 +59,8 @@ div
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-md-center <strong>No holidays!</strong>
     .col-md-6
-      LeaveForm
+      //- LeaveForm
+      LeaveRequestForm
   .row
     .col-md-5
 
@@ -68,6 +69,7 @@ div
 <script>
 import { mapState } from 'vuex';
 import LeaveForm from './forms/LeaveForm.vue';
+import LeaveRequestForm from './forms/LeaveRequestForm.vue'
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
@@ -77,7 +79,8 @@ export default {
   name: 'dashboard',
 
   components: {
-    LeaveForm: LeaveForm,
+    LeaveForm,
+    LeaveRequestForm
   },
 
   data () {
@@ -138,7 +141,6 @@ export default {
           lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
           lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
         });
-        
         lv['leave_start'] = lv.leavedate_set[0].starts_at;
         lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
       });
