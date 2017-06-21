@@ -9,8 +9,8 @@ div
       form.form
         .row
           .col-md-6
-            label <strong>From</strong>
-            input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
+            b-form-fieldset(:feedback='fromDateFeedback', label='From', :state='fromDateState', :label-size='1')
+              input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
           .col-md-2
             b-form-checkbox(v-model='fromFullDay') <strong>Full day</strong>
           .col-md-4
@@ -18,8 +18,8 @@ div
               b-form-input.form-control(type='time' step='300' v-model='fromTime', :disabled='fromFullDay')
         .row
           .col-md-6
-            label <strong>To</strong>
-            input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
+            b-form-fieldset(:feedback='toDateFeedback', label='To', :state='toDateState', :label-size='1')
+              input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
           .col-md-2
             b-form-checkbox(v-model='toFullDay') <strong>Full day</strong>
           .col-md-4
@@ -36,7 +36,10 @@ div
           .col-md-6
             b-form-fieldset(label='Attachments')
               b-form-file(v-model='attachments', :multiple='true', placeholder='upload file(s)', drop-label='file', choose-label='Attachment')
-        .btn.btn-success.col-md-12(@click='submitLeaveRequest()')
+        button.btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-if='buttonState')
+          i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
+          i.fa.fa-plus.submit-icons(v-else)
+        button.btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-else, disabled)
           i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
           i.fa.fa-plus.submit-icons(v-else)
 </template>
@@ -74,8 +77,6 @@ export default {
 
   watch: {
     fromDate: function(newFromDate, oldFromdate) {
-      console.log(oldFromdate)
-      console.log(newFromDate)
       this.toDate = moment(newFromDate).format('DD MMM YYYY');
     },
     
@@ -121,7 +122,7 @@ export default {
 
   methods: {
     submitLeaveRequest: function() {
-      if( this.fromDate && this.toDate && this.leaveType && this.description) {
+      if( (this.fromdate instanceof moment) && (this.toDate instanceof moment) && this.leaveType && this.description) {
         this.requestLoading = true;
 
         let s_time = moment(this.fromTime, "HH:mm");
@@ -309,7 +310,25 @@ export default {
   },
 
   computed: {
+    buttonState: function() {
+      return this.fromDateState === "success" && this.toDateState === "success" && this.descriptionState === "success" && this.leaveTypeState === "success"
+    },
 
+    fromDateFeedback: function() {
+      return moment(this.fromDate).isValid() ? '' : 'Please provide a correct date'
+    },
+
+    fromDateState: function() {
+      return moment(this.fromDate).isValid() ? 'success' : 'warning'
+    },
+
+    toDateFeedback: function() {
+      return moment(this.toDate).isValid() ? '' : 'Please provide a correct date'
+    },
+
+    toDateState: function() {
+      return moment(this.toDate).isValid() ? 'success' : 'warning'
+    },
     descriptionFeedback: function() {
       return this.description.length ? '' : 'Please provide a description'
     },
