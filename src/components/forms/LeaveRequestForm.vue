@@ -86,6 +86,7 @@ export default {
   },
 
   mounted: function() {
+    // initialize the from date picker
     this.fromDatePicker = new Pikaday({
       field: this.$refs.fromDatePicker,
       firstDay: 1,
@@ -104,6 +105,7 @@ export default {
         this.fromDate = moment(val).format('DD MMM YYYY');
       }
     });
+    // initialize the to date picker
     this.toDatePicker = new Pikaday({
       field: this.$refs.toDatePicker,
       firstDay: 1,
@@ -122,7 +124,7 @@ export default {
 
   methods: {
     submitLeaveRequest: function() {
-      if( (this.fromdate instanceof moment) && (this.toDate instanceof moment) && this.leaveType && this.description) {
+      if( (this.fromDate instanceof moment) && (this.toDate instanceof moment) && this.leaveType && this.description) {
         this.requestLoading = true;
 
         let s_time = moment(this.fromTime, "HH:mm");
@@ -310,6 +312,7 @@ export default {
   },
 
   computed: {
+    // BEGIN OF VALIDATION
     buttonState: function() {
       return this.fromDateState === "success" && this.toDateState === "success" && this.descriptionState === "success" && this.leaveTypeState === "success"
     },
@@ -344,6 +347,8 @@ export default {
     leaveTypeState: function() {
       return this.leaveType ? 'success' : 'warning'
     },
+    // END OF VALIDATION
+    
     upcomingLeaves: function() {
       if(store.getters.upcoming_leaves) {
         var leavedate_arr = [];
