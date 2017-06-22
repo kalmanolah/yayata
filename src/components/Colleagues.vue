@@ -80,7 +80,11 @@ export default {
 
   created: () => {
     if(!store.getters.filtered_users){
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS);
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
+        params: {
+          is_active: true
+        }
+      });
     }
   },
 
@@ -157,7 +161,8 @@ export default {
       var options = {
         path: '/users/',
         params: {
-          order_by: this.tableSort
+          order_by: this.tableSort,
+          is_active: true
         }
       }
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
