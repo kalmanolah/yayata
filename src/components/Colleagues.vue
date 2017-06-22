@@ -18,6 +18,7 @@ div
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
     .row#user-table(v-if='filtered_users')
+      .alert.alert-warning(v-if='noResultsFound') No results found
       table.table.table-striped
         thead#user-table-head
           tr
@@ -89,6 +90,10 @@ export default {
   },
 
   computed: {
+    noResultsFound: function() {
+      return this.filtered_users.length === 0;
+    },
+
     storeUser: function() {
       if(store.getters.user){
         return store.getters.user;
