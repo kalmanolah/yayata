@@ -5,7 +5,10 @@
       span &nbsp; {{ today | moment('DD/MM/YYYY') }}
     vue-form-generator(:id='"vfg-" + i', :schema="schema", :model="model", :options="formOptions")
 
-    button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm')
+    button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm', v-if='formHasData')
+      i.fa.fa-check
+      span &nbsp; Submit
+    button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm', v-if='!formHasData', disabled)
       i.fa.fa-check
       span &nbsp; Submit
     button.btn.btn-danger.col-sm-6(v-if='defaultPerformance', @click='deleteEntry')
