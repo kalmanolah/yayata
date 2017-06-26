@@ -293,8 +293,11 @@ export default {
     // Generates a chart based on a support or consultancy contract.
     generateTimeLeftChart: function(contract) {
       var data = [];
-      var daysLeft = moment().diff(moment(contract.start_date), 'days');
-      var daysSinceStart = moment(contract.end_date).diff(moment(), 'days');
+      var daysLeft = moment().diff(moment(contract.end_date), 'days');
+      daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
+      var daysSinceStart = moment(contract.start_date).diff(moment(), 'days');
+      daysSinceStart = daysSinceStart < 0 ? moment(contract.end_date).diff(moment(contract.start_date), 'days') :daysSinceStart;
+      console.log(daysSinceStart)
       
       var datacollection = {
         labels: ['Days left', 'Days spent'],
@@ -302,7 +305,7 @@ export default {
           {
             label: 'Data One',
             backgroundColor: ['#41B883', '#E46651'],
-            data: [daysSinceStart, daysLeft]
+            data: [daysLeft, daysSinceStart]
           },
         ]
       }
