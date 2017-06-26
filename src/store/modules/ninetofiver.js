@@ -27,6 +27,7 @@ const state = {
   work_schedules: null,
   calendar_selected_month: null,
   activity_performances: null,
+  all_monthly_activity_performances: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -139,6 +140,9 @@ const mutations = {
   [types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES] (state, { monthly_activity_performances }) {
     state.monthly_activity_performances = monthly_activity_performances;
   },
+  [types.NINETOFIVER_SET_ALL_MONTHLY_ACTIVITY_PERFORMANCES] (state, { all_monthly_activity_performances }) {
+    state.all_monthly_activity_performances = all_monthly_activity_performances;
+  },
   [types.NINETOFIVER_SET_WORK_SCHEDULES] (state, { work_schedules }) {
     state.work_schedules = work_schedules;
   },
@@ -186,6 +190,7 @@ const getters = {
   calendar_selected_month: state => state.calendar_selected_month,
   employment_contracts: state => state.employment_contracts,
   activity_performances: state => state.activity_performances,
+  all_monthly_activity_performances: state => state.all_monthly_activity_performances,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -283,7 +288,7 @@ const getters = {
 
         // Calculate how many hours were spent this month
         let hours_spent_this_month = 0;
-        state.monthly_activity_performances.forEach((maperformance) => {
+        state.all_monthly_activity_performances.forEach((maperformance) => {
           if(maperformance.contract === c.id){
             hours_spent_this_month += (maperformance.duration * 1);
           }
@@ -952,7 +957,30 @@ const actions = {
         reject(res);
       });
     });
+  },
 
+  [types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
+    let today = moment();
+    options.path = '/performances/activity/';
+    options.params = {
+      timesheet__year: today.format('YYYY'),
+      timesheet__month: today.format('MM')
+    }
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ALL_MONTHLY_ACTIVITY_PERFORMANCES, {
+          all_monthly_activity_performances: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
   },
 
   [types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {

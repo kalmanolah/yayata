@@ -25,7 +25,7 @@ div
       .card-columns
         div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
           .card(v-bind:class='getRibbonStyleClass(contract)')
-            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
+            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
               div.contract-name {{ contract.name }} - {{ contract.end_date}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
@@ -74,8 +74,10 @@ div
                         div(v-for='attachment in contract.attachments')
                           a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
                 .col-md-6
-                  PieChart(:chart-data='contract.datacollection')
-                    
+                  template(v-if='contract.type === "ProjectContract"')
+                    PieChart(v-if='generate', :chart-data='generateProjectChart(contract)')
+                  template(v-else)
+                    PieChart(v-if='generate', :chart-data='generateTimeLeftChart(contract)')
 
   .col-md-3.fixed(v-if='show_extra_info')
     .row
@@ -110,18 +112,24 @@ export default {
       query: '',
       // Stores the unique custoner names
       customers: [],
-      contractTypes: []
+      contractTypes: [],
+      generate: false
     }
   },
 
   created: function () {
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        // page_size: 10
+      }
+    });
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
     }
     if(!store.getters.attachments){
       store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
     }
+
   },
 
   filters: {
@@ -221,7 +229,7 @@ export default {
 
     // Sort by customerName
     sortedContracts: function() {
-      if(this.sortBy !== 'all' && this.fullContracts){
+      if(this.sortBy !== 'all' && this.fullContracts && store.getters.activity_performances){
         var contracts = [];
         this.fullContracts.forEach(contract => {
           if(contract.customerName === this.sortBy || contract.type === this.sortBy){
@@ -230,7 +238,7 @@ export default {
         });
         return this.activeSort(contracts);
       } else {
-        if(this.fullContracts)
+        if(this.fullContracts && store.getters.activity_performances)
           return this.activeSort(this.fullContracts);
       }
     },
@@ -247,16 +255,6 @@ export default {
   },
 
   methods: {
-    generateCharts: function(contracts){
-      contracts.forEach(c => {
-        if(c.type === "ProjectContract"){
-          this.generateProjectChart(c);
-        } else {
-          this.generateTimeLeftChart(c);
-        }
-      });
-    },
-
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
       let data = [];
@@ -270,7 +268,6 @@ export default {
           labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
         }
       });
-
       let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
       performances.forEach((perf) => {
         if(!total_spent_per_role[perf.contract_role]){
@@ -278,7 +275,6 @@ export default {
         }
         total_spent_per_role[perf.contract_role] += (perf.duration * 1);
       });
-      console.log(total_spent_per_role);
       // Display hours spent per role and hours left
       let time_spent_data = Object.values(total_spent_per_role);
       labels.push('Hours left')
@@ -301,7 +297,7 @@ export default {
           },
         ]
       }
-      contract.datacollection = datacollection;
+      return datacollection;
     },
 
     // Generates a chart based on a support or consultancy contract.
@@ -322,7 +318,7 @@ export default {
           },
         ]
       }
-      contract.datacollection = datacollection;
+      return datacollection;
     },
 
     setSortByCustomerName: function(value) {
@@ -356,7 +352,6 @@ export default {
     },
 
     activeSort: function(contracts) {
-      this.generateCharts(contracts);
       if(contracts){
         return contracts.sort(function(a, b) {
           a = a.active;
