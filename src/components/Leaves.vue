@@ -22,14 +22,24 @@ div(class='calendar')
       //- All leaves
       h3.text-md-center All Leaves
       p.text-md-center An overview of all your leaves.
-      .card.card-top-blue
-        table.table
-          tbody
-            tr(v-for='leave in sortLeaves(processedLeaves)')
-              td <strong>{{ leave.leave_type }}</strong> 
-                .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
-                  | {{ leave.status }}
-              td.text-md-right {{ leave.leave_start | moment('DD MMMM YYYY - HH:mm') }}  → {{ leave.leave_end | moment('DD MMMM YYYY - HH:mm') }}
+      #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
+        .card.card-top-blue
+          .card-header(role='tab', v-bind:id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', v-bind:aria-controls='"allLeavesCollapse-" + year', v-bind:href='"#allLeavesCollapse-" + year')
+            h4.card-title.text-md-center <strong>{{ year }}</strong>
+          .collapse(role='tabpanel', v-bind:id='"allLeavesCollapse-" + year', v-bind:aria-labelledby='"leavesHeading-" + year')
+            .card-block
+              table.table
+                tbody(v-for='(leaves, month) in yg')
+                  tr
+                    td &nbsp;
+                    td
+                      h5 <strong>{{ month | moment('MMM') }}</strong>
+                  template(v-for='leave in leaves')
+                    tr
+                      td <strong>{{ leave.leave_type }}</strong> 
+                        .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                          | {{ leave.status }}
+                      td.text-md-right {{ leave.leave_start | moment('DD MMM - HH:mm') }}  → {{ leave.leave_end | moment('DD MMM - HH:mm') }}
 
     //- Holidays
     .col-md-6
@@ -83,7 +93,7 @@ export default {
       leaves: [],
       showAllLeaves: false,
       showPendingLeaves: true,
-      loaded: false
+      loaded: false,
     }
   },
 
@@ -116,17 +126,36 @@ export default {
     pendingLeaves: function() {
       var today = moment();
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0] && today.isSameOrBefore(x.leave_end))
+        if(x.status === store.getters.leave_statuses[0] && today.isSameOrBefore(x.leave_end)){
           return x;
+        }
       });
     },
 
     processedLeaves: function() {
-      return this.leaves.filter(x => {
-        if(x.status !== store.getters.leave_statuses[0] 
-          && x.status !== store.getters.leave_statuses[3])
-          return x;
-      });
+      if(this.leaves){
+        let procLeaves = {};
+        
+        let leaves = this.leaves.filter(x => {
+          if(x.status !== store.getters.leave_statuses[0] 
+            && x.status !== store.getters.leave_statuses[3]) {
+              x.year = moment(x.leave_start).year();
+              x.month = moment(x.leave_start).month() + 1;
+              return x;
+            }
+        });
+        this.sortLeaves(leaves);
+        leaves.forEach((leave) => {
+          if(!procLeaves[leave.year]){
+            procLeaves[leave.year] = {};
+          }
+          if(!procLeaves[leave.year][leave.month]){
+            procLeaves[leave.year][leave.month] = [];
+          }
+          procLeaves[leave.year][leave.month].push(leave);
+        });
+        return procLeaves;
+      }
     },
 
     //Filters for upcoming leaves, sorts them & returns the first result
@@ -142,7 +171,6 @@ export default {
   filter: { },
 
   methods: {
-    
     //Displays a toast with message
     showToast(text) {
       this.$toast(text, 
@@ -240,4 +268,5 @@ export default {
 .leave__header {
   cursor: pointer;
 }
+
 </style>
