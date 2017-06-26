@@ -98,7 +98,7 @@ export default {
       format: 'DD MMM YYYY',
       disableDayFn: val => {
         return this.upcomingLeaves.find(x => {
-          return moment(x.leave_start).isSame(val, 'day');
+          return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
         });
       },
       onSelect: val => {
@@ -116,15 +116,18 @@ export default {
       showDaysInNextAndPreviousMonths: true,
       disableDayFn: val => {
         return moment(val).isBefore(this.toDate) ? true : this.upcomingLeaves.find(x => {
-          return moment(x.leave_start).isSame(val, 'day');
+          return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
         });
+      },
+      onSelect: val => {
+        this.toDate = moment(val).format('DD MMM YYYY');
       }
     });
   },
 
   methods: {
     submitLeaveRequest: function() {
-      if( (this.fromDate instanceof moment) && (this.toDate instanceof moment) && this.leaveType && this.description) {
+      if( this.buttonState ) {
         this.requestLoading = true;
 
         let s_time = moment(this.fromTime, "HH:mm");
