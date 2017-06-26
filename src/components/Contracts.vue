@@ -259,31 +259,45 @@ export default {
 
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
-      var data = [];
-      var labels = [];
-      var total_allocated = 0;
+      let data = [];
+      let labels = [];
+      let total_allocated = 0;
+      let total_spent_per_role = {};
       this.project_estimates.forEach(estimate => {
         if(estimate.project === contract.id){
           total_allocated += estimate.hours_estimated;
           data.push(estimate.hours_estimated);
           labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
         }
-      })
+      });
+
+      let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
+      performances.forEach((perf) => {
+        if(!total_spent_per_role[perf.contract_role]){
+          total_spent_per_role[perf.contract_role] = 0;
+        }
+        total_spent_per_role[perf.contract_role] += (perf.duration * 1);
+      });
+      console.log(total_spent_per_role);
+      // Display hours spent per role and hours left
+      let time_spent_data = Object.values(total_spent_per_role);
+      labels.push('Hours left')
+      time_spent_data.push(contract.hours_left);
 
       // Should be hours allocated: project_estimates needs refactoring first.
-      var hoursToFillIn = total_allocated- contract.total_duration;
-      var datacollection = {
+      let hoursToFillIn = total_allocated - contract.total_duration;
+      let datacollection = {
         labels: labels,
         datasets :[
+          {
+            label: 'Time left',
+            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+            data: time_spent_data
+          },
           {
             label: 'Estimates',
             backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
             data: data
-          },
-          {
-            label: 'Time left',
-            backgroundColor: ['#41B883', '#E46651'],
-            data: [contract.total_duration, hoursToFillIn]
           },
         ]
       }
