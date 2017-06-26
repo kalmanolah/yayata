@@ -40,7 +40,7 @@ div
                     hr
                     .row
                       .col-md-4 <strong>This month:</strong>
-                      .col-md-8.text-md-right {{ contract.monthly_duration }} hours
+                      .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
                     hr
                     .row
                       .col-md-4 <strong>Groups:</strong>
@@ -297,7 +297,6 @@ export default {
       daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
       var daysSinceStart = moment(contract.start_date).diff(moment(), 'days');
       daysSinceStart = daysSinceStart < 0 ? moment(contract.end_date).diff(moment(contract.start_date), 'days') :daysSinceStart;
-      console.log(daysSinceStart)
       
       var datacollection = {
         labels: ['Days left', 'Days spent'],
