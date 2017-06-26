@@ -26,6 +26,7 @@ const state = {
   attachments: null,
   work_schedules: null,
   calendar_selected_month: null,
+  activity_performances: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -158,6 +159,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH] (state, { selected_month }) {
     state.calendar_selected_month = selected_month 
+  },
+  [types.NINETOFIVER_SET_ACTIVITY_PERFORMANCES] (state, { activity_performances }) {
+    state.activity_performances = activity_performances 
   }
 }
 
@@ -181,6 +185,7 @@ const getters = {
   grid_date: state => state.grid_date,
   calendar_selected_month: state => state.calendar_selected_month,
   employment_contracts: state => state.employment_contracts,
+  activity_performances: state => state.activity_performances,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -929,6 +934,26 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES] (store, options = {}) {
+
+    options.path = '/performances/activity/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ACTIVITY_PERFORMANCES, {
+          activity_performances: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+
+  },
 
   [types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
 
