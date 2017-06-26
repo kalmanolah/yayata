@@ -267,7 +267,7 @@ const getters = {
       return state.filtered_contracts.map((c) => {
 
         // Calculate total hours allocated to project contract
-        var total_hours_allocated = 0;
+        let total_hours_allocated = 0;
         if(c.type === 'ProjectContract'){
           if(c.hours_estimated){
             c.hours_estimated.forEach((estimate) => {
@@ -276,11 +276,19 @@ const getters = {
           }
         }
 
+        // Calculate how many hours were spent this month
+        let hours_spent_this_month = 0;
+        state.monthly_activity_performances.forEach((maperformance) => {
+          if(maperformance.contract === c.id){
+            hours_spent_this_month += (maperformance.duration * 1);
+          }
+        });
+
         // Calculate hours left to fill in
-        var hours_left = total_hours_allocated - c.hours_spent;
+        let hours_left = total_hours_allocated - c.hours_spent;
 
         // Get the contract users
-        var contract_users = [];
+        let contract_users = [];
         state.contract_users.forEach((cu) => {
           if(cu.contract === c.id){
             contract_users.push(cu);
@@ -288,7 +296,7 @@ const getters = {
         });
 
         // Get attachments if the contract has any
-        var attachments = [];
+        let attachments = [];
         if(c.attachments.length > 0){
           state.attachments.forEach((a) => {
             c.attachments.forEach((ca) => {
@@ -321,7 +329,8 @@ const getters = {
           total_hours_allocated: total_hours_allocated,
           contract_users: contract_users,
           attachments: attachments,
-          hours_left: hours_left
+          hours_left: hours_left,
+          hours_spent_this_month: hours_spent_this_month
         }
       });
     }
@@ -335,7 +344,7 @@ const getters = {
       return null;
     } else {
       // Return true if the user is a project manager.
-      var show = false;
+      var show = true;
       state.user.groups.forEach((group) => {
         if(group.id === 3){
           show = true;
