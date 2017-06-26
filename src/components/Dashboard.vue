@@ -374,7 +374,7 @@ export default {
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
         // Selected day is between leaves.
         this.leavesWidget.filter((lv) => {
-          if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, lv.leavedate_set[lv.leavedate_set.length - 1].starts_at)
+          if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, moment(lv.leavedate_set[lv.leavedate_set.length - 1].starts_at).add(1, 'day'), null, '[]')
             || lv.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
             this.leavesSelectedDay.push(lv);
 
