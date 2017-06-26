@@ -104,6 +104,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS);
         if(!store.getters.wherabouts)
           store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
+        if(!store.getters.activity_performances)
+          store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES)
         if(!store.getters.employment_contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
             params: {
