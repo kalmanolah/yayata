@@ -9,14 +9,18 @@ div
       //- BIRTHDAYS
       .card.card-top-blue
         h4.card-title.text-md-center Birthdays
-        .card-block
+        .text-md-center
+          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
+          | {{ selectedBirthday | moment('DD MMMM')}}
+          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
+        .card-blocd
           table.table
             tbody
-              tr(v-for="(user, index) in birthdays")
+              tr(v-for="(user, index) in birthdaysSelectedDay")
                 td
                   router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
                   .fa.fa-birthday-cake.pull-right
-              tr(v-if='birthdays && birthdays.length === 0')
+              tr(v-if='users && birthdaysSelectedDay.length === 0')
                 td.text-md-center <strong>No rijsttaart today :(</strong>
       //- TIMESHEETS
       .card.card-top-blue
@@ -94,7 +98,9 @@ export default {
       latestLeave: new Date(),
       leavesWidget: [],
       leavesSelectedDay: [],
-      holidaysSelectedDay: []
+      holidaysSelectedDay: [],
+      birthdaysSelectedDay: [],
+      selectedBirthday: moment()
     }
   },
 
@@ -185,12 +191,6 @@ export default {
         return store.getters.user_work_schedule;
     },
 
-    birthdays: function() {
-      if(store.getters.users){
-        var today = moment().format('MM-DD');
-        return store.getters.users.filter(user => moment(user.birth_date).format('MM-DD') === today);
-      }
-    },
 
     //Calculates amount of hours that should be worked according to the workschedule
     totalHoursRequired: function() {
@@ -355,7 +355,26 @@ export default {
     dayLater: function() {
       this.selectedDay.add(1, 'days');      
       this.filterLeaves();
-      this.filterHolidays();      
+      this.filterHolidays(); 
+    },
+
+    dayEarlierBirthdays: function() {
+      this.selectedBirthday.subtract(1, 'days');
+      this.filterBirthdays()
+    },
+
+    dayLaterBirthdays: function() {
+      this.selectedBirthday.add(1, 'days');
+      this.filterBirthdays();
+    },
+
+    filterBirthdays: function() {
+      this.birthdaysSelectedDay = [];
+      this.users.filter((user) => {
+        if(moment(user.birth_date).isSame(this.selectedBirthday, 'day')){
+          this.birthdaysSelectedDay.push(user);
+        }
+      });
     },
 
     filterHolidays: function() {
