@@ -199,10 +199,10 @@ export default {
       //Loop over each entry in the schedule array
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
-      if(store.getters.work_schedule && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
+      if(store.getters.work_schedules && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
         var work_schedules = [];
         store.getters.employment_contracts.forEach( (ec) => {
-          var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
+          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
           if(work_schedule){
             work_schedules.push(work_schedule);
           }
@@ -440,7 +440,7 @@ export default {
       });
     },
     //Subtracts hours worked from hours supposed to work. Returns 0 if negative result
-    getHoursToFill() {
+    getHoursToFill: function() {
       var remaining = this.totalHoursRequired - this.totalHoursPerformed;
       return remaining > 0 ? remaining : 0;
     }
