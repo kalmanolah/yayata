@@ -236,12 +236,18 @@ export default {
 
     //Check whether holiday / user is on leave
     isExcusedFromWork: function(day) {
-      var today = moment(store.getters.calendar_selected_month).date(day);
-      var onLeave = false;
+      let today = moment(store.getters.calendar_selected_month).date(day);
+      let onLeave = false;
+      let companyId = store.getters.employment_contracts.find((ec) => {
+        return ec.user === store.getters.user.id;
+      }).company;
+      let companyCountry = store.getters.companies.find((c) => {
+        return c.id === companyId;
+      }).country;
 
       if(store.getters.holidays) {
         store.getters.holidays.forEach(x => {
-          if (today.format('YYYY-MM-DD') === x.date)
+          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
             onLeave = true;
         });
       }
