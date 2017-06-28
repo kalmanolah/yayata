@@ -88,6 +88,8 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
         if(!store.getters.monthly_activity_performances)
           store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+        if(!store.getters.all_monthly_activity_performances)
+          store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
         if(!store.getters.user_work_schedule)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
         if(!store.getters.work_schedule)
