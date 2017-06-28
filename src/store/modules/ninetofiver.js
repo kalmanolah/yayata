@@ -723,6 +723,8 @@ const actions = {
         order_by: 'first_name'
       }
     }
+    options.params.is_active = true;
+    
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
