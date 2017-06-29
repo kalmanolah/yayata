@@ -77,9 +77,9 @@ div
                           a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
                 .col-md-6
                   template(v-if='contract.type === "ProjectContract"')
-                    PieChart(v-if='generate', :chart-data='generateProjectChart(contract)')
+                    PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
                   template(v-else)
-                    PieChart(v-if='generate', :chart-data='generateTimeLeftChart(contract)')
+                    PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
   .col-md-3.fixed(v-if='showFilter')
     .row
@@ -118,7 +118,14 @@ export default {
       customers: [],
       contractTypes: [],
       generate: false,
-      showFilter: false
+      showFilter: false,
+      chartOptions: {
+        legend: {
+          labels: {
+            fontSize: 20
+          }
+        }
+      }
     }
   },
 
@@ -418,5 +425,10 @@ export default {
 
 .show-filter-button {
   margin-right: -33px;
+}
+
+.chart-container {
+  max-height: 600px;
+  max-width: 600px;
 }
 </style>
