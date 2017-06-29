@@ -1,8 +1,10 @@
 <template lang="pug">
 div
-  .col-md-9
+  div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row 
       h3 Contracts
+        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all contracts
     .row
       .col-md-8
@@ -79,9 +81,11 @@ div
                   template(v-else)
                     PieChart(v-if='generate', :chart-data='generateTimeLeftChart(contract)')
 
-  .col-md-3.fixed(v-if='show_extra_info')
+  .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
+        button.btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
       ContractsFilterForm
@@ -113,7 +117,8 @@ export default {
       // Stores the unique custoner names
       customers: [],
       contractTypes: [],
-      generate: false
+      generate: false,
+      showFilter: false
     }
   },
 
@@ -411,4 +416,7 @@ export default {
   margin-right: 15px;
 }
 
+.show-filter-button {
+  margin-right: -33px;
+}
 </style>

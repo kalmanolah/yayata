@@ -57,17 +57,6 @@ div
             :width='75'
           )
   toggle-button(
-            @change='toggleSwitch("45")',
-            :value='show45', 
-            color='#33b5e5', 
-            :sync='true', 
-            :labels={
-              checked: '4/5',
-              unchecked: '4/5'
-            }, 
-            :width='45'
-          )
-  toggle-button(
             @change='toggleSwitch("leave")', 
             :value='showLeave', 
             color='#00c851', 
@@ -119,7 +108,6 @@ div
       loading: true,
       showHome: true,
       showSickness: true,
-      show45: true,
       showLeave: true,
       showNonWorkingDay: true 
     }
@@ -227,8 +215,6 @@ div
         this.showHome = !this.showHome;
       else if(switchToggle === "sickness")
         this.showSickness = !this.showSickness;
-      else if(switchToggle === "45")
-        this.show45 = !this.show45;
       else if(switchToggle === "leave")
         this.showLeave = !this.showLeave;
       else if(switchToggle === "nonWorkingDay")
@@ -281,7 +267,6 @@ div
               var temp = [
                 'cell-sickness',
                 'cell-leave',
-                'cell-45',
                 'cell-paid-leave',
                 'cell-sick-leave',
                 'cell-klein-verlet',
@@ -292,8 +277,6 @@ div
               if(cellClass === 'cell-sickness' && this.showSickness){
                 cellClassR = cellClass;
               } else if(cellClass === 'cell-leave' && this.showLeave){
-                cellClassR = cellClass;
-              } else if(cellClass === 'cell-45' && this.show45){
                 cellClassR = cellClass;
               } else if(cellClass === 'cell-paid-leave' && this.showLeave) {
                 cellClassR = cellClass;
@@ -396,10 +379,6 @@ th.overviewgrid {
 
 .cell-sickness{
   background-color: @warining;
-}
-
-.cell-45{
-  background-color: @info;
 }
 
 .cell-leave{

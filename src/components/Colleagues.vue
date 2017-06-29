@@ -1,8 +1,10 @@
 <template lang="pug">
 div
-  .col-md-9
+  div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row
       h3 Colleagues
+        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all colleagues
     .row
       .col-md-8
@@ -47,9 +49,11 @@ div
       .col-md-6
         .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
-  .col-md-3.fixed
+  .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
+        button.btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
       ColleaguesFilterForm
@@ -67,6 +71,7 @@ var data = {
   tableSort: '',
   groupLabel: 'group',
   query: '',
+  showFilter: false
 }
 
 export default {
@@ -274,5 +279,8 @@ export default {
 #user-table-head>tr>th:hover {
   background-color: #d2d2d2;
   border-bottom: 2px solid #d2d2d2;
+}
+.show-filter-button {
+  margin-right: -33px;
 }
 </style>

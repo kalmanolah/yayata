@@ -95,6 +95,17 @@ export default {
         return store.getters.timesheets;
     },
 
+    formHasData: function() {
+      if(this.model.contract 
+        // && this.model.duration 
+        && this.model.performance_type 
+        && this.model.contract_role) {
+        return true;
+      } else {
+        return false;
+      };
+   },
+
   },
 
   watch: {},
