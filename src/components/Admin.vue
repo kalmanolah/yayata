@@ -31,63 +31,63 @@ import store from '../store';
 import * as types from '../store/mutation-types.js'
 
 export default {
-name: 'admin',
-components: {
-    LeaveOverviewGrid,
-    Calendar
-},
-data() {
-  return {
-    currentView: 'LeaveOverviewGrid',
-    selected: 1,
-    month: moment().startOf('month').format('YYYY-MM-DD')
-  }
-},
-
-
-computed: {
-  selectedUser: function() {
-    if(this.currentView === 'Calendar') {
-      return this.selected;
+  name: 'admin',
+  components: {
+      LeaveOverviewGrid,
+      Calendar
+  },
+  data() {
+    return {
+      currentView: 'LeaveOverviewGrid',
+      selected: 1,
+      month: moment().startOf('month').format('YYYY-MM-DD')
     }
   },
 
-  options: function() {
-    if(store.getters.users){
-      var optionsT = [];
-      store.getters.users.forEach(u => optionsT.push({text: u.display_label, value: u.id}))
-      return optionsT
+
+  computed: {
+    selectedUser: function() {
+      if(this.currentView === 'Calendar') {
+        return this.selected;
+      }
+    },
+
+    options: function() {
+      if(store.getters.users){
+        var optionsT = [];
+        store.getters.users.forEach(u => optionsT.push({text: u.display_label, value: u.id}))
+        return optionsT
+      }
+    },
+
+    selectedMonth: function() {
+      if(this.currentView === 'Calendar'){
+        return store.getters.calendar_selected_month;
+      } 
     }
   },
 
-  selectedMonth: function() {
-    if(this.currentView === 'Calendar'){
-      return store.getters.calendar_selected_month;
-    } 
+  methods: {
+    selectNextMonth: function () {
+      var date = moment(this.selectedMonth).add(1, 'month')
+      var options = {
+        params: {
+          date: date
+        }
+      };
+      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
+    },
+
+    selectPreviousMonth: function () {
+      var date = moment(this.selectedMonth).subtract(1, 'month')
+      var options = {
+        params: {
+          date: date 
+        }
+      };
+      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
+    },
   }
-},
-
-methods: {
-  selectNextMonth: function () {
-    var date = moment(this.selectedMonth).add(1, 'month')
-    var options = {
-      params: {
-        date: date
-      }
-    };
-    store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
-  },
-
-  selectPreviousMonth: function () {
-    var date = moment(this.selectedMonth).subtract(1, 'month')
-    var options = {
-      params: {
-        date: date 
-      }
-    };
-    store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
-  },
-}
 }
 </script>
 <style>
