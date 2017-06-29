@@ -1,4 +1,4 @@
-    <template lang="pug">
+<template lang="pug">
   div
     h3 My timesheets
     p.subtitle Overview of all open timesheets
@@ -273,7 +273,6 @@
             total += parseFloat(x.duration);
           });
         }
-
         return total;
       },
 
@@ -288,7 +287,8 @@
             for(var w in ws)
               if(store.getters.days[w] >= 0)
                 total += parseFloat(ws[w]) * this.daysInMonth[timesheet.id][w];
-
+            
+            console.log(total)
             //Correcting total with holidays
             store.getters.holidays.forEach(h => {
               var date = moment(h.date, 'YYYY-MM-DD');
@@ -297,22 +297,26 @@
                 total -= ws[date.format('dddd').toLowerCase()];
             });
 
+            console.log(total)
 
             //Correcting total with leaves
             this.leaves[timesheet.id].forEach(lv => {
-              var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-              var endOfDay = moment(lv.leave_end).hour(17).minute(30);
-              var ld = moment(lv.leave_start).add(1, 'days');
+              let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+              let endOfDay = moment(lv.leave_end).hour(17).minute(30);
+              let ld = moment(lv.leave_start).add(1, 'days');
 
-              var startDiff = lv.leave_start.diff(startOfDay, 'hours');
-              var endDiff = endOfDay.diff(lv.leave_end, 'hours');
+              let startDiff = lv.leave_start.diff(startOfDay, 'hours');
+              let endDiff = endOfDay.diff(lv.leave_end, 'hours');
+              console.log(endDiff)
+              console.log(startDiff)
 
+              console.log(8 - (startDiff + endDiff))
               //Do not occur on the same day
               if(lv.leave_start.date() !== lv.leave_end.date()) {
 
                 //Subtract either the hours gone, or the complete day
-                total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-                total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+                total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
+                total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
 
                 //While the leavedate isn't equal to the enddate
                 while(ld.date() !== lv.leave_end.date()) {
@@ -321,11 +325,12 @@
                   ld = ld.add(1, 'days');
                 }
               } else {
-                total -= (startDiff > 0) ? startDiff : 0;
-                total -= (endDiff > 0) ? endDiff : 0;
+                let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
+                total -= (leaveHours > 0) ? leaveHours : 0;
               }
             });
           });
+          console.log('req ' + total)
           return total;
         }
       },

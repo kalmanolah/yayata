@@ -241,8 +241,8 @@ export default {
               if(lv.leave_start.date() !== lv.leave_end.date()) {
 
                 //Subtract either the hours gone, or the complete day
-                total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-                total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+                total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
+                total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
 
                 //While the leavedate isn't equal to the enddate
                 while(ld.date() !== lv.leave_end.date()) {
@@ -251,8 +251,8 @@ export default {
                   ld = ld.add(1, 'days');
                 }
               } else {
-                total -= (startDiff > 0) ? startDiff : 0;
-                total -= (endDiff > 0) ? endDiff : 0;
+                let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
+                total -= (leaveHours > 0) ? leaveHours : 0;
               }
             });
           });
