@@ -272,7 +272,11 @@ export default {
       }
     });
     if(!store.getters.leaves){
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES);
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: {
+          user_id: store.getters.user.id
+        }
+      });
     }
   },
 
@@ -417,13 +421,14 @@ export default {
 
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
-      var total = 0;
+      let total = 0;
 
       for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
         total += parseFloat(val.duration);
       }
       
       let date = day.date();
+      // Add hours with leave of this day to total
       this.leaves.forEach((leave) => {
         let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, date ]), 'day'));
         let leaveDuration = 0;
@@ -434,12 +439,15 @@ export default {
             let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
             let startOfDay = moment([this.selectedYear, 5, date, 9]);
             
-            let startDiff = moment(ld.starts_at).diff(startOfDay, 'hours');
-            let endDiff = moment(endOfDay).diff(ld.ends_at, 'hours');
+            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
+
             let leaveHours = startDiff + endDiff;
             leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
             leaveDuration = 8 - leaveHours;
-            console.log(leaveHours)
           } else {
             // else assume that 8 leave hours are consumed
             leaveDuration = 8;
@@ -799,18 +807,22 @@ export default {
     },
 
     getDaysLeaves: function(day) {
-      var result = [];
+      let result = [];
+      let month = moment().week(this.selectedWeek).month();
       this.leaves.forEach((leave) => {
-        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, day ]), 'day'));
+        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, month, day ]), 'day'));
         let leaveDuration = 0;
         if(ld && leave.leavedate_set.length > 1) {
           // if ld is the first or last leavedate calculate amount of hours in leave
           if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
-            let endOfDay = moment([this.selectedYear, 5, day, 17, 30]);
-            let startOfDay = moment([this.selectedYear, 5, day, 9]);
+            let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
+            let startOfDay = moment([this.selectedYear, month, day, 9]);
 
             let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
             let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
 
             let leaveHours = startDiff + endDiff;
             leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
@@ -822,8 +834,8 @@ export default {
           leave.leaveDuration = leaveDuration + '.00';
           result.push(leave)
         } else if (ld) {
-          let endOfDay = moment([this.selectedYear, 5, day, 17, 30]);
-          let startOfDay = moment([this.selectedYear, 5, day, 9]);
+          let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
+          let startOfDay = moment([this.selectedYear, month, day, 9]);
 
           let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
           let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
