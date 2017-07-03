@@ -135,8 +135,8 @@ export default {
 
   methods: {
     reloadEmploymentContracts: function() {
-      var ec_user = this.userId ? this.userId : this.user.id;
-      var today = moment(store.getters.calendar_selected_month).format('YYYY-MM-DD');
+      let ec_user = this.userId ? this.userId : this.user.id;
+      let today = moment(store.getters.calendar_selected_month).format('YYYY-MM-DD');
       store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
         params: {
           user: ec_user,
@@ -147,10 +147,10 @@ export default {
 
     //Return style based on quota
     getDailyQuota: function(day) {
-      var performed = this.getPerformedHours(day);
-      var required = this.getRequiredHours(day);
+      let performed = this.getPerformedHours(day);
+      let required = this.getRequiredHours(day);
 
-      var quota = required > 0 ? performed / required : 1;
+      let quota = required > 0 ? performed / required : 1;
 
       return quota >= 1 ? 'tag-success' : quota <= 0.6 ? 'tag-danger' : 'tag-warning';
     },
@@ -158,9 +158,9 @@ export default {
     //Get all leaves for this month
     getLeaves: function() {
       //Make param for month's range
-      var startOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
-      var endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
-      var range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
+      let startOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
+      let endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
+      let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/leaves/',
         params: {
@@ -191,8 +191,8 @@ export default {
 
     //Get all performances for this month
     getPerformances: function() {
-      var month = moment(store.getters.calendar_selected_month).month() + 1;
-      var year = moment(store.getters.calendar_selected_month).year();
+      let month = moment(store.getters.calendar_selected_month).month() + 1;
+      let year = moment(store.getters.calendar_selected_month).year();
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/performances/',
         params: {
@@ -209,9 +209,9 @@ export default {
 
     //Get hours required per day
     getRequiredHours: function(day) {
-      var total = 0;
+      let total = 0;
       if(this.workschedule) {
-        var date = moment(store.getters.calendar_selected_month).date(day);
+        let date = moment(store.getters.calendar_selected_month).date(day);
         this.workschedule.forEach(x => {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
         });        
@@ -222,7 +222,7 @@ export default {
 
     //Get hours performed per day
     getPerformedHours: function(day) {
-      var total = 0;
+      let total = 0;
 
       if(this.performances) {
         this.performances.forEach(x => {
@@ -231,6 +231,30 @@ export default {
         });
       }
 
+      if(this.leaves) {
+        let date = day;
+        let year = store.getters.calendar_selected_month.year();
+        let month = store.getters.calendar_selected_month.month();
+        this.leaves.forEach((leave) => {
+          let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([year, month, date ]), 'day'));
+          if(ld){
+            let endOfDay = moment([year, month, date, 17, 30]);
+            let startOfDay = moment([year, month, date, 9]);
+
+            let startDiff = moment(ld.starts_at._i).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at._i, 'hours');
+            
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
+
+            console.log(startDiff)
+            console.log(endDiff)
+            let leaveDuration = (8 - (startDiff + endDiff));
+            console.log(leaveDuration)
+            total += leaveDuration;
+          }
+        });
+      }
       return total;
     },
 
@@ -257,11 +281,11 @@ export default {
 
     //Check whether user is on requested leave on that particular day
     isOnLeave: function(day) {
-      var today = moment(store.getters.calendar_selected_month).date(day);
+      let today = moment(store.getters.calendar_selected_month).date(day);
 
       return this.leaves.some(x => {
-        var start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
-        var end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
+        let start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
+        let end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
         
         return (start <= today && end >= today);
       });
@@ -269,7 +293,7 @@ export default {
 
     //Formatting to help display in calendar
     getLeaveRange: function(day) {
-      var today = moment(store.getters.calendar_selected_month).date(day);
+      let today = moment(store.getters.calendar_selected_month).date(day);
       return this.leaves.find(x => {
         return today.isSameOrAfter(x.leave_start) 
           && today.isSameOrBefore(x.leave_end);
@@ -289,12 +313,12 @@ export default {
     },
 
     isWeekendDay: function (day) {
-      var dow = this.getDayOfWeek(day)
+      let dow = this.getDayOfWeek(day)
       return dow > 5 || dow < 1
     },
 
     isCurrentDay: function (day) {
-      var now = new Date()
+      let now = new Date()
 
       if (
         (day == now.getDate()) &&
@@ -323,8 +347,8 @@ export default {
     },
 
     selectNextMonth: function () {
-      var date = moment(this.selected_month).add(1, 'month')
-      var options = {
+      let date = moment(this.selected_month).add(1, 'month')
+      let options = {
         params: {
           date:date
         }
@@ -334,8 +358,8 @@ export default {
     },
 
     selectPreviousMonth: function () {
-      var date = moment(this.selected_month).subtract(1, 'month')
-      var options = {
+      let date = moment(this.selected_month).subtract(1, 'month')
+      let options = {
         params: {
           date:date
         }
@@ -406,14 +430,14 @@ export default {
     },
 
     days: function() {
-      var daysInWeek = [];
+      let daysInWeek = [];
 
       //Make days-object containing amount of -days in current month
-      var dayOfMonth = moment(this.selectedMonth).startOf('month');
-      var endOfMonth = moment(this.selectedMonth).endOf('month');
+      let dayOfMonth = moment(this.selectedMonth).startOf('month');
+      let endOfMonth = moment(this.selectedMonth).endOf('month');
 
       while(dayOfMonth <= endOfMonth) {
-        var weekday = dayOfMonth.format('dddd').toLowerCase();
+        let weekday = dayOfMonth.format('dddd').toLowerCase();
 
         if(!daysInWeek[weekday])
           daysInWeek[weekday] = 0;
@@ -427,25 +451,25 @@ export default {
 
     //Hours required according to workschedules
     totalHoursRequired: function() {
-      var total = 0;
+      let total = 0;
       // Get workschedule from active contracts
 
       if(this.workschedule && this.leaves && store.getters.holidays && this.selected_month) {
         this.workschedule.forEach(ws => {
           //Add regular days to total
-          for(var w in ws) {
+          for(let w in ws) {
             if(store.getters.days[w] >= 0){
               total += parseFloat(ws[w]) * this.days[w];
             }
           }
 
           //Correcting total with holidays
-          var startOfMonth = moment(this.selected_month).startOf('month');
-          var endOfMonth = moment(this.selected_month).endOf('month');
+          let startOfMonth = moment(this.selected_month).startOf('month');
+          let endOfMonth = moment(this.selected_month).endOf('month');
     
           store.getters.holidays.forEach(holiday => {
             if(this.user.country === holiday.country){
-              var date = moment(holiday.date).format('YYYY-MM-DD');
+              let date = moment(holiday.date).format('YYYY-MM-DD');
 
               if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
                 total -= 8;
@@ -455,12 +479,12 @@ export default {
 
           //Correcting total with leaves
           this.leaves.forEach(lv => {
-            var startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-            var endOfDay = moment(lv.leave_end).hour(17).minute(30);
-            var ld = moment(lv.leave_start).add(1, 'days');
+            let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+            let endOfDay = moment(lv.leave_end).hour(17).minute(30);
+            let ld = moment(lv.leave_start).add(1, 'days');
 
-            var startDiff = lv.leave_start.diff(startOfDay, 'hours');
-            var endDiff = endOfDay.diff(lv.leave_end, 'hours');
+            let startDiff = lv.leave_start.diff(startOfDay, 'hours');
+            let endDiff = endOfDay.diff(lv.leave_end, 'hours');
 
             //Do not occur on the same day
             if(lv.leave_start.date() !== lv.leave_end.date()) {
@@ -488,7 +512,7 @@ export default {
 
     //Hours already logged
     totalHoursPerformed: function() {
-      var total = 0;
+      let total = 0;
 
       if(this.contracts)
         this.contracts.forEach(x => {
@@ -500,10 +524,10 @@ export default {
 
     contracts: function() {
       if(store.getters.contracts && this.performances) {
-        var contrs = store.getters.contracts;
+        let contrs = store.getters.contracts;
         //Calculate total perf duration for each entry
         contrs.forEach(c => {
-          var total = 0;
+          let total = 0;
 
           this.performances.forEach(p => {
             if(p.contract === c.id)
@@ -536,7 +560,7 @@ export default {
     },
 
     dayOffset: (vm) => {
-      var dow = moment(store.getters.calendar_selected_month).day()
+      let dow = moment(store.getters.calendar_selected_month).day()
       if (dow == 0) {
         dow = 7
       }
@@ -544,7 +568,7 @@ export default {
     },
 
     dayCount: function() {
-      var days = moment(this.selected_month).endOf('month').date();
+      let days = moment(this.selected_month).endOf('month').date();
       return days;
     }
 
