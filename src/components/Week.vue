@@ -81,8 +81,9 @@
               button.btn.btn-success.btn-submit
                 i.fa.fa-plus
 
-            small.text-muted
-              | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+            template(v-if='leaves')
+              small.text-muted
+                | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
             .pull-right.quota__icon
               i.fa(:class='getDailyQuota(weekDay)')
             hr.smaller-horizontal-hr.smaller-vertical-hr
@@ -91,6 +92,19 @@
           //- Check if timesheet status status is active
           template( v-if='timesheet && timesheetActive')
             .card-block.performance-list
+              //- Add leaves if any
+              template(v-if='leaves')
+                li.list-group-item.performance_entry(
+                  v-for='leave in getDaysLeaves(weekDay.date())',
+                  :class='[list-group, performance-list]'
+                )
+                  .list-group-item-heading {{ leave.leave_type | leaveTypeAsString }}
+                  .list-group-item-text
+                    div {{ leave.description }}
+                    hr.small-vertical-hr
+                    small
+                      i.fa.fa-plane.pull-left
+                      .pull-right {{ leave.leaveDuration}} h 
               li.list-group-item.performance-entry(
                 v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
                 :key='perf.id',
@@ -146,6 +160,14 @@ export default {
   },
 
   computed: {
+    leaves: function() {
+      if(store.getters.leaves) {
+        return store.getters.leaves.filter((leave) => {
+          return leave.user === store.getters.user.id
+        });
+      }
+    },
+    
     timesheetActive: function() {
       if(this.timesheet){
         return this.timesheet.status === store.getters.timesheet_statuses[1];
@@ -249,6 +271,9 @@ export default {
         contractuser__user__id: store.getters.user.id
       }
     });
+    if(!store.getters.leaves){
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES);
+    }
   },
 
   methods: {
@@ -394,9 +419,43 @@ export default {
     getDurationTotal: function(day) {
       var total = 0;
 
-      for(var val of this.activityPerformances.filter(x => x.day == day.format('D'))) 
+      for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
         total += parseFloat(val.duration);
+      }
+      
+      let date = day.date();
+      this.leaves.forEach((leave) => {
+        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, date ]), 'day'));
+        let leaveDuration = 0;
+        if(ld && leave.leavedate_set.length > 1){
+          // do things with leaves that span multiple days here
+          // if ld is the first or last leavedate calculate amount of hours in leave
+          if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
+            let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
+            let startOfDay = moment([this.selectedYear, 5, date, 9]);
+            
+            let startDiff = moment(ld.starts_at).diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).diff(ld.ends_at, 'hours');
+            let leaveHours = startDiff + endDiff;
+            leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
+            leaveDuration = 8 - leaveHours;
+            console.log(leaveHours)
+          } else {
+            // else assume that 8 leave hours are consumed
+            leaveDuration = 8;
+          }
+          total += leaveDuration;
+        } else if (ld) {
+          let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
+          let startOfDay = moment([this.selectedYear, 5, date, 9]);
 
+          let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+          let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+          leaveDuration = (8 - (startDiff + endDiff));
+
+          startDiff < 0 ? total += 8 : total += leaveDuration;
+        }
+      });
       return total;
     },
 
@@ -737,6 +796,44 @@ export default {
           result.push(this.activityPerformances[i]);
 
       return result.reverse();
+    },
+
+    getDaysLeaves: function(day) {
+      var result = [];
+      this.leaves.forEach((leave) => {
+        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, day ]), 'day'));
+        let leaveDuration = 0;
+        if(ld && leave.leavedate_set.length > 1) {
+          // if ld is the first or last leavedate calculate amount of hours in leave
+          if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
+            let endOfDay = moment([this.selectedYear, 5, day, 17, 30]);
+            let startOfDay = moment([this.selectedYear, 5, day, 9]);
+
+            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+            let leaveHours = startDiff + endDiff;
+            leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
+            leaveDuration = 8 - leaveHours;
+          } else {
+            // else assume that 8 leave hours are consumed
+            leaveDuration = 8;
+          }
+          leave.leaveDuration = leaveDuration + '.00';
+          result.push(leave)
+        } else if (ld) {
+          let endOfDay = moment([this.selectedYear, 5, day, 17, 30]);
+          let startOfDay = moment([this.selectedYear, 5, day, 9]);
+
+          let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+          let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+          leaveDuration = (8 - (startDiff + endDiff));
+          leave.leaveDuration = leaveDuration + '.00';
+          result.push(leave);
+        }
+      })
+      return result;
     }
   },
 
@@ -761,6 +858,9 @@ export default {
   },
 
   filters: {
+    leaveTypeAsString: function(val) {
+      return store.getters.leave_types.find(lt => lt.id === val).display_label;
+    }
  },
 }
 </script>
