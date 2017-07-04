@@ -216,21 +216,7 @@ export default {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
         });        
       }
-
-      return total;
-    },
-
-    //Get hours performed per day
-    getPerformedHours: function(day) {
-      let total = 0;
-
-      if(this.performances) {
-        this.performances.forEach(x => {
-          if(x.duration && x.day === day)
-            total += parseFloat(x.duration);
-        });
-      }
-
+      // TODO: take into account hours on leave
       if(this.leaves) {
         let date = day;
         let year = store.getters.calendar_selected_month.year();
@@ -248,10 +234,25 @@ export default {
             endDiff = endDiff > 0 ? endDiff : 0;
 
             let leaveDuration = (8 - (startDiff + endDiff));
-            total += leaveDuration;
+            total -= leaveDuration;
           }
         });
       }
+
+      return total;
+    },
+
+    //Get hours performed per day
+    getPerformedHours: function(day) {
+      let total = 0;
+
+      if(this.performances) {
+        this.performances.forEach(x => {
+          if(x.duration && x.day === day)
+            total += parseFloat(x.duration);
+        });
+      }
+
       return total;
     },
 
