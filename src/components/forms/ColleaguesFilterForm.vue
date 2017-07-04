@@ -30,7 +30,7 @@ export default {
                 is_active: true,
                 groups__icontains: '',
                 label__icontains: '',
-                userinfo__gender__iexact: '',
+                userinfo__gender__iexact: null,
                 userinfo__birth_date__year__gte: '',
                 userinfo__birth_date__year__lte: '',
                 userrelative__name__icontains: '',
@@ -129,8 +129,11 @@ export default {
                     },
                    {
                       type: "select",
-                      label: "Gender",
                       model: "userinfo__gender__iexact",
+                      styleClasses: "no-label-field",
+                      selectOptions: {
+                        noneSelectedText: "Gender"
+                      },
                       values: function() {
                         return [
                           { name: "Male", id: "M" },
@@ -287,7 +290,6 @@ export default {
                       type: "checklist",
                       label: "Active days",
                       model: "active_days",
-                      listBox: true,
                       values: [
                           { name: "Monday", value: {active_monday: 'True'} },
                           { name: "Tuesday", value: { active_tuesday: 'True'}},
@@ -367,9 +369,15 @@ export default {
 <style>
 .form-group>label {
   font-weight: bold;
+  padding-bottom: .5em;
+  padding-top: .5em;
 }
 
 .no-label-field {
   margin-top: -1.2rem;
+}
+
+.field-wrap {
+  padding-bottom: 5px;
 }
 </style>
