@@ -210,7 +210,7 @@ export default {
     //Get hours required per day
     getRequiredHours: function(day) {
       let total = 0;
-      if(this.workschedule) {
+      if(this.workschedule && !this.isHoliday(day)) {
         let date = moment(store.getters.calendar_selected_month).date(day);
         this.workschedule.forEach(x => {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
@@ -247,16 +247,32 @@ export default {
             startDiff = startDiff > 0 ? startDiff : 0;
             endDiff = endDiff > 0 ? endDiff : 0;
 
-            console.log(startDiff)
-            console.log(endDiff)
             let leaveDuration = (8 - (startDiff + endDiff));
-            console.log(leaveDuration)
             total += leaveDuration;
           }
         });
       }
       return total;
     },
+
+    isHoliday: function(day) {
+      let today = moment(store.getters.calendar_selected_month).date(day);
+      let holiday = false;
+      let companyId = store.getters.employment_contracts.find((ec) => {
+        return ec.user === store.getters.user.id;
+      }).company;
+      let companyCountry = store.getters.companies.find((c) => {
+        return c.id === companyId;
+      }).country;
+
+      if(store.getters.holidays) {
+        store.getters.holidays.forEach(x => {
+          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
+            holiday = true;
+        });
+      }
+      return holiday
+    }, 
 
     //Check whether holiday / user is on leave
     isExcusedFromWork: function(day) {
@@ -514,11 +530,12 @@ export default {
     totalHoursPerformed: function() {
       let total = 0;
 
-      if(this.contracts)
+      if(this.contracts) {
         this.contracts.forEach(x => {
           total += x.monthly_duration;
         });
-
+      }
+      
       return total;
     },
 
