@@ -2,7 +2,8 @@
 div(class='calendar')
   .row
     .col-md-3
-    h1(class='col-md-6 text-md-center') {{ month }} {{ year }}
+    h1(v-if='params' class='col-md-6 text-md-center') {{ month }} {{ params.year }}
+    h1(v-else class='col-md-6 text-md-center') {{ month }}  {{ year }}
     .col-md-3.text-md-right
       div(
         class='btn-group'
@@ -216,11 +217,10 @@ export default {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
         });        
       }
-      // TODO: take into account hours on leave
       if(this.leaves) {
         let date = day;
-        let year = store.getters.calendar_selected_month.year();
-        let month = store.getters.calendar_selected_month.month();
+        let year = moment(store.getters.calendar_selected_month).year();
+        let month = moment(store.getters.calendar_selected_month).month();
         this.leaves.forEach((leave) => {
           let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([year, month, date ]), 'day'));
           if(ld){
@@ -259,18 +259,21 @@ export default {
     isHoliday: function(day) {
       let today = moment(store.getters.calendar_selected_month).date(day);
       let holiday = false;
-      let companyId = store.getters.employment_contracts.find((ec) => {
+      let empContract = store.getters.employment_contracts.find((ec) => {
         return ec.user === this.user.id;
-      }).company;
-      let companyCountry = store.getters.companies.find((c) => {
-        return c.id === companyId;
-      }).country;
+      });
+      let companyId = empContract ? empContract.company : null;
+      if(companyId) {
+        let companyCountry = store.getters.companies.find((c) => {
+          return c.id === companyId;
+        }).country;
 
-      if(store.getters.holidays) {
-        store.getters.holidays.forEach(x => {
-          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-            holiday = true;
-        });
+        if(store.getters.holidays) {
+          store.getters.holidays.forEach(x => {
+            if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
+              holiday = true;
+          });
+        }
       }
       return holiday
     }, 
@@ -279,18 +282,21 @@ export default {
     isExcusedFromWork: function(day) {
       let today = moment(store.getters.calendar_selected_month).date(day);
       let onLeave = false;
-      let companyId = store.getters.employment_contracts.find((ec) => {
+      let empContract = store.getters.employment_contracts.find((ec) => {
         return ec.user === this.user.id;
-      }).company;
-      let companyCountry = store.getters.companies.find((c) => {
-        return c.id === companyId;
-      }).country;
+      });
+      let companyId = empContract ? empContract.company : null;
+      if(companyId) {
+        let companyCountry = store.getters.companies.find((c) => {
+          return c.id === companyId;
+        }).country;
 
-      if(store.getters.holidays) {
-        store.getters.holidays.forEach(x => {
-          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-            onLeave = true;
-        });
+        if(store.getters.holidays) {
+          store.getters.holidays.forEach(x => {
+            if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
+              onLeave = true;
+          });
+        }
       }
 
       return onLeave || this.isOnLeave(day);
@@ -421,6 +427,18 @@ export default {
   },
 
   computed: {
+    params: function(){
+      if(this.$route.params.year){
+        let date = moment().year(this.$route.params.year).month(this.$route.params.month - 1).startOf('month').format('YYYY-MM-DDThh:mm:ss');
+        store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, {
+          params: {
+            date: date
+          }
+        });
+        return this.$route.params;
+      }
+    },
+
     selected_month: function() {
       if(store.getters.calendar_selected_month){
         return store.getters.calendar_selected_month;
