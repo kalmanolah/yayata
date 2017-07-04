@@ -39,10 +39,10 @@ export default {
                 contractuser__user__groups__icontains: '',
                 active: true,
                 performance_types__label__icontains: '',
-                performance_types__id: '',
+                performance_types__id: null,
                 customer__internal: '',
                 contractuser__user__first_name__icontains: '',
-                company__internal: '',
+                company__internal: null,
                 company__name__icontains: '',
                 contractuser__user__username__icontains: '',
                 company__vat_identification_number: '',
@@ -147,8 +147,10 @@ export default {
                       // Company_internal
                       type: "select",
                       label: "Company",                      
-                      model: "company",
-                      required: true,
+                      model: "company__internal",
+                      selectOptions: {
+                        noneSelectedText: 'internal company'
+                      },
                       values: function() {
                         if(store.getters.companies)
                           return store.getters.companies.filter(c => c.internal === true);
@@ -197,8 +199,10 @@ export default {
                       //PERFORMANCE_TYPE
                       type: "select",
                       model: "performance_types__id",
-                      required: true,
                       styleClasses: 'no-label-field',
+                      selectOptions: {
+                        noneSelectedText: 'performance type'
+                      },
                       values: function() {
                         if(store.getters.performance_types)
                           return store.getters.performance_types;
