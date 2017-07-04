@@ -259,7 +259,7 @@ export default {
       let today = moment(store.getters.calendar_selected_month).date(day);
       let holiday = false;
       let companyId = store.getters.employment_contracts.find((ec) => {
-        return ec.user === store.getters.user.id;
+        return ec.user === this.user.id;
       }).company;
       let companyCountry = store.getters.companies.find((c) => {
         return c.id === companyId;
@@ -279,7 +279,7 @@ export default {
       let today = moment(store.getters.calendar_selected_month).date(day);
       let onLeave = false;
       let companyId = store.getters.employment_contracts.find((ec) => {
-        return ec.user === store.getters.user.id;
+        return ec.user === this.user.id;
       }).company;
       let companyCountry = store.getters.companies.find((c) => {
         return c.id === companyId;
