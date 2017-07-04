@@ -1,8 +1,10 @@
 <template lang="pug">
 div
-  .col-md-9
+  div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row
       h3 Colleagues
+        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all colleagues
     .row
       .col-md-8
@@ -18,6 +20,7 @@ div
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
     .row#user-table(v-if='filtered_users')
+      .alert.alert-warning(v-if='noResultsFound') No results found
       table.table.table-striped
         thead#user-table-head
           tr
@@ -29,6 +32,8 @@ div
               .pull-right.fa.fa-sort(aria-hidden='true')
             th(@click='setTableSort("userinfo__country")') Country
               .pull-right.fa.fa-sort(aria-hidden='true')
+            th(@click='setTableSort("userinfo__join_date")') Joindate
+              .pull-right.fa.fa-sort(aria-hidden='true')
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
@@ -37,15 +42,18 @@ div
               span {{ user.email }}
             td {{ user.birth_date | moment('DD/MM/YYYY') }}
             td {{ user.country }}
+            td {{ user.join_date | moment('DD/MM/YYYY') }}
 
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
         .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
-  .col-md-3.fixed
+  .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
+        button.btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
       ColleaguesFilterForm
@@ -63,6 +71,7 @@ var data = {
   tableSort: '',
   groupLabel: 'group',
   query: '',
+  showFilter: false
 }
 
 export default {
@@ -77,11 +86,19 @@ export default {
 
   created: () => {
     if(!store.getters.filtered_users){
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS);
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
+        params: {
+          is_active: true
+        }
+      });
     }
   },
 
   computed: {
+    noResultsFound: function() {
+      return this.filtered_users.length === 0;
+    },
+
     storeUser: function() {
       if(store.getters.user){
         return store.getters.user;
@@ -154,10 +171,10 @@ export default {
       var options = {
         path: '/users/',
         params: {
-          order_by: this.tableSort
+          order_by: this.tableSort,
+          is_active: true
         }
       }
-      console.log(options)
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
     },
 
@@ -262,5 +279,8 @@ export default {
 #user-table-head>tr>th:hover {
   background-color: #d2d2d2;
   border-bottom: 2px solid #d2d2d2;
+}
+.show-filter-button {
+  margin-right: -33px;
 }
 </style>

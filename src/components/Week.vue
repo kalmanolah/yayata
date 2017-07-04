@@ -41,8 +41,8 @@
     //- Header w days
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
-        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations')
-          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ timesheet_locations[i] }}
+        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations && timesheet')
+          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
           .dropdown-menu(aria-labelledby='btnGroupDrop')
             a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
         .card-header.card-info
@@ -57,7 +57,8 @@
                 color='#DB4C4C', 
                 :sync='true', 
                 :labels='toggleButtonLabels', 
-                :width='65'
+                :width='65',
+                :disabled='!timesheet || !timesheetActive'
               )
             .hidden-lg-up
               toggle-button(
@@ -65,40 +66,73 @@
                 :value='getStandbyStatus(weekDay)', 
                 color='#DB4C4C', 
                 :sync='true',
-                :width='35'
+                :width='35',
+                :disabled='!timesheet || !timesheetActive'
               )
 
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
-          //- Performance creation is disabled for future activityPerformances
-          hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
+          //- Check if timesheet status is active
+          template(v-if='timesheet && timesheetActive')
+            //- Performance creation is disabled for future activityPerformances
+            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
 
-            //- Visible text
-            button.btn.btn-success.btn-submit
-              i.fa.fa-plus
-
-          small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
-          .pull-right.quota__icon
-            i.fa(:class='getDailyQuota(weekDay)')
-          hr.smaller-horizontal-hr.smaller-vertical-hr
-
-        //- Body of performances
-        .card-block.performance-list
-          li.list-group-item.performance-entry(
-            v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
-            :key='perf.id',
-            :class='[list-group, performance-list]'
-          )
-            hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
               //- Visible text
+              button.btn.btn-success.btn-submit
+                i.fa.fa-plus
+
+            template(v-if='leaves')
+              small.text-muted
+                | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
+            .pull-right.quota__icon
+              i.fa(:class='getDailyQuota(weekDay)')
+            hr.smaller-horizontal-hr.smaller-vertical-hr
+
+          //- Body of performances
+          //- Check if timesheet status status is active
+          template( v-if='timesheet && timesheetActive')
+            .card-block.performance-list
+              //- Add leaves if any
+              template(v-if='leaves')
+                li.list-group-item.performance_entry(
+                  v-for='leave in getDaysLeaves(weekDay.date())',
+                  :class='[list-group, performance-list]'
+                )
+                  .list-group-item-heading {{ leave.leave_type | leaveTypeAsString }}
+                  .list-group-item-text
+                    div {{ leave.description }}
+                    hr.small-vertical-hr
+                    small
+                      i.fa.fa-plane.pull-left
+                      .pull-right {{ leave.leaveDuration}} h 
+              li.list-group-item.performance-entry(
+                v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+                :key='perf.id',
+                :class='[list-group, performance-list]'
+              )
+                hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+                  //- Visible text
+                  .list-group-item-heading {{ findContractName(perf.contract) }}
+                  .list-group-item-text 
+                    div {{ perf.description }}
+                    hr.smaller-vertical-hr
+                    small
+                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                      .pull-right {{ perf.duration }} h
+          template(v-else)
+            .card-block.performance-list
+            li.list-group-item.performance-entry.disabled(
+              v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+              :key='perf.id',
+              :class='[list-group, performance-list]'
+            )
               .list-group-item-heading {{ findContractName(perf.contract) }}
-              .list-group-item-text 
-                div {{ perf.description }}
-                hr.smaller-vertical-hr
-                small
-                  .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                  .pull-right {{ perf.duration }} h
+                .list-group-item-text 
+                  div {{ perf.description }}
+                  hr.smaller-vertical-hr
+                  small
+                    .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                    .pull-right {{ perf.duration }} h
 
 </template>
 
@@ -126,6 +160,37 @@ export default {
   },
 
   computed: {
+    leaves: function() {
+      if(store.getters.leaves) {
+        return store.getters.leaves.filter((leave) => {
+          return leave.user === store.getters.user.id
+        });
+      }
+    },
+    
+    timesheetActive: function() {
+      if(this.timesheet){
+        return this.timesheet.status === store.getters.timesheet_statuses[1];
+      }
+    },
+
+    timesheet: function() {
+      if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
+        var month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+        return store.getters.timesheets.find((ts) => {
+          return ts.year === this.selectedYear && ts.month === month;
+        });
+      }
+    },
+
+    selectedYear: function() {
+      return this.$route.params.year * 1;
+    },
+
+    selectedWeek: function() {
+      return this.$route.params.week * 1;
+    },
+
     whereabouts: function() {
       if(store.getters.whereabouts && this.daysOfWeek){
         var whereabouts = []
@@ -165,8 +230,16 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
+      if(store.getters.work_schedules && store.getters.user && store.getters.employment_contracts){
+        var work_schedules = [];
+        store.getters.employment_contracts.forEach((ec) => {
+          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
+          if(work_schedule){
+            work_schedules.push(work_schedule);
+          }
+        });
+        return work_schedules
+      }
     },
 
     //Get the month corresponding with the start of the week
@@ -193,9 +266,26 @@ export default {
 
   created: function() {
     this.reloadWhereabouts();
+    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+      params: {
+        contractuser__user__id: store.getters.user.id
+      }
+    });
+    if(!store.getters.leaves){
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: {
+          user_id: store.getters.user.id
+        }
+      });
+    }
   },
 
   methods: {
+    getWhereaboutClass: function() {
+      // Check if status is active
+      return (this.timesheet && this.timesheetActive) ? '' : 'disabled';
+    },
+
     reloadWhereabouts: function() {
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
@@ -208,7 +298,6 @@ export default {
     },
     
     patchWhereabout: function(whereaboutId, location, day, timesheetId) {
-      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/' + whereaboutId + '/',
         method: 'PATCH',
@@ -234,7 +323,6 @@ export default {
     },
 
     createWhereabout: function(location, day, timesheetId) {
-      console.log(timesheetId)
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/whereabouts/',
         method: 'POST',
@@ -333,11 +421,49 @@ export default {
 
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
-      var total = 0;
+      let total = 0;
 
-      for(var val of this.activityPerformances.filter(x => x.day == day.format('D'))) 
+      for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
         total += parseFloat(val.duration);
+      }
+      
+      let date = day.date();
+      // Add hours with leave of this day to total
+      this.leaves.forEach((leave) => {
+        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, date ]), 'day'));
+        let leaveDuration = 0;
+        if(ld && leave.leavedate_set.length > 1){
+          // do things with leaves that span multiple days here
+          // if ld is the first or last leavedate calculate amount of hours in leave
+          if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
+            let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
+            let startOfDay = moment([this.selectedYear, 5, date, 9]);
+            
+            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
 
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
+
+            let leaveHours = startDiff + endDiff;
+            leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
+            leaveDuration = 8 - leaveHours;
+          } else {
+            // else assume that 8 leave hours are consumed
+            leaveDuration = 8;
+          }
+          total += leaveDuration;
+        } else if (ld) {
+          let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
+          let startOfDay = moment([this.selectedYear, 5, date, 9]);
+
+          let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+          let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+          leaveDuration = (8 - (startDiff + endDiff));
+
+          startDiff < 0 ? total += 8 : total += leaveDuration;
+        }
+      });
       return total;
     },
 
@@ -678,14 +804,56 @@ export default {
           result.push(this.activityPerformances[i]);
 
       return result.reverse();
+    },
+
+    getDaysLeaves: function(day) {
+      let result = [];
+      let month = moment().week(this.selectedWeek).month();
+      this.leaves.forEach((leave) => {
+        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, month, day ]), 'day'));
+        let leaveDuration = 0;
+        if(ld && leave.leavedate_set.length > 1) {
+          // if ld is the first or last leavedate calculate amount of hours in leave
+          if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
+            let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
+            let startOfDay = moment([this.selectedYear, month, day, 9]);
+
+            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
+
+            let leaveHours = startDiff + endDiff;
+            leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
+            leaveDuration = 8 - leaveHours;
+          } else {
+            // else assume that 8 leave hours are consumed
+            leaveDuration = 8;
+          }
+          leave.leaveDuration = leaveDuration + '.00';
+          result.push(leave)
+        } else if (ld) {
+          let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
+          let startOfDay = moment([this.selectedYear, month, day, 9]);
+
+          let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
+          let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
+
+          leaveDuration = (8 - (startDiff + endDiff));
+          leave.leaveDuration = leaveDuration + '.00';
+          result.push(leave);
+        }
+      })
+      return result;
     }
   },
 
   data () {
 
     return {
-      selectedYear: this.$route.params.year,
-      selectedWeek: this.$route.params.week,
+      // selectedYear: this.$route.params.year,
+      // selectedWeek: this.$route.params.week,
 
       activityPerformances: [],
       standbyPerformances: [],
@@ -702,6 +870,9 @@ export default {
   },
 
   filters: {
+    leaveTypeAsString: function(val) {
+      return store.getters.leave_types.find(lt => lt.id === val).display_label;
+    }
  },
 }
 </script>
@@ -738,6 +909,10 @@ export default {
   position: relative;
   border-width: 1px;
   border-color: rgba(0, 0, 0, 0.08);
+}
+
+.performance-entry.disabled {
+  height: 80px;
 }
 
 .smaller-horizontal-hr {

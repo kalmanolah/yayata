@@ -1,8 +1,10 @@
 <template lang="pug">
 div
-  .col-md-9
+  div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row 
       h3 Contracts
+        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all contracts
     .row
       .col-md-8
@@ -25,7 +27,7 @@ div
       .card-columns
         div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
           .card(v-bind:class='getRibbonStyleClass(contract)')
-            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index') 
+            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
               div.contract-name {{ contract.name }} - {{ contract.end_date}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
@@ -40,7 +42,7 @@ div
                     hr
                     .row
                       .col-md-4 <strong>This month:</strong>
-                      .col-md-8.text-md-right {{ contract.monthly_duration }} hours
+                      .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
                     hr
                     .row
                       .col-md-4 <strong>Groups:</strong>
@@ -74,12 +76,16 @@ div
                         div(v-for='attachment in contract.attachments')
                           a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
                 .col-md-6
-                  PieChart(:chart-data='contract.datacollection')
-                    
+                  template(v-if='contract.type === "ProjectContract"')
+                    PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
+                  template(v-else)
+                    PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
-  .col-md-3.fixed(v-if='show_extra_info')
+  .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
+        button.btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
+          i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
       ContractsFilterForm
@@ -110,18 +116,32 @@ export default {
       query: '',
       // Stores the unique custoner names
       customers: [],
-      contractTypes: []
+      contractTypes: [],
+      generate: false,
+      showFilter: false,
+      chartOptions: {
+        legend: {
+          labels: {
+            fontSize: 20
+          }
+        }
+      }
     }
   },
 
   created: function () {
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS)
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+        // page_size: 10
+      }
+    });
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
     }
     if(!store.getters.attachments){
       store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
     }
+
   },
 
   filters: {
@@ -221,7 +241,7 @@ export default {
 
     // Sort by customerName
     sortedContracts: function() {
-      if(this.sortBy !== 'all' && this.fullContracts){
+      if(this.sortBy !== 'all' && this.fullContracts && store.getters.activity_performances){
         var contracts = [];
         this.fullContracts.forEach(contract => {
           if(contract.customerName === this.sortBy || contract.type === this.sortBy){
@@ -230,7 +250,7 @@ export default {
         });
         return this.activeSort(contracts);
       } else {
-        if(this.fullContracts)
+        if(this.fullContracts && store.getters.activity_performances)
           return this.activeSort(this.fullContracts);
       }
     },
@@ -247,54 +267,58 @@ export default {
   },
 
   methods: {
-    generateCharts: function(contracts){
-      contracts.forEach(c => {
-        if(c.type === "ProjectContract"){
-          this.generateProjectChart(c);
-        } else {
-          this.generateTimeLeftChart(c);
-        }
-      });
-    },
-
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
-      var data = [];
-      var labels = [];
-      var total_allocated = 0;
+      let data = [];
+      let labels = [];
+      let total_allocated = 0;
+      let total_spent_per_role = {};
       this.project_estimates.forEach(estimate => {
         if(estimate.project === contract.id){
           total_allocated += estimate.hours_estimated;
           data.push(estimate.hours_estimated);
           labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
         }
-      })
+      });
+      let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
+      performances.forEach((perf) => {
+        if(!total_spent_per_role[perf.contract_role]){
+          total_spent_per_role[perf.contract_role] = 0;
+        }
+        total_spent_per_role[perf.contract_role] += (perf.duration * 1);
+      });
+      // Display hours spent per role and hours left
+      let time_spent_data = Object.values(total_spent_per_role);
+      labels.push('Hours left')
+      time_spent_data.push(contract.hours_left);
 
       // Should be hours allocated: project_estimates needs refactoring first.
-      var hoursToFillIn = total_allocated- contract.total_duration;
-      var datacollection = {
+      let hoursToFillIn = total_allocated - contract.total_duration;
+      let datacollection = {
         labels: labels,
         datasets :[
+          {
+            label: 'Time left',
+            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+            data: time_spent_data
+          },
           {
             label: 'Estimates',
             backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
             data: data
           },
-          {
-            label: 'Time left',
-            backgroundColor: ['#41B883', '#E46651'],
-            data: [contract.total_duration, hoursToFillIn]
-          },
         ]
       }
-      contract.datacollection = datacollection;
+      return datacollection;
     },
 
     // Generates a chart based on a support or consultancy contract.
     generateTimeLeftChart: function(contract) {
       var data = [];
-      var daysLeft = moment().diff(moment(contract.start_date), 'days');
-      var daysSinceStart = moment(contract.end_date).diff(moment(), 'days');
+      var daysLeft = moment().diff(moment(contract.end_date), 'days');
+      daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
+      var daysSinceStart = moment(contract.start_date).diff(moment(), 'days');
+      daysSinceStart = daysSinceStart < 0 ? moment(contract.end_date).diff(moment(contract.start_date), 'days') :daysSinceStart;
       
       var datacollection = {
         labels: ['Days left', 'Days spent'],
@@ -302,11 +326,11 @@ export default {
           {
             label: 'Data One',
             backgroundColor: ['#41B883', '#E46651'],
-            data: [daysSinceStart, daysLeft]
+            data: [daysLeft, daysSinceStart]
           },
         ]
       }
-      contract.datacollection = datacollection;
+      return datacollection;
     },
 
     setSortByCustomerName: function(value) {
@@ -340,7 +364,6 @@ export default {
     },
 
     activeSort: function(contracts) {
-      this.generateCharts(contracts);
       if(contracts){
         return contracts.sort(function(a, b) {
           a = a.active;
@@ -400,4 +423,12 @@ export default {
   margin-right: 15px;
 }
 
+.show-filter-button {
+  margin-right: -33px;
+}
+
+.chart-container {
+  max-height: 600px;
+  max-width: 600px;
+}
 </style>

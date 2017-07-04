@@ -24,6 +24,10 @@ const state = {
   grid_date: null,
   leaves: null,
   attachments: null,
+  work_schedules: null,
+  calendar_selected_month: null,
+  activity_performances: null,
+  all_monthly_activity_performances: null,
 
   //User specific & prone to frequent change outside of this session
   timesheets: null,
@@ -31,13 +35,14 @@ const state = {
   contract_durations: null,
   contract_users: null,
   monthly_activity_performances: null,
-  work_schedule: null,
+  user_work_schedule: null,
   show_extra_info: null,
   upcoming_leaves: null,
   whereabouts: null,
   employment_contracts: null,
 
   //Predefined
+  timesheet_statuses: ['CLOSED', 'ACTIVE', 'PENDING'],
   leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
   group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
   contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
@@ -135,8 +140,14 @@ const mutations = {
   [types.NINETOFIVER_SET_MONTHLY_ACTIVITY_PERFORMANCES] (state, { monthly_activity_performances }) {
     state.monthly_activity_performances = monthly_activity_performances;
   },
-  [types.NINETOFIVER_SET_WORK_SCHEDULE] (state, { work_schedule }) {
-    state.work_schedule = work_schedule;
+  [types.NINETOFIVER_SET_ALL_MONTHLY_ACTIVITY_PERFORMANCES] (state, { all_monthly_activity_performances }) {
+    state.all_monthly_activity_performances = all_monthly_activity_performances;
+  },
+  [types.NINETOFIVER_SET_WORK_SCHEDULES] (state, { work_schedules }) {
+    state.work_schedules = work_schedules;
+  },
+  [types.NINETOFIVER_SET_USER_WORK_SCHEDULE] (state, { work_schedule }) {
+    state.user_work_schedule = work_schedule;
   },
   [types.NINETOFIVER_SET_GRID_DATE] (state, { grid_date }) {
     state.grid_date = grid_date;
@@ -149,6 +160,12 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS] (state, { employment_contracts}) {
     state.employment_contracts = employment_contracts
+  },
+  [types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH] (state, { selected_month }) {
+    state.calendar_selected_month = selected_month 
+  },
+  [types.NINETOFIVER_SET_ACTIVITY_PERFORMANCES] (state, { activity_performances }) {
+    state.activity_performances = activity_performances 
   }
 }
 
@@ -170,7 +187,10 @@ const getters = {
   leaves: state => state.leaves,
   filtered_users: state => state.filtered_users,
   grid_date: state => state.grid_date,
+  calendar_selected_month: state => state.calendar_selected_month,
   employment_contracts: state => state.employment_contracts,
+  activity_performances: state => state.activity_performances,
+  all_monthly_activity_performances: state => state.all_monthly_activity_performances,
   project_estimates: state => {
     if(!state.project_estimates)
       return null;
@@ -257,7 +277,7 @@ const getters = {
       return state.filtered_contracts.map((c) => {
 
         // Calculate total hours allocated to project contract
-        var total_hours_allocated = 0;
+        let total_hours_allocated = 0;
         if(c.type === 'ProjectContract'){
           if(c.hours_estimated){
             c.hours_estimated.forEach((estimate) => {
@@ -266,11 +286,19 @@ const getters = {
           }
         }
 
+        // Calculate how many hours were spent this month
+        let hours_spent_this_month = 0;
+        state.all_monthly_activity_performances.forEach((maperformance) => {
+          if(maperformance.contract === c.id){
+            hours_spent_this_month += (maperformance.duration * 1);
+          }
+        });
+
         // Calculate hours left to fill in
-        var hours_left = total_hours_allocated - c.hours_spent;
+        let hours_left = total_hours_allocated - c.hours_spent;
 
         // Get the contract users
-        var contract_users = [];
+        let contract_users = [];
         state.contract_users.forEach((cu) => {
           if(cu.contract === c.id){
             contract_users.push(cu);
@@ -278,7 +306,7 @@ const getters = {
         });
 
         // Get attachments if the contract has any
-        var attachments = [];
+        let attachments = [];
         if(c.attachments.length > 0){
           state.attachments.forEach((a) => {
             c.attachments.forEach((ca) => {
@@ -311,20 +339,22 @@ const getters = {
           total_hours_allocated: total_hours_allocated,
           contract_users: contract_users,
           attachments: attachments,
-          hours_left: hours_left
+          hours_left: hours_left,
+          hours_spent_this_month: hours_spent_this_month
         }
       });
     }
   },
   contract_users: state => state.contract_users,
   monthly_activity_performances: state => state.monthly_activity_performances,
-  work_schedule: state => state.work_schedule,
+  work_schedules: state => state.work_schedules,
+  user_work_schedule: state => state.user_work_schedule,
   show_extra_info: state => {
     if(!state.user){
       return null;
     } else {
       // Return true if the user is a project manager.
-      var show = false;
+      var show = true;
       state.user.groups.forEach((group) => {
         if(group.id === 3){
           show = true;
@@ -338,6 +368,7 @@ const getters = {
   //Predefined
   whereabout_locations: state => state.whereabout_locations,
   leave_statuses: state => state.leave_statuses,
+  timesheet_statuses: state => state.timesheet_statuses,
   week_formatting: state => state.week_formatting,
   group_names: state => state.group_names,
   contract_types: state => state.contract_types,
@@ -692,6 +723,8 @@ const actions = {
         order_by: 'first_name'
       }
     }
+    options.params.is_active = true;
+    
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
@@ -838,6 +871,17 @@ const actions = {
   },
 
 
+  [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
+    var days = moment().date();
+    var date = moment().subtract(days - 1,'days');
+    if(options.params){
+      date = options.params.date;
+    }
+    store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
+       selected_month: date
+    });
+  },
+
   [types.NINETOFIVER_RELOAD_GRID_DATE] (store, options = {}) {
     var date = moment()
     if(options.params){
@@ -897,6 +941,49 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES] (store, options = {}) {
+
+    options.path = '/performances/activity/';
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ACTIVITY_PERFORMANCES, {
+          activity_performances: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+
+  [types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
+    let today = moment();
+    options.path = '/performances/activity/';
+    options.params = {
+      timesheet__year: today.format('YYYY'),
+      timesheet__month: today.format('MM')
+    }
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+        store.commit(types.NINETOFIVER_SET_ALL_MONTHLY_ACTIVITY_PERFORMANCES, {
+          all_monthly_activity_performances: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
 
   [types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES] (store, options = {}) {
 
@@ -927,8 +1014,27 @@ const actions = {
 
   },
 
+  [types.NINETOFIVER_RELOAD_WORK_SCHEDULES] (store, options = {}) {
 
-  [types.NINETOFIVER_RELOAD_WORK_SCHEDULE] (store, options = {}) {
+    options.path = '/work_schedules/';
+
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST,
+        options
+      ).then((res) => {
+
+        store.commit(types.NINETOFIVER_SET_WORK_SCHEDULES, {
+          work_schedules: res.data.results
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+  },
+  [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE] (store, options = {}) {
 
     options.path = '/my_workschedules/';
 
@@ -938,7 +1044,7 @@ const actions = {
         options
       ).then((res) => {
 
-        store.commit(types.NINETOFIVER_SET_WORK_SCHEDULE, {
+        store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
           work_schedule: res.data.results
         });
         resolve(res);

@@ -9,14 +9,18 @@ div
       //- BIRTHDAYS
       .card.card-top-blue
         h4.card-title.text-md-center Birthdays
-        .card-block
+        .text-md-center
+          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
+          | {{ selectedBirthday | moment('DD MMMM')}}
+          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
+        .card-blocd
           table.table
             tbody
-              tr(v-for="(user, index) in birthdays")
+              tr(v-for="(user, index) in birthdaysSelectedDay")
                 td
                   router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
                   .fa.fa-birthday-cake.pull-right
-              tr(v-if='birthdays && birthdays.length === 0')
+              tr(v-if='users && birthdaysSelectedDay.length === 0')
                 td.text-md-center <strong>No rijsttaart today :(</strong>
       //- TIMESHEETS
       .card.card-top-blue
@@ -24,8 +28,8 @@ div
           router-link(:to='{ name: "calendar_month_redirect" }')
             | {{ today | moment('MMMM YYYY') }}
         table.table
-          tbody
-            tr(v-for="(c, index) in contracts" v-bind:key="c.id")              
+          tbody(v-if='contracts && user')
+            tr(v-for="(c, index) in contracts")              
               td {{ c.customerName }}: {{ c.name }}
               td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr
@@ -59,7 +63,8 @@ div
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-md-center <strong>No holidays!</strong>
     .col-md-6
-      LeaveForm
+      //- LeaveForm
+      LeaveRequestForm
   .row
     .col-md-5
 
@@ -68,6 +73,7 @@ div
 <script>
 import { mapState } from 'vuex';
 import LeaveForm from './forms/LeaveForm.vue';
+import LeaveRequestForm from './forms/LeaveRequestForm.vue'
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
@@ -77,7 +83,8 @@ export default {
   name: 'dashboard',
 
   components: {
-    LeaveForm: LeaveForm,
+    LeaveForm,
+    LeaveRequestForm
   },
 
   data () {
@@ -91,7 +98,9 @@ export default {
       latestLeave: new Date(),
       leavesWidget: [],
       leavesSelectedDay: [],
-      holidaysSelectedDay: []
+      holidaysSelectedDay: [],
+      birthdaysSelectedDay: [],
+      selectedBirthday: moment()
     }
   },
 
@@ -138,7 +147,6 @@ export default {
           lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
           lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
         });
-        
         lv['leave_start'] = lv.leavedate_set[0].starts_at;
         lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
       });
@@ -146,23 +154,30 @@ export default {
     }, () => {
       this.loading = false;
     });
-
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-      params: {
-        contractuser__user__id: store.getters.user.id
-      }
-    });
+    if(store.getters.user) {
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+        params: {
+          contractuser__user__id: store.getters.user.id
+        }
+      });
+    }
   },
 
   computed: {
     user: function() {
-      if(store.getters.user)
+      if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
           params: {
             contractuser__user__id: store.getters.user.id
           }
         });
+        store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+          params: {
+            user: store.getters.user.id
+          }
+        });
         return store.getters.user
+      }
     },
 
     holidays: function() {
@@ -172,16 +187,10 @@ export default {
     },
 
     workschedule: function() {
-      if(store.getters.work_schedule)
-        return store.getters.work_schedule;
+      if(store.getters.user_work_schedule)
+        return store.getters.user_work_schedule;
     },
 
-    birthdays: function() {
-      if(store.getters.users){
-        var today = moment().format('MM-DD');
-        return store.getters.users.filter(user => moment(user.birth_date).format('MM-DD') === today);
-      }
-    },
 
     //Calculates amount of hours that should be worked according to the workschedule
     totalHoursRequired: function() {
@@ -190,10 +199,10 @@ export default {
       //Loop over each entry in the schedule array
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
-      if(store.getters.work_schedule && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
+      if(store.getters.work_schedules && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
         var work_schedules = [];
         store.getters.employment_contracts.forEach( (ec) => {
-          var work_schedule = store.getters.work_schedule.find((ws) => ws.id === ec.work_schedule);
+          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
           if(work_schedule){
             work_schedules.push(work_schedule);
           }
@@ -232,8 +241,8 @@ export default {
               if(lv.leave_start.date() !== lv.leave_end.date()) {
 
                 //Subtract either the hours gone, or the complete day
-                total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-                total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+                total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
+                total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
 
                 //While the leavedate isn't equal to the enddate
                 while(ld.date() !== lv.leave_end.date()) {
@@ -242,8 +251,8 @@ export default {
                   ld = ld.add(1, 'days');
                 }
               } else {
-                total -= (startDiff > 0) ? startDiff : 0;
-                total -= (endDiff > 0) ? endDiff : 0;
+                let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
+                total -= (leaveHours > 0) ? leaveHours : 0;
               }
             });
           });
@@ -289,7 +298,6 @@ export default {
     contracts: function() {
       if(store.getters.filtered_contracts && store.getters.monthly_activity_performances && this.user) {
         var active_contrs = store.getters.filtered_contracts.filter(x => x.active === true);
-        console.log(active_contrs)
 
         //For each entry, calculate the total performances duration
         active_contrs.forEach(c => {
@@ -347,7 +355,26 @@ export default {
     dayLater: function() {
       this.selectedDay.add(1, 'days');      
       this.filterLeaves();
-      this.filterHolidays();      
+      this.filterHolidays(); 
+    },
+
+    dayEarlierBirthdays: function() {
+      this.selectedBirthday.subtract(1, 'days');
+      this.filterBirthdays()
+    },
+
+    dayLaterBirthdays: function() {
+      this.selectedBirthday.add(1, 'days');
+      this.filterBirthdays();
+    },
+
+    filterBirthdays: function() {
+      this.birthdaysSelectedDay = [];
+      this.users.filter((user) => {
+        if(moment(user.birth_date).isSame(this.selectedBirthday, 'day')){
+          this.birthdaysSelectedDay.push(user);
+        }
+      });
     },
 
     filterHolidays: function() {
@@ -366,7 +393,7 @@ export default {
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
         // Selected day is between leaves.
         this.leavesWidget.filter((lv) => {
-          if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, lv.leavedate_set[lv.leavedate_set.length - 1].starts_at)
+          if(this.selectedDay.isBetween(lv.leavedate_set[0].starts_at, moment(lv.leavedate_set[lv.leavedate_set.length - 1].starts_at).add(1, 'day'), null, '[]')
             || lv.leavedate_set[0].starts_at.isSame(this.selectedDay, 'day')){
             this.leavesSelectedDay.push(lv);
 
@@ -413,7 +440,7 @@ export default {
       });
     },
     //Subtracts hours worked from hours supposed to work. Returns 0 if negative result
-    getHoursToFill() {
+    getHoursToFill: function() {
       var remaining = this.totalHoursRequired - this.totalHoursPerformed;
       return remaining > 0 ? remaining : 0;
     }

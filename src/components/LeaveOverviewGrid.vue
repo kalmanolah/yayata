@@ -57,17 +57,6 @@ div
             :width='75'
           )
   toggle-button(
-            @change='toggleSwitch("45")',
-            :value='show45', 
-            color='#33b5e5', 
-            :sync='true', 
-            :labels={
-              checked: '4/5',
-              unchecked: '4/5'
-            }, 
-            :width='45'
-          )
-  toggle-button(
             @change='toggleSwitch("leave")', 
             :value='showLeave', 
             color='#00c851', 
@@ -79,27 +68,27 @@ div
             :width='65'
           )
   toggle-button(
-            @change='toggleSwitch("weekend")', 
-            :value='showWeekend', 
+            @change='toggleSwitch("nonWorkingDay")', 
+            :value='showNonWorkingDay', 
             color='#37474f', 
             :sync='true', 
             :labels={
-              checked: 'Weekend',
-              unchecked: 'Weekend'
+              checked: 'nonWorkingDay',
+              unchecked: 'nonWorkingDay'
             }, 
-            :width='75'
+            :width='110'
           )
   table.table.table-bordered.table-sm
     thead
       tr
         th.overviewgrid Name
-        th.overviewgrid(v-for='d in daysInMonth' v-bind:class='determineWeekend(d)') {{ d }}
+        th.overviewgrid(v-for='d in daysInMonth' v-bind:class='determineNonWorkingDay(d)') {{ d }}
         th.overviewgrid.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
     tbody
       tr(v-if='country_users && leaves' v-for='user in country_users')
         td 
           router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
-        td.day-cell(v-for='d in 31' v-bind:class='[determineWeekend(d), determineCellColor(user, d)]') &nbsp;
+        td.day-cell(v-for='d in 31' v-bind:class='[determineNonWorkingDay(d, user), determineCellColor(user, d)]') &nbsp;
 </template>
 <script>
   import Vue from 'vue'
@@ -119,13 +108,13 @@ div
       loading: true,
       showHome: true,
       showSickness: true,
-      show45: true,
       showLeave: true,
-      showWeekend: true
+      showNonWorkingDay: true 
     }
   },
 
  created: function() {
+    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS);
     if(!store.getters.grid_date)
       store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE)
 
@@ -226,12 +215,10 @@ div
         this.showHome = !this.showHome;
       else if(switchToggle === "sickness")
         this.showSickness = !this.showSickness;
-      else if(switchToggle === "45")
-        this.show45 = !this.show45;
       else if(switchToggle === "leave")
         this.showLeave = !this.showLeave;
-      else if(switchToggle === "weekend")
-        this.showWeekend = !this.showWeekend;
+      else if(switchToggle === "nonWorkingDay")
+        this.showNonWorkingDay = !this.showNonWorkingDay;
     },
 
     // Changes the country filter and dropdown label to the selected value.
@@ -246,10 +233,22 @@ div
       this.cu_label = contract.display_label;
     },
 
-    // Determines if the given day is a weekend day and styles it accordingly.
-    determineWeekend: function(day) {
-      if(this.showWeekend && moment().month(this.grid_month - 1).date(day).isoWeekday() > 5)
-        return 'cell-weekend';
+    // Determines if the given day is a non working day and styles it accordingly.
+    determineNonWorkingDay: function(day, user) {
+      if(this.showNonWorkingDay) {
+        let nonWorkingDay = null;
+        if(store.getters.employment_contracts && user) {
+          let employmentContract = store.getters.employment_contracts.find((ec) => ec.user === user.id);
+          let workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
+          if(workSchedule){
+            let dw = moment().month(this.grid_month - 1).date(day).isoWeekday();
+            dw = dw === 1 ? 'monday' : dw === 2 ? 'tuesday' : dw === 3 ? 'wednesday' : dw === 4 ? 'thursday' : dw === 5 ? 'friday' : dw === 6 ? 'saturday' : 'sunday' 
+            nonWorkingDay = (workSchedule[dw] === "0.00"); 
+          }
+        }
+        if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5 || nonWorkingDay)
+          return 'cell-nonWorkingDay';
+      }
     },
 
     // Determines the color of the cell depending on the leave type.
@@ -268,7 +267,6 @@ div
               var temp = [
                 'cell-sickness',
                 'cell-leave',
-                'cell-45',
                 'cell-paid-leave',
                 'cell-sick-leave',
                 'cell-klein-verlet',
@@ -279,8 +277,6 @@ div
               if(cellClass === 'cell-sickness' && this.showSickness){
                 cellClassR = cellClass;
               } else if(cellClass === 'cell-leave' && this.showLeave){
-                cellClassR = cellClass;
-              } else if(cellClass === 'cell-45' && this.show45){
                 cellClassR = cellClass;
               } else if(cellClass === 'cell-paid-leave' && this.showLeave) {
                 cellClassR = cellClass;
@@ -385,10 +381,6 @@ th.overviewgrid {
   background-color: @warining;
 }
 
-.cell-45{
-  background-color: @info;
-}
-
 .cell-leave{
   background-color: @success;
 }
@@ -404,7 +396,7 @@ th.overviewgrid {
 .cell-sick-leave {
   background-color: @warining;
 }
-.cell-weekend {
+.cell-nonWorkingDay{
   background-color: @neutral;
 }
 
