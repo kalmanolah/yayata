@@ -199,9 +199,7 @@ export default {
       //Loop over each entry in the schedule array
       //Check for each property in the entry if it appears in the days var
       //Multiply total hours with times that day appears in this month
-      console.log(this.leaves)
       if(this.workschedule && this.leaves && store.getters.holidays && store.getters.employment_contracts) {
-        console.log('in thr')
         var work_schedules = [];
         store.getters.employment_contracts.forEach( (ec) => {
           var work_schedule = this.workschedule.find((ws) => ws.id === ec.work_schedule);
