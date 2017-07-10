@@ -114,6 +114,12 @@ export default {
               ended_at__gte: moment().format('YYYY-MM-DD')
             }
           })
+        if(!store.getters.redmine_time_entries)
+          store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
+            params: {
+              user_id: 344
+            }
+          })
         date: moment()
       });
   },

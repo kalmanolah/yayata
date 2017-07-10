@@ -30,6 +30,7 @@ const state = {
   all_monthly_activity_performances: null,
 
   //User specific & prone to frequent change outside of this session
+  redmine_time_entries: null,
   timesheets: null,
   contracts: null,
   contract_durations: null,
@@ -166,6 +167,9 @@ const mutations = {
   },
   [types.NINETOFIVER_SET_ACTIVITY_PERFORMANCES] (state, { activity_performances }) {
     state.activity_performances = activity_performances 
+  },
+  [types.NINETOFIVER_SET_REDMINE_TIME_ENTRIES] (state, { redmine_time_entries }) {
+    state.redmine_time_entries = redmine_time_entries
   }
 }
 
@@ -364,6 +368,7 @@ const getters = {
     }
   },
   upcoming_leaves: state => state.upcoming_leaves,
+  redmine_time_entries: state => state.redmine_time_entries,
 
   //Predefined
   whereabout_locations: state => state.whereabout_locations,
@@ -872,8 +877,8 @@ const actions = {
 
 
   [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
-    var days = moment().date();
-    var date = moment().subtract(days - 1,'days');
+    let days = moment().date();
+    let date = moment().subtract(days - 1,'days');
     if(options.params){
       date = options.params.date;
     }
@@ -1146,6 +1151,29 @@ const actions = {
         reject(res);
       });
     });
+  },
+
+  [types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES] (store, options = {}) {
+
+    options.path = '/redmine_time_entries/'
+    
+    return new Promise((resolve, reject) => {
+      store.dispatch(
+        types.NINETOFIVER_API_REQUEST, 
+        options
+      ).then((res) => {
+        console.log(res)
+        store.commit(types.NINETOFIVER_SET_REDMINE_TIME_ENTRIES, {
+          redmine_time_entries: res.data
+        });
+        resolve(res);
+
+      }, (res) => {
+        reject(res);
+      });
+    });
+
+
   }
 
 }
