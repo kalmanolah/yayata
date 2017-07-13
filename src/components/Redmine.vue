@@ -77,14 +77,7 @@ export default {
   },
 
   created: function() {
-    // Reload redmine time entries for this user and this month
-    store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
-      params: {
-        user_id: 344,
-        month: moment().month() + 1
-      }
-    });
-
+    this.reload_time_entries();
     // Reload filtered contracts for this user
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
       params: {
@@ -178,9 +171,18 @@ export default {
       this.selectedContract.displayLabel = contract.display_label;
       this.selectedContract.value = contract.id;
 
+      // // Reset checked states
+      this.checkedStateImported = true;
+      this.checkedStateNotImported = true;
+
+      // Filter contract timeEntries on contract 
       this.contractTimeEntries = this.timeEntries.filter((te) => {
-        return contract.redmine_project_id && te.project.id === contract.redmine_project_id
+        return contract.redmine_project_id && te.project.id === contract.redmine_project_id;
       });
+
+      // Reset checked for each contractTimeEntry
+      this.toggleAllImported();
+      this.toggleAllNotImported();
     },
     
     submitTimeEntries: function() {
@@ -203,9 +205,9 @@ export default {
       let success = true;
       this.contractTimeEntries.forEach((te) => {
         // Check if Time Entry has been imported already and if it has been updated.
-        if(this.getImportStatus(te) && this.checkDiff(te)){
+        if(this.getImportStatus(te)){
           // Patch performance
-          if(te.checked) {
+          if(te.checked && this.checkDiff(te)) {
             let performance = this.performances.find((perf) => perf.redmine_time_entry_id === te.id);
             let body = {
               timesheet: performance.timesheet,
@@ -258,6 +260,8 @@ export default {
       });
       let message = success ? 'Time entries imported!' : 'Something went wrong.';
       this.showToast(message);
+      this.reload_time_entries();
+      store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
     },
 
     createTimesheet: function() {
@@ -294,24 +298,30 @@ export default {
     checkDiff(timeEntry) {
       // Check if the time entry has been updated.
       let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
-      return timeEntry.hours != performance.duration ? true : timeEntry.comments === performance.description ? true : false;
+      return timeEntry.hours * 1 != performance.duration *1 ? true : timeEntry.comments !== performance.description ? true : false;
     },
 
     checkDiffHours(timeEntry) {
       // Check if the time entry hours have been updated.
       let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
-      console.log(performance.duration)
-      console.log(timeEntry.hours)
-      return timeEntry.hours == performance.duration * 1 ? '' : 'diff'
+      return timeEntry.hours * 1 == performance.duration * 1 ? '' : 'diff';
     },
 
     checkDiffComments(timeEntry) {
       // Check if the time entry comments have been updated.
       let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
-      return timeEntry.comments === performance.description ? '' : diff
+      return timeEntry.comments === performance.description ? '' : 'diff';
     },
 
-
+    reload_time_entries() {
+      // Reload redmine time entries for this user and this month
+      store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
+        params: {
+          user_id: store.getters.user.redmine_user_id,
+          month: moment().month() + 1
+        }
+      });
+    },
   }
 }
 </script>
