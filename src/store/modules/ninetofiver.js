@@ -265,6 +265,7 @@ const getters = {
           start_date: x.starts_at,
           end_date: x.ends_at,    
           project_estimate: x.hours_estimated,
+          redmine_project_id: x.redmine_project_id || null,
           attachments: x.attachments,          
           customerName: state.companies.find(com => com.id == x.customer).name,
           companyName: state.companies.find(com => com.id == x.company).name,

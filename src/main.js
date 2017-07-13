@@ -25,6 +25,7 @@ import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
+import Redmine from './components/Redmine.vue'
 
 // Vue.use(Vuex)
 Vue.use(Toast)
@@ -100,6 +101,11 @@ export const router = new VueRouter({
           name: 'admin',
           path: '/admin',
           component: Admin,
+        },
+        {
+          name: 'redmine',
+          path: '/redmine',
+          component: Redmine,
         }
       ],
     },

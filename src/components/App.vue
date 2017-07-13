@@ -29,6 +29,9 @@ div(
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
+            router-link(:to='{ name: "redmine" }')
+              h3 Redmine
+              p.small.hidden-md-down Time entries
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
@@ -112,12 +115,6 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
             params: {
               ended_at__gte: moment().format('YYYY-MM-DD')
-            }
-          })
-        if(!store.getters.redmine_time_entries)
-          store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
-            params: {
-              user_id: 344
             }
           })
         date: moment()
