@@ -16,6 +16,7 @@ div
       thead
         tr
           th Activity
+          th Date
           th Hours
           th Issue
           th Comments
@@ -26,6 +27,7 @@ div
           template(v-if='!getImportStatus(timeEntry)')
             tr
             td {{ timeEntry.activity.name }}
+            td {{ timeEntry.spent_on }}
             td {{ timeEntry.hours }}
             td 
               a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
@@ -39,6 +41,7 @@ div
       thead
         tr
           th Activity
+          th Date
           th Hours
           th Issue
           th Comments
@@ -49,6 +52,7 @@ div
           template(v-if='getImportStatus(timeEntry)')
             tr
               td(:class='checkDiff(timeEntry)') {{ timeEntry.activity.name }}
+              td {{ timeEntry.spent_on }}
               td(:class='checkDiffHours(timeEntry)') {{ timeEntry.hours }}
               td(:class='checkDiff(timeEntry)') 
                 a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
@@ -141,11 +145,12 @@ export default {
   },
 
   watch: {
-    // Watch checkedState and update the checked status of all time entries.
+    // Watch checkedStateImported and update the checked status of all time entries that are imported.
     checkedStateImported: function(newCheckedState) {
       this.toggleAllImported();
     },
 
+    // Watch checkedStateNotImported and update the checked status of all time entries that are not imported.
     checkedStateNotImported: function(newCheckedState) {
       this.toggleAllNotImported();
     },
