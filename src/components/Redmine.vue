@@ -55,6 +55,8 @@ div
               td(:class='checkDiffComments(timeEntry)') {{ timeEntry.comments }}
               td(:class='checkDiff(timeEntry)')
                 b-form-checkbox(v-model='timeEntry.checked') &nbsp;
+  br
+  .alert.alert-info.text-md-center(v-if='!selectedContract.value') Please select a contract
 </template>
 <script>
 import store from '../store';
@@ -201,9 +203,9 @@ export default {
       }
     },
 
-    importToYayata: function() {
+    importToYayata: async function() {
       let success = true;
-      this.contractTimeEntries.forEach((te) => {
+      let x = await this.contractTimeEntries.forEach((te) => {
         // Check if Time Entry has been imported already and if it has been updated.
         if(this.getImportStatus(te)){
           // Patch performance
