@@ -237,16 +237,21 @@ div
     determineNonWorkingDay: function(day, user) {
       if(this.showNonWorkingDay) {
         let nonWorkingDay = null;
+        let workSchedule = null;
         if(store.getters.employment_contracts && user) {
-          let employmentContract = store.getters.employment_contracts.find((ec) => ec.user === user.id);
-          let workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
+          let employmentContract = store.getters.employment_contracts.find((ec) => {
+            return ec.user === user.id 
+              // Check if the user has an employment contract this mont
+              && moment(store.getters.grid_date).day(day).isBetween(moment(ec.started_at), moment(ec.ended_at), 'day', [])
+          });
+          workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
           if(workSchedule){
             let dw = moment().month(this.grid_month - 1).date(day).isoWeekday();
             dw = dw === 1 ? 'monday' : dw === 2 ? 'tuesday' : dw === 3 ? 'wednesday' : dw === 4 ? 'thursday' : dw === 5 ? 'friday' : dw === 6 ? 'saturday' : 'sunday' 
             nonWorkingDay = (workSchedule[dw] === "0.00"); 
           }
         }
-        if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5 || nonWorkingDay)
+        if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5 || nonWorkingDay || !workSchedule)
           return 'cell-nonWorkingDay';
       }
     },
