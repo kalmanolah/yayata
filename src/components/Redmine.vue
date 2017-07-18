@@ -139,7 +139,7 @@ export default {
 
     performances: function() {
       if(store.getters.activity_performances && this.timesheet) {
-        return store.getters.activity_performances.filter((p) => p.redmine_time_entry_id && p.timesheet === this.timesheet.id)
+        return store.getters.activity_performances.filter((p) => p.redmine_id && p.timesheet === this.timesheet.id)
       }
     }
   },
@@ -184,7 +184,7 @@ export default {
 
       // Filter contract timeEntries on contract 
       this.contractTimeEntries = this.timeEntries.filter((te) => {
-        return contract.redmine_project_id && te.project.id === contract.redmine_project_id;
+        return contract.redmine_id && te.project.id === contract.redmine_id;
       });
 
       // Reset checked for each contractTimeEntry
@@ -215,7 +215,7 @@ export default {
         if(this.getImportStatus(te)){
           // Patch performance
           if(te.checked && this.checkDiff(te)) {
-            let performance = this.performances.find((perf) => perf.redmine_time_entry_id === te.id);
+            let performance = this.performances.find((perf) => perf.redmine_id === te.id);
             let body = {
               timesheet: performance.timesheet,
               day: performance.day,
@@ -224,7 +224,7 @@ export default {
               performance_type: performance.performance_type,
               contract: performance.contract,
               contract_role: performance.contract_role,
-              redmine_time_entry_id: performance.redmine_time_entry_id
+              redmine_id: performance.redmine_id
             }
             store.dispatch(types.NINETOFIVER_API_REQUEST, {
               path: '/my_performances/activity/' + performance.id + '/',
@@ -240,7 +240,7 @@ export default {
         } else {
           // Create a new performance for each selected time entry
           if(te.checked) {
-            let contract_id = this.contracts.find((c) => te.project.id === c.redmine_project_id).id;
+            let contract_id = this.contracts.find((c) => te.project.id === c.redmine_id).id;
             let body = {
               timesheet: this.timesheet.id,
               day: moment(te.spent_on).date(),
@@ -249,7 +249,7 @@ export default {
               performance_type: 1,
               contract: contract_id,
               contract_role: 1,
-              redmine_time_entry_id: te.id
+              redmine_id: te.id
             }
             // Create new performance
             store.dispatch(types.NINETOFIVER_API_REQUEST, {
@@ -297,26 +297,26 @@ export default {
 
     getImportStatus(timeEntry) {
       let performance = this.performances.find((p) => {
-        return p.redmine_time_entry_id === timeEntry.id
+        return p.redmine_id === timeEntry.id
       })
       return performance ? true : false; 
     },
 
     checkDiff(timeEntry) {
       // Check if the time entry has been updated.
-      let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
+      let performance = this.performances.find((perf) => perf.redmine_id === timeEntry.id);
       return timeEntry.hours * 1 != performance.duration *1 ? true : timeEntry.comments !== performance.description ? true : false;
     },
 
     checkDiffHours(timeEntry) {
       // Check if the time entry hours have been updated.
-      let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
+      let performance = this.performances.find((perf) => perf.redmine_id === timeEntry.id);
       return timeEntry.hours * 1 == performance.duration * 1 ? '' : 'diff';
     },
 
     checkDiffComments(timeEntry) {
       // Check if the time entry comments have been updated.
-      let performance = this.performances.find((perf) => perf.redmine_time_entry_id === timeEntry.id);
+      let performance = this.performances.find((perf) => perf.redmine_id === timeEntry.id);
       return timeEntry.comments === performance.description ? '' : 'diff';
     },
 
@@ -324,7 +324,7 @@ export default {
       // Reload redmine time entries for this user and this month
       store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
         params: {
-          user_id: store.getters.user.redmine_user_id,
+          user_id: store.getters.user.redmine_id,
           month: moment().month() + 1
         }
       });
