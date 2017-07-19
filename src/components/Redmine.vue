@@ -248,7 +248,7 @@ export default {
               description: te.comments,
               performance_type: 1,
               contract: contract_id,
-              contract_role: 1,
+              contract_role: 2,
               redmine_id: te.id
             }
             // Create new performance
@@ -324,8 +324,7 @@ export default {
       // Reload redmine time entries for this user and this month
       store.dispatch(types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES, {
         params: {
-          user_id: store.getters.user.redmine_id,
-          month: moment().month() + 1
+          filter_imported: false
         }
       });
     },
