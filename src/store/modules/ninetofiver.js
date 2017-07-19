@@ -1156,7 +1156,7 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_REDMINE_TIME_ENTRIES] (store, options = {}) {
 
-    options.path = '/redmine/time_entries/'
+    options.path = '/services/time_entry_import/'
     
     return new Promise((resolve, reject) => {
       store.dispatch(
