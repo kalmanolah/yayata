@@ -232,7 +232,6 @@ export default {
               body: body,
               emulateJSON: true,
             }).then((res) => {
-              console.log(res)
             }).catch((error) => {
               success = false;
             })
@@ -258,7 +257,6 @@ export default {
               body: body,
               emulateJSON: true,
             }).then((res) => {
-              console.log(res)
             }).catch((error) => {
               success = false;
             });

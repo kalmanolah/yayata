@@ -288,7 +288,6 @@
               if(store.getters.days[w] >= 0)
                 total += parseFloat(ws[w]) * this.daysInMonth[timesheet.id][w];
             
-            console.log(total)
             //Correcting total with holidays
             store.getters.holidays.forEach(h => {
               var date = moment(h.date, 'YYYY-MM-DD');
@@ -297,7 +296,6 @@
                 total -= ws[date.format('dddd').toLowerCase()];
             });
 
-            console.log(total)
 
             //Correcting total with leaves
             this.leaves[timesheet.id].forEach(lv => {
@@ -307,10 +305,7 @@
 
               let startDiff = lv.leave_start.diff(startOfDay, 'hours');
               let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-              console.log(endDiff)
-              console.log(startDiff)
 
-              console.log(8 - (startDiff + endDiff))
               //Do not occur on the same day
               if(lv.leave_start.date() !== lv.leave_end.date()) {
 
@@ -330,7 +325,6 @@
               }
             });
           });
-          console.log('req ' + total)
           return total;
         }
       },
