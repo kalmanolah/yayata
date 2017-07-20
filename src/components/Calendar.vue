@@ -239,7 +239,8 @@ export default {
         });
       }
 
-      return total;
+      // You cant work negative hours
+      return total > 0 ? total : 0;
     },
 
     //Get hours performed per day
