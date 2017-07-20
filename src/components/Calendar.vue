@@ -530,9 +530,12 @@ export default {
               total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
 
               //While the leavedate isn't equal to the enddate
-              while(ld.date() !== lv.leave_end.date()) {
-                total -= ws[ld.format('dddd').toLowerCase()];
 
+              while(ld.date() <= lv.leave_end.date()) {
+                console.log(ld.date())
+                if(!this.isWeekendDay(ld.date())){
+                  total -= ws[ld.format('dddd').toLowerCase()];
+                }
                 ld = ld.add(1, 'days');
               }
             } else {

@@ -245,7 +245,7 @@ export default {
                 total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
 
                 //While the leavedate isn't equal to the enddate
-                while(ld.date() !== lv.leave_end.date()) {
+                while(ld.date() <= lv.leave_end.date()) {
                   total -= ws[ld.format('dddd').toLowerCase()];
 
                   ld = ld.add(1, 'days');
