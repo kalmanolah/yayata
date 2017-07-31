@@ -7,28 +7,38 @@ div
 
     .card-block
       form.form
+
         .row
           .col-md-6
             b-form-fieldset(:feedback='fromDateFeedback', label='From', :state='fromDateState', :label-size='1')
               input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
-          .col-md-2
-            b-form-checkbox(v-model='fromFullDay') <strong>Full day</strong>
+          .col-md-2.text-sm-center
+            .row
+              strong Full day
+            .row
+              b-form-checkbox(v-model='fromFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
               b-form-input.form-control(type='time' step='300' v-model='fromTime', :disabled='fromFullDay')
+
         .row
           .col-md-6
             b-form-fieldset(:feedback='toDateFeedback', label='To', :state='toDateState', :label-size='1')
               input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
-          .col-md-2
-            b-form-checkbox(v-model='toFullDay') <strong>Full day</strong>
+          .col-md-2.text-sm-center
+            .row
+              strong Full day
+            .row
+              b-form-checkbox(v-model='toFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
               b-form-input.form-control(type='time' step='300' v-model='toTime', :disabled='toFullDay')
+
         .row
           .col-md-12
             b-form-fieldset(:feedback='descriptionFeedback', label='Description', :state='descriptionState', :label-size='1')
               b-form-input.form-control(textarea v-model='description' placeholder='why are you leaving us')
+
         .row
           .col-md-6(v-if='leaveTypes')
             b-form-fieldset(:feedback='leaveTypeFeedback', label='Leavetype', :state='leaveTypeState', :label-size='1', input-selector='select')
@@ -36,10 +46,11 @@ div
           .col-md-6
             b-form-fieldset(label='Attachments')
               b-form-file(v-model='attachments', :multiple='true', placeholder='upload file(s)', drop-label='file', choose-label='Attachment')
-        button.btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-if='buttonState')
+
+        .btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-if='buttonState')
           i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
           i.fa.fa-plus.submit-icons(v-else)
-        button.btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-else, disabled)
+        .btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-else, disabled)
           i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
           i.fa.fa-plus.submit-icons(v-else)
 </template>
