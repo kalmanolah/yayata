@@ -5,7 +5,7 @@ div
     .col-md-12
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
         .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
-    .col-md-6
+    .col-lg-6
       //- BIRTHDAYS
       .card.card-top-blue
         h4.card-title.text-md-center Birthdays
@@ -38,7 +38,7 @@ div
             tr
               td <strong>Hours left to fill in</strong>
               td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
-    .col-md-6
+    .col-lg-6
       //- ABSENT COLLEAGUES
       .card.card-top-blue
         h4.card-title.text-md-center Absent colleagues
@@ -62,7 +62,7 @@ div
                 td.text-md-right {{ holiday.date }}
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-md-center <strong>No holidays!</strong>
-    .col-md-6
+    .col-lg-6
       //- LeaveForm
       LeaveRequestForm
   .row
