@@ -13,7 +13,7 @@ div
             b-form-fieldset(:feedback='fromDateFeedback', label='From', :state='fromDateState', :label-size='1')
               input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
           .col-md-2.text-sm-center              
-              b-form-fieldset(label='Full day')
+              b-form-fieldset(label='All day')
                 b-form-checkbox(v-model='fromFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
@@ -24,7 +24,7 @@ div
             b-form-fieldset(:feedback='toDateFeedback', label='To', :state='toDateState', :label-size='1')
               input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
           .col-md-2.text-sm-center
-            b-form-fieldset(label='Full day')
+            b-form-fieldset(label='All day')
               b-form-checkbox(v-model='toFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
@@ -105,9 +105,11 @@ export default {
       showDaysInNextAndPreviousMonths: true,
       format: 'DD MMM YYYY',
       disableDayFn: val => {
-        return this.upcomingLeaves.find(x => {
-          return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
-        });
+        if(this.upcomingLeaves) {
+          return this.upcomingLeaves.find(x => {
+            return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
+          });          
+        }
       },
       onSelect: val => {
         this.fromDate = moment(val).format('DD MMM YYYY');
@@ -124,9 +126,11 @@ export default {
       showWeekNumber: true,
       showDaysInNextAndPreviousMonths: true,
       disableDayFn: val => {
-        return moment(val).isBefore(this.toDate) ? true : this.upcomingLeaves.find(x => {
-          return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
-        });
+        if(this.upcomingLeaves) {
+          return moment(val).isBefore(this.toDate) ? true : this.upcomingLeaves.find(x => {
+            return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
+          });          
+        }
       },
       onSelect: val => {
         this.toDate = moment(val).format('DD MMM YYYY');
