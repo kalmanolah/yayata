@@ -2,7 +2,8 @@
 div(class='calendar')
   .row
     .col-md-3
-    h1(class='col-md-6 text-md-center') {{ month }} {{ year }}
+    h1(v-if='params' class='col-md-6 text-md-center') {{ month }} {{ params.year }}
+    h1(v-else class='col-md-6 text-md-center') {{ month }}  {{ year }}
     .col-md-3.text-md-right
       div(
         class='btn-group'
@@ -216,6 +217,27 @@ export default {
           total += parseFloat(x[date.format('dddd').toLowerCase()]);
         });        
       }
+      if(this.leaves) {
+        let date = day;
+        let year = moment(store.getters.calendar_selected_month).year();
+        let month = moment(store.getters.calendar_selected_month).month();
+        this.leaves.forEach((leave) => {
+          let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([year, month, date ]), 'day'));
+          if(ld){
+            let endOfDay = moment([year, month, date, 17, 30]);
+            let startOfDay = moment([year, month, date, 9]);
+
+            let startDiff = moment(ld.starts_at._i).subtract(2, 'hours').diff(startOfDay, 'hours');
+            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at._i, 'hours');
+            
+            startDiff = startDiff > 0 ? startDiff : 0;
+            endDiff = endDiff > 0 ? endDiff : 0;
+
+            let leaveDuration = (8 - (startDiff + endDiff));
+            total -= leaveDuration;
+          }
+        });
+      }
 
       return total;
     },
@@ -231,27 +253,6 @@ export default {
         });
       }
 
-      if(this.leaves) {
-        let date = day;
-        let year = store.getters.calendar_selected_month.year();
-        let month = store.getters.calendar_selected_month.month();
-        this.leaves.forEach((leave) => {
-          let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([year, month, date ]), 'day'));
-          if(ld){
-            let endOfDay = moment([year, month, date, 17, 30]);
-            let startOfDay = moment([year, month, date, 9]);
-
-            let startDiff = moment(ld.starts_at._i).subtract(2, 'hours').diff(startOfDay, 'hours');
-            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at._i, 'hours');
-            
-            startDiff = startDiff > 0 ? startDiff : 0;
-            endDiff = endDiff > 0 ? endDiff : 0;
-
-            let leaveDuration = (8 - (startDiff + endDiff));
-            total += leaveDuration;
-          }
-        });
-      }
       return total;
     },
 
@@ -433,6 +434,18 @@ export default {
   },
 
   computed: {
+    params: function(){
+      if(this.$route.params.year){
+        let date = moment().year(this.$route.params.year).month(this.$route.params.month - 1).startOf('month').format('YYYY-MM-DDThh:mm:ss');
+        store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, {
+          params: {
+            date: date
+          }
+        });
+        return this.$route.params;
+      }
+    },
+
     selected_month: function() {
       if(store.getters.calendar_selected_month){
         return store.getters.calendar_selected_month;
