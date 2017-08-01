@@ -12,11 +12,9 @@ div
           .col-md-6
             b-form-fieldset(:feedback='fromDateFeedback', label='From', :state='fromDateState', :label-size='1')
               input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
-          .col-md-2.text-sm-center
-            .row
-              strong Full day
-            .row
-              b-form-checkbox(v-model='fromFullDay')
+          .col-md-2.text-sm-center              
+              b-form-fieldset(label='Full day')
+                b-form-checkbox(v-model='fromFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
               b-form-input.form-control(type='time' step='300' v-model='fromTime', :disabled='fromFullDay')
@@ -26,9 +24,7 @@ div
             b-form-fieldset(:feedback='toDateFeedback', label='To', :state='toDateState', :label-size='1')
               input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
           .col-md-2.text-sm-center
-            .row
-              strong Full day
-            .row
+            b-form-fieldset(label='Full day')
               b-form-checkbox(v-model='toFullDay')
           .col-md-4
             b-form-fieldset(label='Time')
@@ -97,6 +93,7 @@ export default {
   },
 
   mounted: function() {
+
     // initialize the from date picker
     this.fromDatePicker = new Pikaday({
       field: this.$refs.fromDatePicker,
@@ -116,6 +113,7 @@ export default {
         this.fromDate = moment(val).format('DD MMM YYYY');
       }
     });
+
     // initialize the to date picker
     this.toDatePicker = new Pikaday({
       field: this.$refs.toDatePicker,
