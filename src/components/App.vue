@@ -29,6 +29,9 @@ div(
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
               p.small.hidden-md-down Monthly overview
+            router-link(:to='{ name: "redmine" }')
+              h3 Redmine
+              p.small.hidden-md-down Time entries
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
