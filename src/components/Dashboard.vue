@@ -3,13 +3,15 @@
 div
   .row
     .col-md-12
+      //- WARNING
       .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
-        .text-md-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+        .text-xs-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+  .row
     .col-lg-6
       //- BIRTHDAYS
       .card.card-top-blue
-        h4.card-title.text-md-center Birthdays
-        .text-md-center
+        h4.card-title.text-xs-center Birthdays
+        .text-xs-center
           i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
           | {{ selectedBirthday | moment('DD MMMM')}}
           i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
@@ -21,28 +23,30 @@ div
                   router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
                   .fa.fa-birthday-cake.pull-right
               tr(v-if='users && birthdaysSelectedDay.length === 0')
-                td.text-md-center <strong>No rijsttaart today :(</strong>
+                td.text-xs-center <strong>No rijsttaart today :(</strong>
+
       //- TIMESHEETS
       .card.card-top-blue
-        h4.card-title.text-md-center Timesheets for 
+        h4.card-title.text-xs-center Timesheets for 
           router-link(:to='{ name: "calendar_month_redirect" }')
             | {{ today | moment('MMMM YYYY') }}
         table.table
           tbody(v-if='contracts && user')
             tr(v-for="(c, index) in contracts")              
               td {{ c.customerName }}: {{ c.name }}
-              td.text-md-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+              td.text-sm-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
-              td.text-md-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
+              td.text-sm-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
             tr
-              td <strong>Hours left to fill in</strong>
-              td.text-md-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+              td <strong>Open hours</strong>
+              td.text-sm-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+   
     .col-lg-6
       //- ABSENT COLLEAGUES
       .card.card-top-blue
-        h4.card-title.text-md-center Absent colleagues
-        div.text-md-center
+        h4.card-title.text-xs-center Absent colleagues
+        div.text-xs-center
           i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
           | {{ selectedDay | moment('DD MMMM') }}
           i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
@@ -54,25 +58,23 @@ div
                   router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
-                td.text-md-center <strong>No absent colleagues!</strong>
+                td.text-xs-center <strong>No absent colleagues!</strong>
           table.table
             tbody
               tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
                 td {{ holiday.name }} [{{ holiday.country }}]
                 td.text-md-right {{ holiday.date }}
               tr(v-if='holidaysSelectedDay.length === 0')
-                td.text-md-center <strong>No holidays!</strong>
-    .col-lg-6
-      //- LeaveForm
-      LeaveRequestForm
+                td.text-xs-center <strong>No holidays!</strong>
   .row
-    .col-md-5
+    .col-lg-6
+      //- Leaverequest form
+      LeaveRequestForm
 
 </template>
 
 <script>
 import { mapState } from 'vuex';
-import LeaveForm from './forms/LeaveForm.vue';
 import LeaveRequestForm from './forms/LeaveRequestForm.vue'
 import store from '../store';
 import * as types from '../store/mutation-types';
@@ -83,7 +85,6 @@ export default {
   name: 'dashboard',
 
   components: {
-    LeaveForm,
     LeaveRequestForm
   },
 

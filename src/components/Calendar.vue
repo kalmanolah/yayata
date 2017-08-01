@@ -53,7 +53,7 @@ div(class='calendar')
         router-link(:to='{name: "calendar_week", params: { year: year, week: getWeekNumber(n) } }')
           div(class='card card-block')
             p {{ n }}
-              b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
+              b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
                 i.fa.fa-plane
                 div(slot='content')
                   div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
@@ -65,7 +65,7 @@ div(class='calendar')
       template(v-else)
         div(class='card card-block')
           p {{ n }}
-            b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
+            b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
               i.fa.fa-plane
               div(slot='content')
                 div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
@@ -256,43 +256,56 @@ export default {
     },
 
     isHoliday: function(day) {
-      let today = moment(store.getters.calendar_selected_month).date(day);
-      let holiday = false;
-      let companyId = store.getters.employment_contracts.find((ec) => {
-        return ec.user === this.user.id;
-      }).company;
-      let companyCountry = store.getters.companies.find((c) => {
-        return c.id === companyId;
-      }).country;
 
-      if(store.getters.holidays) {
-        store.getters.holidays.forEach(x => {
-          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-            holiday = true;
+      let holiday = false;
+      let today = moment(store.getters.calendar_selected_month).date(day);
+
+      if(store.getters.employment_contracts) {
+        let emplContr = store.getters.employment_contracts.find(ec => {
+          return ec.user === this.user.id;
         });
+
+        if(emplContr && store.getters.companies) {
+          let comp = store.getters.companies.find(c => {
+            return c.id === emplContr.company;
+          });
+
+          if(comp && store.getters.holidays) {
+            holiday = store.getters.holidays.findIndex(h => {
+              return (today.format('YYYY-MM-DD') === x.date && x.country === comp.country);
+            });
+          }
+        }
       }
+
       return holiday
     }, 
 
     //Check whether holiday / user is on leave
     isExcusedFromWork: function(day) {
+      return this.isHoliday(day) || this.isOnLeave(day);
+/*      let onLeave = false;
       let today = moment(store.getters.calendar_selected_month).date(day);
-      let onLeave = false;
-      let companyId = store.getters.employment_contracts.find((ec) => {
-        return ec.user === this.user.id;
-      }).company;
-      let companyCountry = store.getters.companies.find((c) => {
-        return c.id === companyId;
-      }).country;
 
-      if(store.getters.holidays) {
-        store.getters.holidays.forEach(x => {
-          if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-            onLeave = true;
+      if(store.getters.employment_contracts) {
+        let emplContr = store.getters.employment_contracts.find(ec => {
+          return ec.user === this.user.id;
         });
-      }
 
-      return onLeave || this.isOnLeave(day);
+        if(emplContr && store.getters.companies) {
+          let comp = store.getters.companies.find(c => {
+            return c.id === emplContr.company;
+          });
+
+          if(comp && store.getters.holidays) {
+            onLeave = store.getters.holidays.findIndex(h => {
+              return (today.format('YYYY-MM-DD') === x.date && x.country === comp.country);
+            });
+          }
+        }
+      }
+      return this.isHoliday(day) || this.isOnLeave(day);
+*/
     },
 
     //Check whether user is on requested leave on that particular day
