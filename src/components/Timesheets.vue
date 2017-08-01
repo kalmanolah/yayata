@@ -88,7 +88,7 @@
         var work_schedules = [];
         store.getters.employment_contracts.forEach((ec) => {
           var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
-          if(work_schedule){
+          if(work_schedule) {
             work_schedules.push(work_schedule);
           }
         });
@@ -141,36 +141,44 @@
     methods: {
       // Set the status of this sheet to PENDING.
       setPending: function(sheet) {
+
         var body = {
           month: sheet.month,
           year: sheet.year,
           status: 'PENDING'
-        }
-        store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/my_timesheets/' + sheet.id + '/',
-          method: 'PATCH',
-          body: body,
-          emulateJSON: true,
-        }).then((res) => {
+        };
+
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST, 
+          {
+            path: '/my_timesheets/' + sheet.id + '/',
+            method: 'PATCH',
+            body: body,
+            emulateJSON: true,
+          }
+        ).then((res) => {
+
           if(res.status == 200) {
             this.$toast('Timesheet is now pending, you can\'t modify it anymore.', {
               id: 'pending-toast',
               horizontalPosition: 'right',
               verticalPosition: 'top',
-              duration: 1000,
+              duration: 3000,
               transition: 'slide-down',
               mode: 'override'
             });
+
             store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
               filter_future_timesheets: true
             });
+            
           } else {
             console.error(res);
             this.$toast('Something went wrong while setting timesheet to pending. Check the console for more information', {
               id: 'pending-failed-toast',
               horizontalPosition: 'right',
               verticalPosition: 'top',
-              duration: 1000,
+              duration: 3000,
               transition: 'slide-down',
               mode: 'override'
             });
