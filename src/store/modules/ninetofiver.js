@@ -71,6 +71,16 @@ const state = {
     friday: 0,
     saturday: 0,
     sunday: 0
+  },
+  working_hours: {
+    start: {
+      hour: 9,
+      minute: 0
+    },
+    end : {
+      hour: 17,
+      minute: 30
+    }
   }
 }
 
@@ -380,6 +390,7 @@ const getters = {
   contract_types: state => state.contract_types,
   colleagues_filter: state => state.colleagues_filter,
   days: status => state.days,
+  working_hours: state => state.working_hours,
 
   //Calculated
   open_timesheet_count: state => {
@@ -878,9 +889,13 @@ const actions = {
 
 
   [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
+
     let days = moment().date();
     let date = moment().subtract(days - 1,'days');
-    if(options.params){
+    // console.log( days );
+    // console.log( date );
+    // console.log( moment().month() );
+    if(options.params) {
       date = options.params.date;
     }
     store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {

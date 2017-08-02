@@ -1,9 +1,8 @@
 <template lang="pug">
 div(class='calendar')
   .row
-    .col-md-6
-
-      //- Upcoming leave
+    //- Upcoming leave
+    .col-lg-6
       h3.text-md-center Upcoming leave
       p.text-md-center The first one upcoming, or currently active.
 
@@ -19,7 +18,14 @@ div(class='calendar')
 
       hr
 
-      //- All leaves
+    //- Holidays
+    .col-lg-6
+      cmpHolidays
+
+      hr
+  .row
+    //- All leaves
+    .col-lg-6
       h3.text-md-center All Leaves
       p.text-md-center An overview of all your leaves.
       #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
@@ -41,13 +47,8 @@ div(class='calendar')
                           | {{ leave.status }}
                       td.text-md-right {{ leave.leave_start | moment('DD MMM - HH:mm') }}  → {{ leave.leave_end | moment('DD MMM - HH:mm') }}
 
-    //- Holidays
-    .col-md-6
-      cmpHolidays
-
-      hr
-
-      //- Pending leaves
+    //- Pending leaves
+    .col-lg-6
       h3.text-md-center(@click='showPendingLeaves = !showPendingLeaves') Pending leaves
         .btn.btn-default.pull-right
           i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
