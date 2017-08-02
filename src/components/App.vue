@@ -39,7 +39,7 @@ div(
     .row
       navbar
     .main-app
-      router-view
+      router-view(v-if='user')
 
 </template>
 
@@ -148,7 +148,12 @@ export default {
   },
   methods: {},
 
-  computed: {},
+  computed: {
+    user: () => {
+      if(store.getters.user)
+        return store.getters.user
+    }
+  },
 
   data () {
     return {
