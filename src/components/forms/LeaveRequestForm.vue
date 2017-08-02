@@ -9,31 +9,29 @@ div
       form.form
 
         .row
+          .col-md-12.form-header-title <strong>From</strong>
           .col-md-6
-            b-form-fieldset(:feedback='fromDateFeedback', label='From', :state='fromDateState', :label-size='1')
+            b-form-fieldset(:feedback='fromDateFeedback', :state='fromDateState', :label-size='1')
               input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
-          .col-md-2.text-sm-center              
-              b-form-fieldset(label='All day')
-                b-form-checkbox(v-model='fromFullDay')
+          .col-md-2.text-sm-center
+            b-form-checkbox(v-model='fromFullDay') 24h
           .col-md-4
-            b-form-fieldset(label='Time')
-              b-form-input.form-control(type='time' step='300' v-model='fromTime', :disabled='fromFullDay')
+            b-form-input.form-control(type='time' step='300' v-model='fromTime', :disabled='fromFullDay', style='padding: 5px')
 
         .row
+          .col-md-12.form-header-title <strong>To</strong>
           .col-md-6
-            b-form-fieldset(:feedback='toDateFeedback', label='To', :state='toDateState', :label-size='1')
+            b-form-fieldset(:feedback='toDateFeedback', :state='toDateState', :label-size='1')
               input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
           .col-md-2.text-sm-center
-            b-form-fieldset(label='All day')
-              b-form-checkbox(v-model='toFullDay')
+            b-form-checkbox(v-model='toFullDay') 24h
           .col-md-4
-            b-form-fieldset(label='Time')
-              b-form-input.form-control(type='time' step='300' v-model='toTime', :disabled='toFullDay')
+            b-form-input.form-control(type='time' step='300' v-model='toTime', :disabled='toFullDay', style='padding: 5px')
 
         .row
           .col-md-12
             b-form-fieldset(:feedback='descriptionFeedback', label='Description', :state='descriptionState', :label-size='1')
-              b-form-input.form-control(textarea v-model='description' placeholder='why are you leaving us')
+              b-form-input.form-control(textarea v-model='description' placeholder='Why are you leaving us')
 
         .row
           .col-md-6(v-if='leaveTypes')
@@ -41,7 +39,7 @@ div
               b-form-select(:options='leaveTypes' v-model='leaveType', :class='getSelectClass()')
           .col-md-6
             b-form-fieldset(label='Attachments')
-              b-form-file(v-model='attachments', :multiple='true', placeholder='upload file(s)', drop-label='file', choose-label='Attachment')
+              b-form-file(v-model='attachments', :multiple='true', placeholder='Upload file(s)', drop-label='file', choose-label='Select')
 
         .btn.btn-success.col-md-12(@click='submitLeaveRequest()', v-if='buttonState')
           i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
@@ -69,9 +67,11 @@ export default {
         fromDatePicker: '',
         toDate: moment().format('DD MMM YYYY'),
         toDatePicker: '',
-        // full day
+
+        // Full day
         fromFullDay: true,
         toFullDay: true,
+
         // Time
         fromTime: '09:00',
         toTime: '17:30',
@@ -422,4 +422,43 @@ export default {
 .form-group {
   margin: 0px;
 }
+
+.form-header-title {
+  padding: 10px 15px;
+}
+
+.custom-file-control {
+    overflow: hidden;
+}
+.custom-file-control {
+    overflow: hidden;
+}
+.custom-file-control.dragging {
+    overflow: hidden;
+    filter: blur(3px);
+}
+.custom-file-control::after {
+    content: attr(data-selected);
+}
+.custom-file-control::before {
+    content: attr(data-choose);
+}
+.custom-file .drop-here {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, .5);
+    border-radius: 3px;
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.custom-file .drop-here::before {
+    color: white;
+    content: attr(data-drop);
+}
+
 </style>
