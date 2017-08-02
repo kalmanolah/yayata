@@ -114,7 +114,8 @@ export default {
         if(!store.getters.employment_contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
             params: {
-              ended_at__gte: moment().format('YYYY-MM-DD')
+              started_at__lte: moment().format('YYYY-MM-DD'),
+              ended_at__isnull: 'True'
             }
           })
         date: moment()
