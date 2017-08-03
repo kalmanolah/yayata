@@ -127,7 +127,7 @@ export default {
       showDaysInNextAndPreviousMonths: true,
       disableDayFn: val => {
         if(this.upcomingLeaves) {
-          return moment(val).isBefore(this.toDate) ? true : this.upcomingLeaves.find(x => {
+          return moment(val).isBefore(this.fromDate) ? true : this.upcomingLeaves.find(x => {
             return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
           });          
         }
