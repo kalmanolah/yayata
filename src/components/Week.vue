@@ -119,6 +119,7 @@
                     small
                       .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
                       .pull-right {{ perf.duration }} h
+
           template(v-else)
             .card-block.performance-list
             li.list-group-item.performance-entry.disabled(
@@ -169,38 +170,32 @@ export default {
     },
     
     timesheetActive: function() {
-      if(this.timesheet){
+      if(this.timesheet)
         return this.timesheet.status === store.getters.timesheet_statuses[1];
-      }
     },
 
     timesheet: function() {
+
       if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
-        var month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+        let month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+
         return store.getters.timesheets.find((ts) => {
           return ts.year === this.selectedYear && ts.month === month;
         });
       }
     },
 
-    selectedYearComp: function() {
-      return this.$route.params.year * 1;
-    },
-
-    selectedWeekComp: function() {
-      return this.$route.params.week * 1;
-    },
-
     whereabouts: function() {
-      if(store.getters.whereabouts && this.daysOfWeek){
-        var whereabouts = []
+      if(store.getters.whereabouts && this.daysOfWeek) {
+        let whereabouts = [];
+
         store.getters.whereabouts.filter((w) => {
           this.daysOfWeek.forEach((day) => {
-            if(day.format('D') == w.day){
+            if(day.format('D') == w.day)
               whereabouts.push(w);
-            }
-          })
+          });
         });
+
         return whereabouts
       }
     },
@@ -476,10 +471,8 @@ export default {
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      if(this.work_schedule) {
-        // console.log( this.work_schedule );
+      if(this.work_schedule)
         return this.work_schedule[0][day.format('dddd').toLowerCase()];
-      }
     },
 
     //Make the call to standby
@@ -861,8 +854,8 @@ export default {
   data () {
 
     return {
-      selectedYear: this.$route.params.year,
-      selectedWeek: this.$route.params.week,
+      selectedYear: parseInt(this.$route.params.year),
+      selectedWeek: parseInt(this.$route.params.week),
 
       activityPerformances: [],
       standbyPerformances: [],
