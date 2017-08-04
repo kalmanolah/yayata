@@ -50,7 +50,7 @@ div(class='calendar')
       }, determineLeaveStyle(n)]'
     )
       template(v-if='!userId')
-        router-link(:to='{name: "calendar_week", params: { year: year, week: getWeekNumber(n) } }')
+        router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }')
           .card.card-block
             p {{ n }}
               b-popover.pull-right(v-if='getLeaveForDay(n)' triggers='hover' placement='top' class='hidden-md-down')
@@ -358,13 +358,14 @@ export default {
       }
     },
 
+    //Gets the ISO year, not just the selected year, for specific dates like Jan 1st 2017 its necessary
+    getISOYear: function(val) {
+      return moment(store.getters.calendar_selected_month).date(val).isoWeekYear();
+    },
+
     //Calculate the current weeknumber
     getWeekNumber: function(val) {
-      return moment({ 
-        day: val, 
-        month: moment(store.getters.calendar_selected_month).month(),
-        year: moment(store.getters.calendar_selected_month).year()
-      }).isoWeek();
+      return moment(store.getters.calendar_selected_month).date(val).isoWeek();
     }
 
   },
