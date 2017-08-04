@@ -77,9 +77,12 @@ const state = {
       hour: 9,
       minute: 0
     },
-    end : {
+    end: {
       hour: 17,
       minute: 30
+    },
+    total: {
+      hour: 8
     }
   }
 }
@@ -889,15 +892,9 @@ const actions = {
 
 
   [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
-
     let days = moment().date();
-    let date = moment().subtract(days - 1,'days');
-    // console.log( days );
-    // console.log( date );
-    // console.log( moment().month() );
-    if(options.params) {
-      date = options.params.date;
-    }
+    let date = options.params ? options.params.date : moment().subtract(days - 1,'days');
+
     store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
        selected_month: date
     });
