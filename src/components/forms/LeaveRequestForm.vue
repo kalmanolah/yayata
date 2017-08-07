@@ -181,7 +181,6 @@ export default {
                 method: 'POST',
                 body: {
                   leave: lvResponse.body.id,
-                  timesheet: 0,
                   starts_at: s_date.format('YYYY-MM-DDTHH:mm:ss'),
                   ends_at: e_date.format('YYYY-MM-DDTHH:mm:ss')
                 },
