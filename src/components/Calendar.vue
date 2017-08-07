@@ -205,31 +205,34 @@ export default {
       let total = 0;
 
       if(this.work_schedule /*&& !this.isExcusedFromWork(day)*/) {
-        console.log( 'workschedules are loaded' );
         let wHours = store.getters.working_hours;
         let date = moment(store.getters.calendar_selected_month).date(day);
+        let dayTotal = parseFloat(this.work_schedule[date.format('dddd').toLowerCase()])
 
-        total += parseFloat(this.work_schedule[date.format('dddd').toLowerCase()]);
+        total += dayTotal;
+
+        if(total === 0)
+          return total;
 
         if(this.leaves) {
-          console.log( 'leaves are loaded' );
           this.leaves.forEach((leave) => {
             //Check whether the day corresponds to the startdate of a leave
             //If so, calculate the hourdifference && update total for this day
             if(leave.leave_start.isSame(date, 'day') || leave.leave_end.isSame(date, 'day')) {
 
-              // If leave has same startday, total -= (leave_start - working_hours.start)
-              // If leave has same endday, total -= (working_hours.end - leave_end)
               let startOfDay = moment(date).hour(wHours.start.hour).minute(wHours.start.minute);
               let endOfDay = moment(date).hour(wHours.end.hour).minute(wHours.end.minute);
 
-              let startDiff = leave.leave_start.diff(startOfDay, 'hours');
-              let endDiff = endOfDay.diff(leave.leave_end, 'hours');
+              let lvStart = moment(leave.leave_start).startOf('hour');
+              let lvEnd = moment(leave.leave_end).startOf('hour');
+
+              let startDiff = lvStart.diff(startOfDay, 'hours');
+              let endDiff = endOfDay.diff(lvEnd, 'hours');
 
               startDiff = startDiff > 0 ? startDiff : 0;
               endDiff = endDiff > 0 ? endDiff : 0;
 
-              total -= wHours.total.hour - (startDiff + endDiff);
+              total -= dayTotal - (startDiff + endDiff);
 
             } else if(date.isBetween(leave.leave_start, leave.leave_end)) {
               total = 0;
