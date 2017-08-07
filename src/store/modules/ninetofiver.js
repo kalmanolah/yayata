@@ -289,9 +289,7 @@ const getters = {
   },
   // Full contracts: merges contract, activity performances, contract users and attachments.
   full_contracts: state => {
-    if(!state.filtered_contracts || !state.contract_users || !state.monthly_activity_performances || !state.attachments){
-      return null;
-    } else {
+    if(state.filtered_contracts && state.contract_users && state.all_monthly_activity_performances && state.attachments) {
       return state.filtered_contracts.map((c) => {
 
         // Calculate total hours allocated to project contract
@@ -306,9 +304,9 @@ const getters = {
 
         // Calculate how many hours were spent this month
         let hours_spent_this_month = 0;
-        state.all_monthly_activity_performances.forEach((maperformance) => {
-          if(maperformance.contract === c.id){
-            hours_spent_this_month += (maperformance.duration * 1);
+        state.all_monthly_activity_performances.forEach((maPerformance) => {
+          if(maPerformance.contract === c.id){
+            hours_spent_this_month += (maPerformance.duration * 1);
           }
         });
 
@@ -1062,7 +1060,6 @@ const actions = {
         options
       ).then((res) => {
 
-        console.log( res.data.results );
         store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
           work_schedule: res.data.results[0]
         });
