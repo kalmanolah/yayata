@@ -6,7 +6,7 @@ div
         .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
           i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all colleagues
-      
+
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
@@ -40,12 +40,16 @@ div
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
-              span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)')  {{ group | getGroupAsString }}
+              span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
             td.email-cell(@click='promptCopyEmail(user.email)')
               span {{ user.email }}
-            td {{ user.birth_date | moment('DD/MM/YYYY') }}
+            td
+              span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+              span(v-else) &nbsp;
             td {{ user.country }}
-            td {{ user.join_date | moment('DD/MM/YYYY') }}
+            td
+              span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+              span(v-else) &nbsp;
 
     .row(v-if='users && users.length === 0')
       .col-md-3
@@ -63,8 +67,7 @@ div
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
+import * as types from '../store/mutation-types';
 import store from '../store';
 import Vue from 'vue';
 import ColleaguesFilterForm from './forms/ColleaguesFilterForm.vue';
@@ -125,7 +128,8 @@ export default {
     // Filter users by input
     queryUsers: function(){
       if(store.getters.filtered_users && this.sortedUsers && this.userId === store.getters.colleagues_filter){
-        var query = this.query;
+        let query = this.query;
+        
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
           // Fields to filter on
@@ -165,11 +169,8 @@ export default {
 
     // Sorts the table
     setTableSort: function(value) {
-      if(this.tableSort === value){
-        this.tableSort = '-' + value;
-      } else {
-        this.tableSort = value;
-      }
+      this.tableSort = (this.tableSort === value) ? '-' + value : value;
+
       var options = {
         path: '/users/',
         params: {
@@ -193,14 +194,16 @@ export default {
 
     // Determines the group tag color
     determineTagColor: function(group_id) {
-      var group_name = store.getters.user_groups.find(group => group_id === group.id).name;
+      var group = store.getters.user_groups.find(group => group_id === group.id);
+      var groupName = group.name || 'UNDEFINED';
       var tempObj = {
         [store.getters.group_names[3]]: 'tag-primary',
         [store.getters.group_names[2]]: 'tag-red',        
         [store.getters.group_names[1]]: 'tag-blue',
         [store.getters.group_names[0]]: 'tag-green',
       }
-      return (tempObj[group_name]) ? tempObj[group_name] : 'tag-primary';   
+
+      return tempObj[groupName] || 'tag-primary';   
     },
 
     reloadPage: function() {
@@ -209,8 +212,8 @@ export default {
   },
 
   filters: {
-    getGroupAsString: function(val){
-      if(store.getters.user_groups){
+    getGroupAsString: function(val) {
+      if(store.getters.user_groups) {
         let userGr = store.getters.user_groups.find(gr => val === gr.id);
         return userGr ? str(userGr.name) : 'Not found';
       }
