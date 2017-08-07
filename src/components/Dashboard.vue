@@ -66,7 +66,6 @@ div
                 td.text-md-right {{ holiday.date }}
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-xs-center <strong>No holidays!</strong>
-  .row
     .col-lg-6
       //- Leaverequest form
       LeaveRequestForm
