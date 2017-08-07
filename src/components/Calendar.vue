@@ -49,39 +49,36 @@ div(class='calendar')
         "calendar-day-current": isCurrentDay(n), \
       }, determineLeaveStyle(n)]'
     )
-      template(v-if='!userId')
-        router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }')
+
+      template
+        router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
+                    :event="!userId ? 'click' : ''"
+                    :class="!userId ? '' : 'unclickable-days'")
           .card.card-block
             p {{ n }}
-              b-popover.pull-right(v-if='getLeaveForDay(n)' triggers='hover' placement='top' class='hidden-md-down')
-                i.fa.fa-plane
+
+              //- Popover showing leaves
+              b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
+                i.fa.fa-plane(v-if='getLeaveForDay(n)')
+                i.fa.fa-university(v-else-if='isHoliday(n)')
                 div(slot='content')
-                  div.text-sm-center <strong> {{ getLeaveForDay(n).leave_type }} </strong>
-                  div <strong>From: </strong> {{ getLeaveForDay(n).leave_start | moment('DD MMMM  HH:mm') }}
-                  div <strong>Until: </strong> {{ getLeaveForDay(n).leave_end | moment('DD MMMM  HH:mm') }}
+
+                  template(v-if='isHoliday(n)')
+                    .text-sm-center <strong>Holiday </strong>
+                    .text-sm-center {{ isHoliday(n).name }}
+                  
+                  template(v-for='leave in getLeaveForDay(n)')
+                    div.text-sm-center <strong> {{ leave.leave_type }} </strong>
+                    div <strong>From: </strong> {{ leave.leave_start | moment('DD MMMM  HH:mm') }}
+                    div <strong>Until: </strong> {{ leave.leave_end | moment('DD MMMM  HH:mm') }}
 
             small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
-              |  {{ getPerformedHours(n) | roundHoursFilter }} /
+              | {{ getPerformedHours(n) | roundHoursFilter }} /
               | {{ getRequiredHours(n) | roundHoursFilter}}
-
-      template(v-else)
-        .card.card-block
-          p {{ n }}
-            b-popover.pull-right(v-if='getLeaveForDay(n)' triggers='hover' placement='top' class='hidden-md-down')
-              i.fa.fa-plane
-              div(slot='content')
-                div.text-sm-center <strong> {{ getLeaveForDay(n).leave_type }} </strong>
-                div <strong>From: </strong> {{ getLeaveForDay(n).leave_start | moment('DD MMMM  HH:mm') }}
-                div <strong>Until: </strong> {{ getLeaveForDay(n).leave_end | moment('DD MMMM  HH:mm') }}
-
-          small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
-            |  {{ getPerformedHours(n) | roundHoursFilter }} /
-            | {{ getRequiredHours(n) | roundHoursFilter}}
 
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
@@ -260,7 +257,7 @@ export default {
 
     //Check whether holiday / user is on leave
     isExcusedFromWork: function(day) {
-      return this.isHoliday(day) || this.getLeaveForDay(day);
+      return this.isHoliday(day) || this.getLeaveForDay(day) ? this.getLeaveForDay(day).length > 0 : null;
     },
 
     // Checks whether the day is a holiday
@@ -294,7 +291,7 @@ export default {
     getLeaveForDay: function(day) {
       let today = moment(store.getters.calendar_selected_month).date(day);
 
-      return this.leaves.find(x => {
+      return this.leaves.filter(x => {
         return today.isBetween(x.leave_start, x.leave_end, 'date', '[]');
       });
     },
@@ -630,5 +627,9 @@ export default {
   }
 }
 
+.unclickable-days {
+  text-decoration: none;
+  cursor: default;
+}
 
 </style>
