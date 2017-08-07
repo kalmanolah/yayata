@@ -225,18 +225,8 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedules && store.getters.employment_contracts) {
-        let work_schedules = [];
-
-        store.getters.employment_contracts.forEach((ec) => {
-          let work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
-
-          if(work_schedule) {
-            work_schedules.push(work_schedule);
-          }
-        });
-
-        return work_schedules
+      if(store.getters.work_schedule) {
+        return store.getters.work_schedule;
       }
     },
 
@@ -472,7 +462,7 @@ export default {
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
       if(this.work_schedule)
-        return this.work_schedule[0][day.format('dddd').toLowerCase()];
+        return this.work_schedule[day.format('dddd').toLowerCase()];
     },
 
     //Make the call to standby

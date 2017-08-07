@@ -95,7 +95,7 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
         if(!store.getters.user_work_schedule)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
-        if(!store.getters.work_schedule)
+        if(!store.getters.work_schedules)
           store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULES);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);

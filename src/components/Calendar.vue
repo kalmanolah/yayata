@@ -204,15 +204,15 @@ export default {
     getRequiredHours: function(day) {
       let total = 0;
 
-      if(this.workschedule /*&& !this.isExcusedFromWork(day)*/) {
+      if(this.work_schedule /*&& !this.isExcusedFromWork(day)*/) {
+        console.log( 'workschedules are loaded' );
         let wHours = store.getters.working_hours;
         let date = moment(store.getters.calendar_selected_month).date(day);
 
-        this.workschedule.forEach(x => {
-          total += parseFloat(x[date.format('dddd').toLowerCase()]);
-        });
+        total += parseFloat(this.work_schedule[date.format('dddd').toLowerCase()]);
 
         if(this.leaves) {
+          console.log( 'leaves are loaded' );
           this.leaves.forEach((leave) => {
             //Check whether the day corresponds to the startdate of a leave
             //If so, calculate the hourdifference && update total for this day
@@ -431,63 +431,62 @@ export default {
       return daysInWeek;
     },
 
-    //Hours required according to workschedules
+    //Hours required according to workschedule
     totalHoursRequired: function() {
       let total = 0;
 
       // Get workschedule from active contracts
-      if(this.workschedule && this.leaves && store.getters.holidays && this.selected_month) {
+      if(this.work_schedule && this.leaves && store.getters.holidays && this.selected_month) {
 
-        this.workschedule.forEach(ws => {
+        let ws = this.work_schedule;
 
-          //Add regular days to total
-          for(let w in ws) {
-            if(this.days[w] >= 0) {
-              total += parseFloat(ws[w]) * this.days[w];
+        //Add regular days to total
+        for(let w in ws) {
+          if(this.days[w] >= 0) {
+            total += parseFloat(ws[w]) * this.days[w];
+          }
+        }
+
+        // //Correcting total with holidays
+        let startOfMonth = moment(this.selected_month).startOf('month');
+        let endOfMonth = moment(this.selected_month).endOf('month');
+  
+        store.getters.holidays.forEach(holiday => {
+          if(this.user.country === holiday.country){
+            let date = moment(holiday.date).format('YYYY-MM-DD');
+
+            if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
+              total -= 8;
             }
           }
+        });
 
-          // //Correcting total with holidays
-          let startOfMonth = moment(this.selected_month).startOf('month');
-          let endOfMonth = moment(this.selected_month).endOf('month');
-    
-          store.getters.holidays.forEach(holiday => {
-            if(this.user.country === holiday.country){
-              let date = moment(holiday.date).format('YYYY-MM-DD');
+        // //Correcting total with leaves
+        this.leaves.forEach(lv => {
+          let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+          let endOfDay = moment(lv.leave_end).hour(17).minute(30);
+          let ld = moment(lv.leave_start).add(1, 'days');
 
-              if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
-                total -= 8;
-              }
+          let startDiff = lv.leave_start.diff(startOfDay, 'hours');
+          let endDiff = endOfDay.diff(lv.leave_end, 'hours');
+
+          //Do not occur on the same day
+          if(lv.leave_start.date() !== lv.leave_end.date()) {
+
+            //Subtract either the hours gone, or the complete day
+            total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
+            total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+
+            //While the leavedate isn't equal to the enddate
+            while(ld.date() !== lv.leave_end.date()) {
+              total -= ws[ld.format('dddd').toLowerCase()];
+
+              ld = ld.add(1, 'days');
             }
-          });
-
-          // //Correcting total with leaves
-          this.leaves.forEach(lv => {
-            let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-            let endOfDay = moment(lv.leave_end).hour(17).minute(30);
-            let ld = moment(lv.leave_start).add(1, 'days');
-
-            let startDiff = lv.leave_start.diff(startOfDay, 'hours');
-            let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-
-            //Do not occur on the same day
-            if(lv.leave_start.date() !== lv.leave_end.date()) {
-
-              //Subtract either the hours gone, or the complete day
-              total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-              total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
-
-              //While the leavedate isn't equal to the enddate
-              while(ld.date() !== lv.leave_end.date()) {
-                total -= ws[ld.format('dddd').toLowerCase()];
-
-                ld = ld.add(1, 'days');
-              }
-            } else {
-              total -= (startDiff > 0) ? startDiff : 0;
-              total -= (endDiff > 0) ? endDiff : 0;
-            }
-          });
+          } else {
+            total -= (startDiff > 0) ? startDiff : 0;
+            total -= (endDiff > 0) ? endDiff : 0;
+          }
         });
       }
 
@@ -536,19 +535,16 @@ export default {
         return store.getters.employment_contracts
     },
 
-    workschedule: function() {
-      if(store.getters.work_schedules && this.employment_contracts){
-        return store.getters.work_schedules.filter((ws) => {
-          return this.employment_contracts.find((ec) => ec.work_schedule === ws.id);
-        });
-      }
+    work_schedule: function() {
+      if(store.getters.user_work_schedule) 
+        return store.getters.user_work_schedule;
     },
 
     dayOffset: (vm) => {
-      let dow = moment(store.getters.calendar_selected_month).day()
-      if (dow == 0) {
-        dow = 7
-      }
+      let dow = moment(store.getters.calendar_selected_month).day();
+      if (dow == 0)
+        dow = 7;
+
       return dow - 1
     },
 

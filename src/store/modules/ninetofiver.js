@@ -1062,8 +1062,9 @@ const actions = {
         options
       ).then((res) => {
 
+        console.log( res.data.results );
         store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
-          work_schedule: res.data.results
+          work_schedule: res.data.results[0]
         });
         resolve(res);
 
