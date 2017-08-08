@@ -39,7 +39,7 @@ div(
     .row
       navbar
     .main-app
-      router-view
+      router-view(v-if='user')
 
 </template>
 
@@ -95,7 +95,7 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
         if(!store.getters.user_work_schedule)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
-        if(!store.getters.work_schedule)
+        if(!store.getters.work_schedules)
           store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULES);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
@@ -114,7 +114,8 @@ export default {
         if(!store.getters.employment_contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
             params: {
-              ended_at__gte: moment().format('YYYY-MM-DD')
+              started_at__lte: moment().format('YYYY-MM-DD'),
+              ended_at__isnull: 'True'
             }
           })
         date: moment()
@@ -148,7 +149,12 @@ export default {
   },
   methods: {},
 
-  computed: {},
+  computed: {
+    user: () => {
+      if(store.getters.user)
+        return store.getters.user
+    }
+  },
 
   data () {
     return {

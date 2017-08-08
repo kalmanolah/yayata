@@ -42,44 +42,43 @@ div(class='calendar')
     )
 
     //- Day-blocks
-    div(
+    .calendar-day(
       v-for='(n, i) in dayCount'
-      class='calendar-day'
       v-bind:class='[{ \
         "calendar-day-weekend": isWeekendDay(n), \
         "calendar-day-current": isCurrentDay(n), \
       }, determineLeaveStyle(n)]'
     )
-      template(v-if='!userId')
-        router-link(:to='{name: "calendar_week", params: { year: year, week: getWeekNumber(n) } }')
-          div(class='card card-block')
+
+      template
+        router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
+                    :event="!userId ? 'click' : ''"
+                    :class="!userId ? '' : 'unclickable-days'")
+          .card.card-block
             p {{ n }}
-              b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
-                i.fa.fa-plane
+
+              //- Popover showing leaves
+              b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
+                i.fa.fa-plane(v-if='getLeaveForDay(n)')
+                i.fa.fa-university(v-else-if='isHoliday(n)')
                 div(slot='content')
-                  div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
-                  div <strong>From: </strong> {{ getLeaveRange(n).leave_start | moment('DD MMMM  HH:mm') }}
-                  div <strong>Until: </strong> {{ getLeaveRange(n).leave_end | moment('DD MMMM  HH:mm') }}
+
+                  template(v-if='isHoliday(n)')
+                    .text-sm-center <strong>Holiday </strong>
+                    .text-sm-center {{ isHoliday(n).name }}
+                  
+                  template(v-for='leave in getLeaveForDay(n)')
+                    div.text-sm-center <strong> {{ leave.leave_type }} </strong>
+                    div <strong>From: </strong> {{ leave.leave_start | moment('DD MMMM  HH:mm') }}
+                    div <strong>Until: </strong> {{ leave.leave_end | moment('DD MMMM  HH:mm') }}
+
             small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
-              |  {{ getPerformedHours(n) | roundHoursFilter }} /
+              | {{ getPerformedHours(n) | roundHoursFilter }} /
               | {{ getRequiredHours(n) | roundHoursFilter}}
-      template(v-else)
-        div(class='card card-block')
-          p {{ n }}
-            b-popover.pull-right(v-if='isOnLeave(n)' triggers='hover' placement='top' class='hidden-md-down')
-              i.fa.fa-plane
-              div(slot='content')
-                div.text-sm-center <strong> {{ getLeaveRange(n).leave_type }} </strong>
-                div <strong>From: </strong> {{ getLeaveRange(n).leave_start | moment('DD MMMM  HH:mm') }}
-                div <strong>Until: </strong> {{ getLeaveRange(n).leave_end | moment('DD MMMM  HH:mm') }}
-          small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
-            |  {{ getPerformedHours(n) | roundHoursFilter }} /
-            | {{ getRequiredHours(n) | roundHoursFilter}}
 
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
@@ -93,107 +92,87 @@ export default {
   ],
 
   watch: {
-    '$route' (to, from) {
-      if(this.$route.params.year && this.$route.params.month){
-        this.getPerformances();
-        this.getLeaves();
-        this.reloadEmploymentContracts()
-      }
-    },
 
     // Watches selected user from parent component.
     userId: function(oldUserid, newUserId) {
-      this.getPerformances();
-      this.getLeaves();
-      this.reloadEmploymentContracts()
+      this.buildPageInfo();
     },
 
     selected_month: function(oldUserid, newUserId) {
-      this.getPerformances();
-      this.getLeaves();
-      this.reloadEmploymentContracts()
+      this.buildPageInfo();
     },
 
-    user: function(oldUser, newUser) {
+  },
+
+  created: function () {
+    this.buildPageInfo();
+  },
+
+  methods: {
+
+    //Requests all data
+    buildPageInfo: function() {
       this.getPerformances();
       this.getLeaves();
       this.reloadEmploymentContracts();
     },
 
-    // Watches selected month from parent component.
-    selectedMonthProp: function(oldSelectedMonthProp, newSelectedMonthProp){
-      this.getPerformances();
-      this.getLeaves();
-      this.reloadEmploymentContracts()
-    }
-  },
-
-  created: function () {
-    this.getPerformances();
-    this.getLeaves();
-    this.reloadEmploymentContracts()
- },
-
-  methods: {
+    //Reload the user's employment contracts
     reloadEmploymentContracts: function() {
-      let ec_user = this.userId ? this.userId : this.user.id;
-      let today = moment(store.getters.calendar_selected_month).format('YYYY-MM-DD');
+      let ec_user = this.userId || this.user.id;
+
       store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
         params: {
           user: ec_user,
-          ended_at__gte: today
+          ended_at__isnull: 'True'
         }
       });
-    },
-
-    //Return style based on quota
-    getDailyQuota: function(day) {
-      let performed = this.getPerformedHours(day);
-      let required = this.getRequiredHours(day);
-
-      let quota = required > 0 ? performed / required : 1;
-
-      return quota >= 1 ? 'tag-success' : quota <= 0.6 ? 'tag-danger' : 'tag-warning';
     },
 
     //Get all leaves for this month
     getLeaves: function() {
-      //Make param for month's range
-      let startOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
-      let endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
-      let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/leaves/',
-        params: {
-          user_id: this.user.id,
-          status: store.getters.leave_statuses[2],
-          leavedate__range: range,
-        }
-      }).then((response) => {
+      if(store.getters.calendar_selected_month) {
+        //Make param for month's range
+        let startOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
+        let endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
+        let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
 
-        response.data.results.forEach(lv => {
-          lv.leavedate_set.forEach(lvd => {
-            lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
-            lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+        store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: '/leaves/',
+          params: {
+            user_id: this.user.id,
+            status: store.getters.leave_statuses[2],
+            leavedate__range: range,
+          }
+        }).then((response) => {
+
+          response.data.results.forEach(lv => {
+            lv.leavedate_set.forEach(lvd => {
+              lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
+              lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+            });
+          
+            lv['leave_start'] = lv.leavedate_set[0].starts_at;
+            lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+
+            lv['leave_type'] = !this.leaveTypes ? 'UNKNOWN TYPE' : this.leaveTypes.find(x => {
+              return x.id === lv.leave_type; 
+            }).display_label;
           });
-        
-          lv['leave_start'] = lv.leavedate_set[0].starts_at;
-          lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).display_label;
-
+          this.leaves = response.data.results;
+        }, () => {
+          this.loading = false;
         });
-
-        this.leaves = response.data.results;
-      }, () => {
-        this.loading = false;
-      });
+      }
     },
 
     //Get all performances for this month
     getPerformances: function() {
+
       let month = moment(store.getters.calendar_selected_month).month() + 1;
       let year = moment(store.getters.calendar_selected_month).year();
+
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/performances/',
         params: {
@@ -208,38 +187,58 @@ export default {
       });
     },
 
-    //Get hours required per day
+    //Return style based on quota
+    getDailyQuota: function(day) {
+      let performed = this.getPerformedHours(day);
+      let required = this.getRequiredHours(day);
+
+      let quota = required > 0 ? performed / required : 1;
+
+      return quota >= 1 ? 'tag-success' : quota <= 0.7 ? 'tag-danger' : 'tag-warning';
+    },
+
+    //Get hours required per day, based on workschedule, holiday & leave
     getRequiredHours: function(day) {
       let total = 0;
-      if(this.workschedule && !this.isHoliday(day)) {
+
+      if(this.work_schedule /*&& !this.isExcusedFromWork(day)*/) {
+        let wHours = store.getters.working_hours;
         let date = moment(store.getters.calendar_selected_month).date(day);
-        this.workschedule.forEach(x => {
-          total += parseFloat(x[date.format('dddd').toLowerCase()]);
-        });        
+        let dayTotal = parseFloat(this.work_schedule[date.format('dddd').toLowerCase()])
+
+        total += dayTotal;
+
+        if(total === 0)
+          return total;
+
+        if(this.leaves) {
+          this.leaves.forEach((leave) => {
+            //Check whether the day corresponds to the startdate of a leave
+            //If so, calculate the hourdifference && update total for this day
+            if(leave.leave_start.isSame(date, 'day') || leave.leave_end.isSame(date, 'day')) {
+
+              let startOfDay = moment(date).hour(wHours.start.hour).minute(wHours.start.minute);
+              let endOfDay = moment(date).hour(wHours.end.hour).minute(wHours.end.minute);
+
+              let lvStart = moment(leave.leave_start).startOf('hour');
+              let lvEnd = moment(leave.leave_end).startOf('hour');
+
+              let startDiff = lvStart.diff(startOfDay, 'hours');
+              let endDiff = endOfDay.diff(lvEnd, 'hours');
+
+              startDiff = startDiff > 0 ? startDiff : 0;
+              endDiff = endDiff > 0 ? endDiff : 0;
+
+              total -= dayTotal - (startDiff + endDiff);
+
+            } else if(date.isBetween(leave.leave_start, leave.leave_end)) {
+              total = 0;
+            }
+          });
+        }
       }
-      if(this.leaves) {
-        let date = day;
-        let year = moment(store.getters.calendar_selected_month).year();
-        let month = moment(store.getters.calendar_selected_month).month();
-        this.leaves.forEach((leave) => {
-          let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([year, month, date ]), 'day'));
-          if(ld){
-            let endOfDay = moment([year, month, date, 17, 30]);
-            let startOfDay = moment([year, month, date, 9]);
 
-            let startDiff = moment(ld.starts_at._i).subtract(2, 'hours').diff(startOfDay, 'hours');
-            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at._i, 'hours');
-            
-            startDiff = startDiff > 0 ? startDiff : 0;
-            endDiff = endDiff > 0 ? endDiff : 0;
-
-            let leaveDuration = (8 - (startDiff + endDiff));
-            total -= leaveDuration;
-          }
-        });
-      }
-
-      return total;
+      return total >= 0 ? total : 0;
     },
 
     //Get hours performed per day
@@ -256,70 +255,44 @@ export default {
       return total;
     },
 
-    isHoliday: function(day) {
-      let today = moment(store.getters.calendar_selected_month).date(day);
-      let holiday = false;
-      let empContract = store.getters.employment_contracts.find((ec) => {
-        return ec.user === this.user.id;
-      });
-      let companyId = empContract ? empContract.company : null;
-      if(companyId) {
-        let companyCountry = store.getters.companies.find((c) => {
-          return c.id === companyId;
-        }).country;
+    //Check whether holiday / user is on leave
+    isExcusedFromWork: function(day) {
+      return this.isHoliday(day) || this.getLeaveForDay(day) ? this.getLeaveForDay(day).length > 0 : null;
+    },
 
-        if(store.getters.holidays) {
-          store.getters.holidays.forEach(x => {
-            if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-              holiday = true;
+    // Checks whether the day is a holiday
+    isHoliday: function(day) {
+
+      let holiday = false;
+      let today = moment(store.getters.calendar_selected_month).date(day);
+
+      if(store.getters.employment_contracts) {
+        let emplContr = store.getters.employment_contracts.find(ec => {
+          return ec.user === this.user.id;
+        });
+
+        if(emplContr && store.getters.companies) {
+          let comp = store.getters.companies.find(c => {
+            return c.id === emplContr.company;
           });
+
+          if(comp && store.getters.holidays) {
+            holiday = store.getters.holidays.find(h => {
+              return (today.format('YYYY-MM-DD') === h.date && h.country === comp.country);
+            });
+          }
         }
       }
+
       return holiday
     }, 
 
-    //Check whether holiday / user is on leave
-    isExcusedFromWork: function(day) {
-      let today = moment(store.getters.calendar_selected_month).date(day);
-      let onLeave = false;
-      let empContract = store.getters.employment_contracts.find((ec) => {
-        return ec.user === this.user.id;
-      });
-      let companyId = empContract ? empContract.company : null;
-      if(companyId) {
-        let companyCountry = store.getters.companies.find((c) => {
-          return c.id === companyId;
-        }).country;
-
-        if(store.getters.holidays) {
-          store.getters.holidays.forEach(x => {
-            if (today.format('YYYY-MM-DD') === x.date && x.country === companyCountry)
-              onLeave = true;
-          });
-        }
-      }
-
-      return onLeave || this.isOnLeave(day);
-    },
-
-    //Check whether user is on requested leave on that particular day
-    isOnLeave: function(day) {
+    //Check whether user is on a requested leave on that particular day
+    getLeaveForDay: function(day) {
       let today = moment(store.getters.calendar_selected_month).date(day);
 
-      return this.leaves.some(x => {
-        let start = x.leavedate_set[0].starts_at.hours(0).minutes(0);
-        let end = x.leavedate_set[x.leavedate_set.length - 1].ends_at.hours(23).minutes(59);
-        
-        return (start <= today && end >= today);
-      });
-    },
-
-    //Formatting to help display in calendar
-    getLeaveRange: function(day) {
-      let today = moment(store.getters.calendar_selected_month).date(day);
-      return this.leaves.find(x => {
-        return today.isSameOrAfter(x.leave_start) 
-          && today.isSameOrBefore(x.leave_end);
+      return this.leaves.filter(x => {
+        return today.isBetween(x.leave_start, x.leave_end, 'date', '[]');
       });
     },
 
@@ -331,31 +304,47 @@ export default {
                 'calendar-day-on-leave';
     },
 
+    //Returns the day of the week on which the day provided resides
     getDayOfWeek: function (day) {
       return (this.dayOffset + day) % 7
     },
 
+    //Checks if the day provided is in the weekend
     isWeekendDay: function (day) {
       let dow = this.getDayOfWeek(day)
       return dow > 5 || dow < 1
     },
 
+    //Checks if the day provided is the current day
     isCurrentDay: function (day) {
-      let now = new Date()
+      let today = moment();
+      let date = moment(store.getters.calendar_selected_month).date(day);
 
-      if (
-        (day == now.getDate()) &&
-        (now.getMonth() == moment(store.getters.calendar_selected_month).month()) &&
-        (now.getFullYear() == moment(store.getters.calendar_selected_month).year())
-      ) {
-        return true;
-      }
-
-      return false
+      return today.startOf('day').isSame(date.startOf('day'));
     },
 
+    //Calls setSelectedMonth with the next month
+    selectNextMonth: function () {
+      let date = moment(this.selected_month).add(1, 'month');
+      let options = { params: { date:date }};
+
+      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
+      this.setSelectedMonth(date.year(), date.month());
+    },
+
+    //Calls setSelectedMonth with the previous month
+    selectPreviousMonth: function () {
+      let date = moment(this.selected_month).subtract(1, 'month');
+      let options = { params: { date:date }};
+
+      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
+      this.setSelectedMonth(date.year(), date.month());
+    },
+
+    //Pushes the new date into the router, so the view navigates to a new page
+    //If no userID is provided
     setSelectedMonth: function (year, month) {
-      if(!this.userId){
+      if(!this.userId) {
         this.$router.push({
           name: 'calendar_month',
           params: {
@@ -369,72 +358,30 @@ export default {
       }
     },
 
-    selectNextMonth: function () {
-      let date = moment(this.selected_month).add(1, 'month')
-      let options = {
-        params: {
-          date:date
-        }
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
-      this.setSelectedMonth(moment(date).year(), moment(date).month());
+    //Gets the ISO year, not just the selected year, for specific dates like Jan 1st 2017 its necessary
+    getISOYear: function(val) {
+      return moment(store.getters.calendar_selected_month).date(val).isoWeekYear();
     },
 
-    selectPreviousMonth: function () {
-      let date = moment(this.selected_month).subtract(1, 'month')
-      let options = {
-        params: {
-          date:date
-        }
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
-      this.setSelectedMonth(moment(date).year(), moment(date).month());
-    },
-
+    //Calculate the current weeknumber
     getWeekNumber: function(val) {
-      return moment({ 
-        day: val, 
-        month: moment(store.getters.calendar_selected_month).month(),
-        year: moment(store.getters.calendar_selected_month).year()
-      }).isoWeek();
+      return moment(store.getters.calendar_selected_month).date(val).isoWeek();
     }
 
-  },
-
-  data () {
-
-    return {
-      leaves: [],
-      performances: [],
-      // selectedMonth: moment().startOf('month').format('YYYY-MM-DD'),
-      weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
-      months: [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December',
-      ],
-
-    }
   },
 
   computed: {
-    params: function(){
-      if(this.$route.params.year){
-        let date = moment().year(this.$route.params.year).month(this.$route.params.month - 1).startOf('month').format('YYYY-MM-DDThh:mm:ss');
+
+    params: function() {
+      if(this.$route.params.year) {
+        let date = moment({ year: this.$route.params.year, month: this.$route.params.month - 1 }).startOf('month');
+
         store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, {
           params: {
-            date: date
+            date: date.format('YYYY-MM-DDThh:mm:ss')
           }
         });
+
         return this.$route.params;
       }
     },
@@ -447,11 +394,11 @@ export default {
 
     // If no userId prop is passed get the details of the current user.
     user: function() {
-      if(!this.userId && store.getters.user) {
+      if(!this.userId && store.getters.user)
         return store.getters.user;
-      } else if(this.userId && store.getters.users) {
+      
+      if(this.userId && store.getters.users)
         return store.getters.users.find(u => u.id === this.userId);
-      }
     },
 
     year: function() {
@@ -468,8 +415,8 @@ export default {
       let daysInWeek = [];
 
       //Make days-object containing amount of -days in current month
-      let dayOfMonth = moment(this.selectedMonth).startOf('month');
-      let endOfMonth = moment(this.selectedMonth).endOf('month');
+      let dayOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
+      let endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
 
       while(dayOfMonth <= endOfMonth) {
         let weekday = dayOfMonth.format('dddd').toLowerCase();
@@ -484,61 +431,62 @@ export default {
       return daysInWeek;
     },
 
-    //Hours required according to workschedules
+    //Hours required according to workschedule
     totalHoursRequired: function() {
       let total = 0;
-      // Get workschedule from active contracts
 
-      if(this.workschedule && this.leaves && store.getters.holidays && this.selected_month) {
-        this.workschedule.forEach(ws => {
-          //Add regular days to total
-          for(let w in ws) {
-            if(store.getters.days[w] >= 0){
-              total += parseFloat(ws[w]) * this.days[w];
+      // Get workschedule from active contracts
+      if(this.work_schedule && this.leaves && store.getters.holidays && this.selected_month) {
+
+        let ws = this.work_schedule;
+
+        //Add regular days to total
+        for(let w in ws) {
+          if(this.days[w] >= 0) {
+            total += parseFloat(ws[w]) * this.days[w];
+          }
+        }
+
+        // //Correcting total with holidays
+        let startOfMonth = moment(this.selected_month).startOf('month');
+        let endOfMonth = moment(this.selected_month).endOf('month');
+  
+        store.getters.holidays.forEach(holiday => {
+          if(this.user.country === holiday.country){
+            let date = moment(holiday.date).format('YYYY-MM-DD');
+
+            if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
+              total -= 8;
             }
           }
+        });
 
-          //Correcting total with holidays
-          let startOfMonth = moment(this.selected_month).startOf('month');
-          let endOfMonth = moment(this.selected_month).endOf('month');
-    
-          store.getters.holidays.forEach(holiday => {
-            if(this.user.country === holiday.country){
-              let date = moment(holiday.date).format('YYYY-MM-DD');
+        // //Correcting total with leaves
+        this.leaves.forEach(lv => {
+          let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+          let endOfDay = moment(lv.leave_end).hour(17).minute(30);
+          let ld = moment(lv.leave_start).add(1, 'days');
 
-              if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
-                total -= 8;
-              }
+          let startDiff = lv.leave_start.diff(startOfDay, 'hours');
+          let endDiff = endOfDay.diff(lv.leave_end, 'hours');
+
+          //Do not occur on the same day
+          if(lv.leave_start.date() !== lv.leave_end.date()) {
+
+            //Subtract either the hours gone, or the complete day
+            total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
+            total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
+
+            //While the leavedate isn't equal to the enddate
+            while(ld.date() !== lv.leave_end.date()) {
+              total -= ws[ld.format('dddd').toLowerCase()];
+
+              ld = ld.add(1, 'days');
             }
-          });
-
-          //Correcting total with leaves
-          this.leaves.forEach(lv => {
-            let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-            let endOfDay = moment(lv.leave_end).hour(17).minute(30);
-            let ld = moment(lv.leave_start).add(1, 'days');
-
-            let startDiff = lv.leave_start.diff(startOfDay, 'hours');
-            let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-
-            //Do not occur on the same day
-            if(lv.leave_start.date() !== lv.leave_end.date()) {
-
-              //Subtract either the hours gone, or the complete day
-              total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-              total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
-
-              //While the leavedate isn't equal to the enddate
-              while(ld.date() !== lv.leave_end.date()) {
-                total -= ws[ld.format('dddd').toLowerCase()];
-
-                ld = ld.add(1, 'days');
-              }
-            } else {
-              total -= (startDiff > 0) ? startDiff : 0;
-              total -= (endDiff > 0) ? endDiff : 0;
-            }
-          });
+          } else {
+            total -= (startDiff > 0) ? startDiff : 0;
+            total -= (endDiff > 0) ? endDiff : 0;
+          }
         });
       }
 
@@ -587,19 +535,16 @@ export default {
         return store.getters.employment_contracts
     },
 
-    workschedule: function() {
-      if(store.getters.work_schedules && this.employment_contracts){
-        return store.getters.work_schedules.filter((ws) => {
-          return this.employment_contracts.find((ec) => ec.work_schedule === ws.id);
-        });
-      }
+    work_schedule: function() {
+      if(store.getters.user_work_schedule) 
+        return store.getters.user_work_schedule;
     },
 
     dayOffset: (vm) => {
-      let dow = moment(store.getters.calendar_selected_month).day()
-      if (dow == 0) {
-        dow = 7
-      }
+      let dow = moment(store.getters.calendar_selected_month).day();
+      if (dow == 0)
+        dow = 7;
+
       return dow - 1
     },
 
@@ -616,6 +561,30 @@ export default {
       return Math.round(val * 2) / 2;
     },
   },
+
+  data () {
+
+    return {
+      leaves: [],
+      performances: [],
+      weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
+      months: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ],
+
+    }
+  }
 
 }
 </script>
@@ -658,5 +627,9 @@ export default {
   }
 }
 
+.unclickable-days {
+  text-decoration: none;
+  cursor: default;
+}
 
 </style>

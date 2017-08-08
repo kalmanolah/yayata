@@ -71,6 +71,19 @@ const state = {
     friday: 0,
     saturday: 0,
     sunday: 0
+  },
+  working_hours: {
+    start: {
+      hour: 9,
+      minute: 0
+    },
+    end: {
+      hour: 17,
+      minute: 30
+    },
+    total: {
+      hour: 8
+    }
   }
 }
 
@@ -276,9 +289,7 @@ const getters = {
   },
   // Full contracts: merges contract, activity performances, contract users and attachments.
   full_contracts: state => {
-    if(!state.filtered_contracts || !state.contract_users || !state.monthly_activity_performances || !state.attachments){
-      return null;
-    } else {
+    if(state.filtered_contracts && state.contract_users && state.all_monthly_activity_performances && state.attachments) {
       return state.filtered_contracts.map((c) => {
 
         // Calculate total hours allocated to project contract
@@ -293,9 +304,9 @@ const getters = {
 
         // Calculate how many hours were spent this month
         let hours_spent_this_month = 0;
-        state.all_monthly_activity_performances.forEach((maperformance) => {
-          if(maperformance.contract === c.id){
-            hours_spent_this_month += (maperformance.duration * 1);
+        state.all_monthly_activity_performances.forEach((maPerformance) => {
+          if(maPerformance.contract === c.id){
+            hours_spent_this_month += (maPerformance.duration * 1);
           }
         });
 
@@ -380,6 +391,7 @@ const getters = {
   contract_types: state => state.contract_types,
   colleagues_filter: state => state.colleagues_filter,
   days: status => state.days,
+  working_hours: state => state.working_hours,
 
   //Calculated
   open_timesheet_count: state => {
@@ -879,10 +891,8 @@ const actions = {
 
   [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH] (store, options = {}) {
     let days = moment().date();
-    let date = moment().subtract(days - 1,'days');
-    if(options.params){
-      date = options.params.date;
-    }
+    let date = options.params ? options.params.date : moment().subtract(days - 1,'days');
+
     store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
        selected_month: date
     });
@@ -1051,7 +1061,7 @@ const actions = {
       ).then((res) => {
 
         store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
-          work_schedule: res.data.results
+          work_schedule: res.data.results[0]
         });
         resolve(res);
 

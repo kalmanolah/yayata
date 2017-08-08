@@ -84,15 +84,8 @@
       },
 
     work_schedule: function() {
-      if(store.getters.work_schedules && store.getters.user && store.getters.employment_contracts){
-        var work_schedules = [];
-        store.getters.employment_contracts.forEach((ec) => {
-          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
-          if(work_schedule){
-            work_schedules.push(work_schedule);
-          }
-        });
-        return work_schedules
+      if(store.getters.user_work_schedule) {
+        return store.getters.user_work_schedule
       }
     },
 
@@ -115,7 +108,7 @@
       loaded: {
         handler: function(newLoaded) {
 
-          for(var l in newLoaded) {
+          for(let l in newLoaded) {
             if(!this.called[l])
               this.called[l] = { performances: false, leaves: false };
 
@@ -141,36 +134,44 @@
     methods: {
       // Set the status of this sheet to PENDING.
       setPending: function(sheet) {
+
         var body = {
           month: sheet.month,
           year: sheet.year,
           status: 'PENDING'
-        }
-        store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/my_timesheets/' + sheet.id + '/',
-          method: 'PATCH',
-          body: body,
-          emulateJSON: true,
-        }).then((res) => {
+        };
+
+        store.dispatch(
+          types.NINETOFIVER_API_REQUEST, 
+          {
+            path: '/my_timesheets/' + sheet.id + '/',
+            method: 'PATCH',
+            body: body,
+            emulateJSON: true,
+          }
+        ).then((res) => {
+
           if(res.status == 200) {
             this.$toast('Timesheet is now pending, you can\'t modify it anymore.', {
               id: 'pending-toast',
               horizontalPosition: 'right',
               verticalPosition: 'top',
-              duration: 1000,
+              duration: 3000,
               transition: 'slide-down',
               mode: 'override'
             });
+
             store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
               filter_future_timesheets: true
             });
+            
           } else {
             console.error(res);
             this.$toast('Something went wrong while setting timesheet to pending. Check the console for more information', {
               id: 'pending-failed-toast',
               horizontalPosition: 'right',
               verticalPosition: 'top',
-              duration: 1000,
+              duration: 3000,
               transition: 'slide-down',
               mode: 'override'
             });
@@ -279,58 +280,52 @@
       //Calculate required hours for a certain timesheet
       getRequiredHours: function(timesheet) {
         if(this.work_schedule && this.leaves[timesheet.id] && this.daysInMonth[timesheet.id] && store.getters.holidays) {
-          var total = 0;
+          let total = 0;
+          let ws = this.work_schedule;
 
-          this.work_schedule.forEach(ws => {
+          //Add regular days to total
+          for(let w in ws) {
+            if(store.getters.days[w] >= 0)
+              total += parseFloat(ws[w]) * this.daysInMonth[timesheet.id][w];
+          }
+          
+          //Correcting total with holidays
+          store.getters.holidays.forEach(h => {
+            var date = moment(h.date, 'YYYY-MM-DD');
 
-            //Add regular days to total
-            for(var w in ws)
-              if(store.getters.days[w] >= 0)
-                total += parseFloat(ws[w]) * this.daysInMonth[timesheet.id][w];
-            
-            console.log(total)
-            //Correcting total with holidays
-            store.getters.holidays.forEach(h => {
-              var date = moment(h.date, 'YYYY-MM-DD');
-
-              if(timesheet.month - 1 === date.month())
-                total -= ws[date.format('dddd').toLowerCase()];
-            });
-
-            console.log(total)
-
-            //Correcting total with leaves
-            this.leaves[timesheet.id].forEach(lv => {
-              let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-              let endOfDay = moment(lv.leave_end).hour(17).minute(30);
-              let ld = moment(lv.leave_start).add(1, 'days');
-
-              let startDiff = lv.leave_start.diff(startOfDay, 'hours');
-              let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-              console.log(endDiff)
-              console.log(startDiff)
-
-              console.log(8 - (startDiff + endDiff))
-              //Do not occur on the same day
-              if(lv.leave_start.date() !== lv.leave_end.date()) {
-
-                //Subtract either the hours gone, or the complete day
-                total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
-                total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
-
-                //While the leavedate isn't equal to the enddate
-                while(ld.date() !== lv.leave_end.date()) {
-                  total -= ws[ld.format('dddd').toLowerCase()];
-
-                  ld = ld.add(1, 'days');
-                }
-              } else {
-                let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
-                total -= (leaveHours > 0) ? leaveHours : 0;
-              }
-            });
+            if(timesheet.month - 1 === date.month())
+              total -= ws[date.format('dddd').toLowerCase()];
           });
-          console.log('req ' + total)
+
+
+          //Correcting total with leaves
+          this.leaves[timesheet.id].forEach(lv => {
+            let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
+            let endOfDay = moment(lv.leave_end).hour(17).minute(30);
+            let ld = moment(lv.leave_start).add(1, 'days');
+
+            let startDiff = lv.leave_start.diff(startOfDay, 'hours');
+            let endDiff = endOfDay.diff(lv.leave_end, 'hours');
+            
+            //Do not occur on the same day
+            if(lv.leave_start.date() !== lv.leave_end.date()) {
+
+              //Subtract either the hours gone, or the complete day
+              total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
+              total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
+
+              //While the leavedate isn't equal to the enddate
+              while(ld.date() !== lv.leave_end.date()) {
+                total -= ws[ld.format('dddd').toLowerCase()];
+
+                ld = ld.add(1, 'days');
+              }
+            } else {
+              let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
+              total -= (leaveHours > 0) ? leaveHours : 0;
+            }
+          });
+          
           return total;
         }
       },

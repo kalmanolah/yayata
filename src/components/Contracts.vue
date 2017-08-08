@@ -3,26 +3,31 @@ div
   div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row 
       h3 Contracts
-        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+        .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
           i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all contracts
+
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
-          button.btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
+          .btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
+          .btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
+
           .btn-group(role='group')
-            button.btn.btn-secondary.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
+            .btn.btn-secondary.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
             .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
               a.dropdown-item(v-for='name in customers' @click='setSortByCustomerName(name)') {{ name }}
+
           .btn-group(role='group')
-            button.btn.btn-secondary.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
+            .btn.btn-secondary.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
             .dropdown-menu(aria-labelledby='btnGroupDropContractType')
               a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
+
       .col-md-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
+
     .row
       .card-columns
         div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
@@ -32,6 +37,7 @@ div
                 span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                 span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
               small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+
             .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
               .card-block
                 .col-md-6
@@ -84,7 +90,7 @@ div
   .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
-        button.btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
+        .btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
           i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
@@ -179,21 +185,25 @@ export default {
   },
 
   computed: {
+
     //Gets the full contracts containing attachtments, contractusers, hours estimated and allocated. 
     fullContracts: function() {
-      if(store.getters.full_contracts){
+      if(store.getters.full_contracts && store.getters.filtered_contracts && this.customers && this.contractTypes) {
+
         // Get each unique customerName
         store.getters.filtered_contracts.forEach((contract) => {
           if(this.customers.indexOf(contract.customerName) === -1){
             this.customers.push(contract.customerName);
           }
         });
+
         // Get each unique contractType
         store.getters.filtered_contracts.forEach((contract) => {
           if(this.contractTypes.indexOf(contract.type) === -1){
             this.contractTypes.push(contract.type);
           }
         });
+
         return store.getters.full_contracts;
       }
     },
@@ -226,12 +236,11 @@ export default {
 
     // Filter by user input
     queryContracts: function() {
-       if(this.sortedContracts){
-        var query = this.query;
+       if(this.sortedContracts) {
         return this.sortedContracts.filter( contract => {
           // Fields to filter on
-          if(contract.name){
-            return contract.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+          if(contract.name) {
+            return contract.name.toLowerCase().indexOf(this.query.toLowerCase()) !== -1;
                   // Not all contracts have a description; this causes an error.
                   // || contract.description.toLowerCase().indexOf(query.toLowerCase()) !== -1;
           }
@@ -242,12 +251,13 @@ export default {
     // Sort by customerName
     sortedContracts: function() {
       if(this.sortBy !== 'all' && this.fullContracts && store.getters.activity_performances){
-        var contracts = [];
+        let contracts = [];
+
         this.fullContracts.forEach(contract => {
-          if(contract.customerName === this.sortBy || contract.type === this.sortBy){
+          if(contract.customerName === this.sortBy || contract.type === this.sortBy)
             contracts.push(contract)
-          }
         });
+
         return this.activeSort(contracts);
       } else {
         if(this.fullContracts && store.getters.activity_performances)
@@ -269,24 +279,32 @@ export default {
   methods: {
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
+      if(this.project_estimates && store.getters.contract_roles && store.getters.activity_performances) {
       let data = [];
       let labels = [];
       let total_allocated = 0;
       let total_spent_per_role = {};
+
       this.project_estimates.forEach(estimate => {
-        if(estimate.project === contract.id){
+        if(estimate.project === contract.id) {
           total_allocated += estimate.hours_estimated;
           data.push(estimate.hours_estimated);
-          labels.push(store.getters.contract_roles.find(role => estimate.role === role.id).name);
+
+          let cRole = store.getters.contract_roles.find(r => estimate.role === role.id); 
+          labels.push(cRole.name || 'UNDEFINED');
         }
       });
+
       let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
-      performances.forEach((perf) => {
-        if(!total_spent_per_role[perf.contract_role]){
-          total_spent_per_role[perf.contract_role] = 0;
-        }
-        total_spent_per_role[perf.contract_role] += (perf.duration * 1);
-      });
+      if(performances) {
+        performances.forEach((perf) => {
+          if(!total_spent_per_role[perf.contract_role]){
+            total_spent_per_role[perf.contract_role] = 0;
+          }
+          total_spent_per_role[perf.contract_role] += (perf.duration * 1);
+        });        
+      }
+
       // Display hours spent per role and hours left
       let time_spent_data = Object.values(total_spent_per_role);
       labels.push('Hours left')
@@ -309,7 +327,9 @@ export default {
           },
         ]
       }
+
       return datacollection;
+      }
     },
 
     // Generates a chart based on a support or consultancy contract.
