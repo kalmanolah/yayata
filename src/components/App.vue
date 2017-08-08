@@ -38,8 +38,9 @@ div(
           div#container(ref='container')
     .row
       navbar
-    .main-app
-      router-view(v-if='user')
+    .row
+      .main-app
+        router-view(v-if='user')
 
 </template>
 
@@ -173,7 +174,7 @@ export default {
 }
 
 .main-app {
-  padding: 2rem 3rem;
+  padding: 2rem 1rem;
 }
 
 .logo{

@@ -1,14 +1,15 @@
 <template lang="pug">
 div
-  div(:class='showFilter ? "col-md-9" : "col-md-12"')
+  div(:class='showFilter ? "col-md-9" : "col-sm-12"')
     .row
-      h3 Colleagues
-        .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-left(aria-hidden='true')
-      p.subtitle Overview of all colleagues
+      .col-lg-12
+        h3 Colleagues
+          .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+            i.fa.fa-angle-double-left(aria-hidden='true')
+        p.subtitle Overview of all colleagues
 
     .row
-      .col-md-8
+      .col-lg-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
           .btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
           .btn.btn-secondary(v-else type='button' @click='reloadPage()') All
@@ -17,39 +18,41 @@ div
             .dropdown-menu(aria-labelledby='btnGroupDrop')
               a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
 
-      .col-md-4
+      .col-lg-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
 
-    .row#user-table(v-if='filtered_users')
-      .alert.alert-warning(v-if='noResultsFound') No results found
-      table.table.table-striped
-        thead#user-table-head
-          tr
-            th(@click='setTableSort("first_name")') Name
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("email")') Email
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__birth_date")') Birthdate
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__country")') Country
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__join_date")') Joindate
-              .pull-right.fa.fa-sort(aria-hidden='true')
-        tbody
-          tr(v-for='(user, index) in queryUsers')
-            td {{ user.first_name }} {{ user.last_name }} 
-              span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
-            td.email-cell(@click='promptCopyEmail(user.email)')
-              span {{ user.email }}
-            td
-              span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
-              span(v-else) &nbsp;
-            td {{ user.country }}
-            td
-              span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
-              span(v-else) &nbsp;
+    .row
+      .col-lg-12
+        div#user-table(v-if='filtered_users')
+          .alert.alert-warning(v-if='noResultsFound') No results found
+          table.table.table-striped
+            thead#user-table-head
+              tr
+                th(@click='setTableSort("first_name")') Name
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("email")') Email
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__birth_date")') Birthdate
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__country")') Country
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__join_date")') Joindate
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+            tbody
+              tr(v-for='(user, index) in queryUsers')
+                td {{ user.first_name }} {{ user.last_name }} 
+                  span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
+                td.email-cell(@click='promptCopyEmail(user.email)')
+                  span {{ user.email }}
+                td
+                  span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+                  span(v-else) &nbsp;
+                td {{ user.country }}
+                td
+                  span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+                  span(v-else) &nbsp;
 
     .row(v-if='users && users.length === 0')
       .col-md-3
