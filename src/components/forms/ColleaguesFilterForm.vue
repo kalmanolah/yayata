@@ -1,16 +1,26 @@
 <template lang="pug">
-div
+.col-sm-12
   .card
     .card-block
       .row
-        .col-md-6
-          button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
-            <i class="fa fa-filter" aria-hidden="true"></i> Submit
-        .col-md-6
-          button.btn.btn-danger.btn-block(@click='resetForm') 
-            <i class="fa fa-refresh" aria-hidden="true"></i> Reset
+        .col-sm-12.text-sm-center
+          h3 Advanced Filter
+          p.subtitle.hidden-md-down More indepth filtering
+
+      .row
+        .col-md-6.form-buttons
+          .btn.btn-primary.btn-block(@click='submitForm')
+            i.fa.fa-filter(aria-hidden="true") &nbsp;
+            span.hidden-lg-down Submit
+
+        .col-md-6.form-buttons
+          .btn.btn-danger.btn-block(@click='resetForm')
+            i.fa.fa-refresh(aria-hidden="true") &nbsp; 
+            span.hidden-lg-down Reset
       hr
-      vue-form-generator.pre-scrollable.filter-scrollable(:schema="schema", :model="model", :options="formOptions") 
+
+      .pre-scrollable.filter-scrollable
+        vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
       
 </template>
 <script>
@@ -367,7 +377,10 @@ export default {
 }
 </script>
 <style>
-.form-group>label {
+.form-group {
+  padding: 0px 6px;
+}
+.form-group > label {
   font-weight: bold;
   padding-bottom: .5em;
   padding-top: .5em;
@@ -379,5 +392,9 @@ export default {
 
 .field-wrap {
   padding-bottom: 5px;
+}
+
+.filter-scrollable {
+  max-height: 60vh;
 }
 </style>

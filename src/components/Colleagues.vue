@@ -1,13 +1,19 @@
 <template lang="pug">
 div
-  div(:class='showFilter ? "col-md-9" : "col-sm-12"')
-    .row
-      .col-lg-12
-        h3 Colleagues
-          .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
-            i.fa.fa-angle-double-left(aria-hidden='true')
-        p.subtitle Overview of all colleagues
+  //- Header
+  .col-sm-12
+    h3 Colleagues
+      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+    p.subtitle Overview of all colleagues
 
+  //- Advanced filter panel
+  .col-lg-3.pull-right(v-if='showFilter')
+    .row
+      ColleaguesFilterForm
+
+  //- Main page
+  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
     .row
       .col-lg-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
@@ -24,7 +30,7 @@ div
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
 
     .row
-      .col-lg-12
+      .col-sm-12
         div#user-table(v-if='filtered_users')
           .alert.alert-warning(v-if='noResultsFound') No results found
           table.table.table-striped
@@ -59,14 +65,7 @@ div
       .col-md-6
         .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
-  .col-md-3.fixed(v-if='showFilter')
-    .row
-      h3 Advanced Filter
-        .btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-right(aria-hidden='true')
-      p.subtitle more advanced filtering here   
-    .row
-      ColleaguesFilterForm
+
 </template>
 
 <script>

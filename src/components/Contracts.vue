@@ -1,15 +1,21 @@
 <template lang="pug">
 div
-  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
-    .row 
-      .col-sm-12
-        h3 Contracts
-          .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
-            i.fa.fa-angle-double-left(aria-hidden='true')
-        p.subtitle Overview of all contracts
+  //- Header
+  .col-sm-12
+    h3 Contracts
+      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+    p.subtitle Overview of all contracts
 
+  //- Advanced filter panel
+  .col-lg-3.pull-right(v-if='showFilter')
     .row
-      .col-md-8
+      ContractsFilterForm
+
+  //- Main page
+  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
+    .row
+      .col-lg-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
           .btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
           .btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
@@ -24,7 +30,7 @@ div
             .dropdown-menu(aria-labelledby='btnGroupDropContractType')
               a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
 
-      .col-md-4
+      .col-lg-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
@@ -89,14 +95,6 @@ div
                     template(v-else)
                       PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
-  .col-md-3.fixed(v-if='showFilter')
-    .row
-      h3 Advanced Filter
-        .btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-right(aria-hidden='true')
-      p.subtitle more advanced filtering here   
-    .row
-      ContractsFilterForm
 </template>
 
 <script>
@@ -445,11 +443,15 @@ export default {
 }
 
 .show-filter-button {
-  margin-right: -33px;
+  margin-right: 0px;
 }
 
 .chart-container {
   max-height: 600px;
   max-width: 600px;
+}
+
+.show-btn {
+  margin-bottom: 40px;
 }
 </style>
