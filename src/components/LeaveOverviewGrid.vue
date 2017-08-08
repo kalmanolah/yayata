@@ -236,16 +236,22 @@ div
     // Determines if the given day is a non working day and styles it accordingly.
     determineNonWorkingDay: function(day, user) {
       if(this.showNonWorkingDay) {
+        console.log( day );
         let nonWorkingDay = null;
         let workSchedule = null;
+        let date = moment(store.getters.grid_date).date(day);
+
         if(store.getters.employment_contracts && user) {
+
           let employmentContract = store.getters.employment_contracts.find((ec) => {
             return ec.user === user.id 
-              // Check if the user has an employment contract this mont
-              && moment(store.getters.grid_date).day(day).isBetween(moment(ec.started_at), moment(ec.ended_at), 'day', [])
+              // Check if the user has an employment contract this month
+              && date.isBetween(moment(ec.started_at), moment(ec.ended_at), 'day', [])
           });
+
           workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
-          if(workSchedule){
+
+          if(workSchedule) {
             let dw = moment().month(this.grid_month - 1).date(day).isoWeekday();
             dw = dw === 1 ? 'monday' : dw === 2 ? 'tuesday' : dw === 3 ? 'wednesday' : dw === 4 ? 'thursday' : dw === 5 ? 'friday' : dw === 6 ? 'saturday' : 'sunday' 
             nonWorkingDay = (workSchedule[dw] === "0.00"); 

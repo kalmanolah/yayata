@@ -119,6 +119,7 @@
                     small
                       .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
                       .pull-right {{ perf.duration }} h
+
           template(v-else)
             .card-block.performance-list
             li.list-group-item.performance-entry.disabled(
@@ -169,38 +170,32 @@ export default {
     },
     
     timesheetActive: function() {
-      if(this.timesheet){
+      if(this.timesheet)
         return this.timesheet.status === store.getters.timesheet_statuses[1];
-      }
     },
 
     timesheet: function() {
+
       if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
-        var month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+        let month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+
         return store.getters.timesheets.find((ts) => {
           return ts.year === this.selectedYear && ts.month === month;
         });
       }
     },
 
-    selectedYear: function() {
-      return this.$route.params.year * 1;
-    },
-
-    selectedWeek: function() {
-      return this.$route.params.week * 1;
-    },
-
     whereabouts: function() {
-      if(store.getters.whereabouts && this.daysOfWeek){
-        var whereabouts = []
+      if(store.getters.whereabouts && this.daysOfWeek) {
+        let whereabouts = [];
+
         store.getters.whereabouts.filter((w) => {
           this.daysOfWeek.forEach((day) => {
-            if(day.format('D') == w.day){
+            if(day.format('D') == w.day)
               whereabouts.push(w);
-            }
-          })
+          });
         });
+
         return whereabouts
       }
     },
@@ -230,30 +225,23 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedules && store.getters.user && store.getters.employment_contracts){
-        var work_schedules = [];
-        store.getters.employment_contracts.forEach((ec) => {
-          var work_schedule = store.getters.work_schedules.find((ws) => ws.id === ec.work_schedule);
-          if(work_schedule){
-            work_schedules.push(work_schedule);
-          }
-        });
-        return work_schedules
+      if(store.getters.work_schedule) {
+        return store.getters.work_schedule;
       }
     },
 
     //Get the month corresponding with the start of the week
     periodStartMonth: function() {
-      var year = this.selectedYear ? this.selectedYear : moment().year();
-      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+      var year = this.selectedYear || moment().year();
+      var week = this.selectedWeek || moment().isoWeek();
 
       return moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
     },
 
     //Get the month corresponding with the end of the week
     periodEndMonth: function() {
-      var year = this.selectedYear ? this.selectedYear : moment().year();
-      var week = this.selectedWeek ? this.selectedWeek : moment().isoWeek();
+      var year = this.selectedYear || moment().year();
+      var week = this.selectedWeek || moment().isoWeek();
 
       return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
     },
@@ -290,7 +278,7 @@ export default {
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
           filter_future_timesheets: false
-        })
+        });
         
         return store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
         });
@@ -333,14 +321,14 @@ export default {
         },
         emulateJSON: true
       }).then((res) => {
-        if(res){
+        if(res) {
           this.reloadWhereabouts();
           this.$toast('Set whereabout to ' + location + '!',
             { 
               id: 'whereabout-toast',
               horizontalPosition: 'right',
               verticalPosition: 'top',
-              duration: 1000,
+              duration: 2000,
               transition: 'slide-down',
               mode: 'override'
             });
@@ -349,7 +337,7 @@ export default {
             id: 'wherabout-toast',
             horizontalPosition: 'right',
             verticalPosition: 'top',
-            duration: 2000,
+            duration: 3000,
             transition: 'slide-dorn',
             mode: 'override'
           });
@@ -363,11 +351,13 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
         filter_future_timesheets: false,
       }).then( () => {
+
         var timesheet = store.getters.timesheets.find(x => 
           x.month == (day.month() + 1)
           &&
           x.year == day.year()
         );
+
         // Timesheet not found; make a new one
         if(!timesheet) {
           this.createNewTimeSheet(day).then( (response) => {
@@ -397,7 +387,7 @@ export default {
       var performed = this.getDurationTotal(day);
       var required = this.getHoursTotal(day);
 
-      var quota = required > 0 ? performed / required : 1;
+      var quota = required > 0 ? (performed / required) : 1;
 
       return quota >= 1 ? 'fa-check' : '';
     },
@@ -472,7 +462,7 @@ export default {
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
       if(this.work_schedule)
-        return this.work_schedule[0][day.format('dddd').toLowerCase()];
+        return this.work_schedule[day.format('dddd').toLowerCase()];
     },
 
     //Make the call to standby
@@ -854,8 +844,8 @@ export default {
   data () {
 
     return {
-      // selectedYear: this.$route.params.year,
-      // selectedWeek: this.$route.params.week,
+      selectedYear: parseInt(this.$route.params.year),
+      selectedWeek: parseInt(this.$route.params.week),
 
       activityPerformances: [],
       standbyPerformances: [],

@@ -3,22 +3,25 @@ div
   div(:class='showFilter ? "col-md-9" : "col-md-12"')
     .row
       h3 Colleagues
-        button.btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
+        .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
           i.fa.fa-angle-double-left(aria-hidden='true')
       p.subtitle Overview of all colleagues
+
     .row
       .col-md-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
-          button.btn.btn-secondary(v-else type='button' @click='reloadPage()') All
+          .btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
+          .btn.btn-secondary(v-else type='button' @click='reloadPage()') All
           .btn-group(role='group')
-            button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
+            .btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
               a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
+
       .col-md-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
+
     .row#user-table(v-if='filtered_users')
       .alert.alert-warning(v-if='noResultsFound') No results found
       table.table.table-striped
@@ -37,12 +40,16 @@ div
         tbody
           tr(v-for='(user, index) in queryUsers')
             td {{ user.first_name }} {{ user.last_name }} 
-              span(v-for='group in user.groups' v-bind:class='determineTagColor(group)').tag.pull-right  {{ group | getGroupAsString }}
+              span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
             td.email-cell(@click='promptCopyEmail(user.email)')
               span {{ user.email }}
-            td {{ user.birth_date | moment('DD/MM/YYYY') }}
+            td
+              span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+              span(v-else) &nbsp;
             td {{ user.country }}
-            td {{ user.join_date | moment('DD/MM/YYYY') }}
+            td
+              span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+              span(v-else) &nbsp;
 
     .row(v-if='users && users.length === 0')
       .col-md-3
@@ -52,7 +59,7 @@ div
   .col-md-3.fixed(v-if='showFilter')
     .row
       h3 Advanced Filter
-        button.btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
+        .btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
           i.fa.fa-angle-double-right(aria-hidden='true')
       p.subtitle more advanced filtering here   
     .row
@@ -60,8 +67,7 @@ div
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import * as types from '../store/mutation-types'
+import * as types from '../store/mutation-types';
 import store from '../store';
 import Vue from 'vue';
 import ColleaguesFilterForm from './forms/ColleaguesFilterForm.vue';
@@ -85,7 +91,7 @@ export default {
   },
 
   created: () => {
-    if(!store.getters.filtered_users){
+    if(!store.getters.filtered_users) {
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
         params: {
           is_active: true
@@ -122,7 +128,8 @@ export default {
     // Filter users by input
     queryUsers: function(){
       if(store.getters.filtered_users && this.sortedUsers && this.userId === store.getters.colleagues_filter){
-        var query = this.query;
+        let query = this.query;
+        
         return this.sortedUsers.filter( user => {
           user.fullname = user.first_name + ' ' + user.last_name;
           // Fields to filter on
@@ -139,35 +146,31 @@ export default {
 
     // Sort users by group
     sortedUsers: function() {
-      if(this.sortBy !== store.getters.colleagues_filter && this.filtered_users){
+      if(this.filtered_users && this.sortBy !== store.getters.colleagues_filter){
         var users = [];
+
         this.filtered_users.forEach(user => {
           user.groups.forEach( group => {
-              if(group === this.sortBy){
+              if(group === this.sortBy)
                 users.push(user);
-              }
             });
         });
         return users;
-      } else {
-        if(this.filtered_users)
-          return this.filtered_users;
       }
+
+      return this.filtered_users;
     },
   },
 
   methods: {
     promptCopyEmail: function(email) {
-      window.prompt('here take this: ', email);
+      window.prompt('Here take this: ', email);
     },
 
     // Sorts the table
     setTableSort: function(value) {
-      if(this.tableSort === value){
-        this.tableSort = '-' + value;
-      } else {
-        this.tableSort = value;
-      }
+      this.tableSort = (this.tableSort === value) ? '-' + value : value;
+
       var options = {
         path: '/users/',
         params: {
@@ -191,14 +194,16 @@ export default {
 
     // Determines the group tag color
     determineTagColor: function(group_id) {
-      var group_name = store.getters.user_groups.find(group => group_id === group.id).name;
+      var group = store.getters.user_groups.find(group => group_id === group.id);
+      var groupName = group.name || 'UNDEFINED';
       var tempObj = {
         [store.getters.group_names[3]]: 'tag-primary',
         [store.getters.group_names[2]]: 'tag-red',        
         [store.getters.group_names[1]]: 'tag-blue',
         [store.getters.group_names[0]]: 'tag-green',
       }
-      return (tempObj[group_name]) ? tempObj[group_name] : 'tag-primary';   
+
+      return tempObj[groupName] || 'tag-primary';   
     },
 
     reloadPage: function() {
@@ -207,18 +212,15 @@ export default {
   },
 
   filters: {
-    getGroupAsString: function(val){
-      if(store.getters.user_groups){
-        var output = '';
-        output += store.getters.user_groups.find(group => val == group.id).name;
-        return output;
+    getGroupAsString: function(val) {
+      if(store.getters.user_groups) {
+        let userGr = store.getters.user_groups.find(gr => val === gr.id);
+        return userGr ? str(userGr.name) : 'Not found';
       }
     },
 
-    fullGender: function(val){
-      var output = ''
-      val == 'f' ? output += 'Female' : output += 'Male';
-      return output;
+    fullGender: function(val) {
+      return val == 'f' ? 'Female' : 'Male';
     }
   }
 
