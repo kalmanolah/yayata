@@ -47,7 +47,7 @@ div
                 th(@click='setTableSort("userinfo__join_date")') Joindate
                   .pull-right.fa.fa-sort(aria-hidden='true')
             tbody
-              tr(v-for='(user, index) in queryUsers')
+              tr(v-for='(user, index) in requestedUsers')
                 td {{ user.first_name }} {{ user.last_name }} 
                   span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
                 td.email-cell(@click='promptCopyEmail(user.email)')
@@ -125,6 +125,13 @@ export default {
     groups: function() {
       if(store.getters.user_groups)
         return store.getters.user_groups
+    },
+
+    //Shows selected user by default or all as a fallback
+    requestedUsers: function() {
+      if(store.getters.users) {
+        return this.userId == 'all' ? this.queryUsers : [store.getters.users.find(u => u.id == this.userId)];
+      }
     },
 
     // Filter users by input
