@@ -14,7 +14,7 @@ import store from '../store'
 import * as types from '../store/mutation-types'
 
 var data = {
-    today: new Date(),
+    today: moment(),
 }
 
 export default {
@@ -26,13 +26,10 @@ export default {
 
   computed: {
     holidays: function() {
-      if(store.getters.holidays){
-        var today = moment().format('MM-DD')
+      if(store.getters.holidays) {
         return store.getters.holidays.filter( holiday => {
-          var date = moment(holiday.date).format('MM-DD');
-          if(moment(date).isSameOrAfter(today)){
-            return holiday
-          }
+          if(moment(holiday.date, 'YYYY-MM-DD').isSameOrAfter(moment()))
+            return holiday;
         });
       }
     }
