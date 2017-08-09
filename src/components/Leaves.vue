@@ -23,16 +23,19 @@ div(class='calendar')
       cmpHolidays
 
       hr
+
   .row
     //- All leaves
     .col-lg-6
       h3.text-md-center All Leaves
       p.text-md-center An overview of all your leaves.
+
       #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
         .card.card-top-blue
-          .card-header(role='tab', v-bind:id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', v-bind:aria-controls='"allLeavesCollapse-" + year', v-bind:href='"#allLeavesCollapse-" + year')
+          .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
             h4.card-title.text-md-center <strong>{{ year }}</strong>
-          .collapse(role='tabpanel', v-bind:id='"allLeavesCollapse-" + year', v-bind:aria-labelledby='"leavesHeading-" + year')
+
+          .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
             .card-block
               table.table
                 tbody(v-for='(leaves, month) in yg')
@@ -40,6 +43,7 @@ div(class='calendar')
                     td &nbsp;
                     td
                       h5 <strong>{{ month | moment('MMM') }}</strong>
+
                   template(v-for='leave in leaves')
                     tr
                       td <strong>{{ leave.leave_type }}</strong> 
@@ -145,16 +149,23 @@ export default {
               return x;
             }
         });
-        this.sortLeaves(leaves);
+        
         leaves.forEach((leave) => {
-          if(!procLeaves[leave.year]){
+          if(!procLeaves[leave.year])
             procLeaves[leave.year] = {};
-          }
-          if(!procLeaves[leave.year][leave.month]){
+
+          if(!procLeaves[leave.year][leave.month])
             procLeaves[leave.year][leave.month] = [];
-          }
+
           procLeaves[leave.year][leave.month].push(leave);
         });
+
+        for(let year in procLeaves) {
+          for(let month in procLeaves[year]) {
+            this.sortLeaves(procLeaves[year][month]).reverse();
+          }
+        }
+
         return procLeaves;
       }
     },
