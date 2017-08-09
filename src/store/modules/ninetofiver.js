@@ -864,24 +864,24 @@ const actions = {
             store.dispatch(
                 types.NINETOFIVER_API_REQUEST,
                 options
-            ).then((res) => {
-                var timesheets = res.data.results;
-
-                if (options.filter_future_timesheets) {
-                    //Filter out all future timesheets after today's month
-                    var today = moment();
-                    timesheets = res.data.results.filter(x => {
-                        return (
-                            x.year < today.year() ||
-                            (x.year == today.year() && x.month <= today.month() + 1)
-                        )
+            ).then(async(res) => {
+                let timesheets = res.data.results;
+                await Promise.all(timesheets.map(async(timesheet) => {
+                    await store.dispatch(types.NINETOFIVER_API_REQUEST, {
+                        path: '/services/month_info/',
+                        params: {
+                            month: timesheet.month
+                        }
+                    }).then((res) => {
+                        timesheet.hours_required = parseFloat(res.data.hours_required);
+                        timesheet.hours_performed = parseFloat(res.data.hours_performed);
                     });
-                }
-
-                store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
-                    timesheets: timesheets
+                })).then(() => {
+                    store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
+                        timesheets: timesheets
+                    });
+                    resolve(res);
                 });
-                resolve(res);
 
             }, (res) => {
                 reject(res);
