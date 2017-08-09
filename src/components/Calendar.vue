@@ -59,8 +59,8 @@ div(class='calendar')
 
               //- Popover showing leaves
               b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
-                i.fa.fa-plane(v-if='getLeaveForDay(n)')
-                i.fa.fa-university(v-else-if='isHoliday(n)')
+                i.fa.fa-university(v-if='isHoliday(n)')
+                i.fa.fa-plane(v-else-if='getLeaveForDay(n)')
                 div(slot='content')
 
                   template(v-if='isHoliday(n)')
@@ -257,7 +257,7 @@ export default {
 
     //Check whether holiday / user is on leave
     isExcusedFromWork: function(day) {
-      return this.isHoliday(day) || this.getLeaveForDay(day) ? this.getLeaveForDay(day).length > 0 : null;
+      return this.isHoliday(day) || this.getLeaveForDay(day)[0];
     },
 
     // Checks whether the day is a holiday
@@ -278,7 +278,7 @@ export default {
 
           if(comp && store.getters.holidays) {
             holiday = store.getters.holidays.find(h => {
-              return (today.format('YYYY-MM-DD') === h.date && h.country === comp.country);
+              return (today.format('YYYY-MM-DD') == h.date && h.country == comp.country);
             });
           }
         }
