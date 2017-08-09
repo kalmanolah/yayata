@@ -262,4 +262,7 @@ export default {
     -o-transition: all 0.5s ease;
     transition: all 0.5s ease;
 }
+/*a {
+  color: #0aa6c9;
+}*/
 </style>

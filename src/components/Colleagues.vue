@@ -50,8 +50,11 @@ div
               tr(v-for='(user, index) in requestedUsers')
                 td {{ user.first_name }} {{ user.last_name }} 
                   span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
-                td.email-cell(@click='promptCopyEmail(user.email)')
+                td
                   span {{ user.email }}
+                  a.pull-right(:href="`mailto:${user.email}`")
+                    i.fa.fa-envelope
+
                 td
                   span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
                   span(v-else) &nbsp;
@@ -172,9 +175,6 @@ export default {
   },
 
   methods: {
-    promptCopyEmail: function(email) {
-      window.prompt('Here take this: ', email);
-    },
 
     // Sorts the table
     setTableSort: function(value) {

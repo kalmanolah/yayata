@@ -12,9 +12,11 @@ div
       .card.card-top-blue
         h4.card-title.text-xs-center Birthdays
         .text-xs-center
-          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
-          | {{ selectedBirthday | moment('DD MMMM')}}
-          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
+          span(title='Go to previous day')
+            i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
+            | {{ selectedBirthday | moment('DD MMMM')}}
+          span(title='Go to next day')
+            i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
         .card-blocd
           table.table
             tbody
@@ -47,9 +49,12 @@ div
       .card.card-top-blue
         h4.card-title.text-xs-center Absent colleagues
         div.text-xs-center
-          i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
-          | {{ selectedDay | moment('DD MMMM') }}
-          i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+          span(title='Go to previous day')
+            i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
+            | {{ selectedDay | moment('DD MMMM') }}
+          span(title='Go to next day')
+            i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+
         .card-block
           table.table
             tbody
@@ -59,6 +64,7 @@ div
                 td.text-md-right {{ leave.leave_type }}
               tr(v-if='sortedLeaves.length === 0')
                 td.text-xs-center <strong>No absent colleagues!</strong>
+
           table.table
             tbody
               tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
@@ -66,6 +72,7 @@ div
                 td.text-md-right {{ holiday.date }}
               tr(v-if='holidaysSelectedDay.length === 0')
                 td.text-xs-center <strong>No holidays!</strong>
+                
     .col-lg-6
       //- Leaverequest form
       LeaveRequestForm
