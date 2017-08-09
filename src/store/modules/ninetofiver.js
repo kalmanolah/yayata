@@ -833,26 +833,21 @@ const actions = {
 
     options.path = '/my_timesheets/';
 
+    if(options.filter_future_timesheets) {
+      options.params = {
+        year__lte: moment().year(),
+        month__lte: moment().month() + 1
+      };
+    }
+
     return new Promise((resolve, reject) => {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
         options
       ).then((res) => {
-        var timesheets =res.data.results;
-
-        if(options.filter_future_timesheets){
-          //Filter out all future timesheets after today's month
-          var today = moment();
-          timesheets = res.data.results.filter(x => {
-            return ( 
-              x.year < today.year() 
-              || (x.year == today.year() && x.month <= today.month() + 1)
-            )
-          });
-        }
-
+        
         store.commit(types.NINETOFIVER_SET_TIMESHEETS, {
-          timesheets: timesheets
+          timesheets: res.data.results
         });
         resolve(res);
 
