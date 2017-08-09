@@ -37,10 +37,10 @@ div
               td.text-sm-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr
               td <strong>Total</strong>
-              td.text-sm-right <strong>{{ totalHoursPerformed | roundHoursFilter }} hours ({{ totalHoursPerformed | hoursToDaysFilter }} days)</strong>
-            tr
+              td.text-sm-right <strong>{{ month_info.hours_performed | roundHoursFilter }} hours ({{ month_info.hours_performed | hoursToDaysFilter }} days)</strong>
+            tr(v-if='month_info')
               td <strong>Open hours</strong>
-              td.text-sm-right <strong>{{ getHoursToFill() }} hours ({{ getHoursToFill() | hoursToDaysFilter }} days)</strong>
+              td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed }} hours ({{ month_info.hours_required - month_info.hours_performed | hoursToDaysFilter }} days)</strong>
    
     .col-lg-6
       //- ABSENT COLLEAGUES
@@ -105,6 +105,7 @@ export default {
   },
 
   created: function () {
+    store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO);
     // Reload the users in the store which may have been changed by the colleagues filter
     store.dispatch(types.NINETOFIVER_RELOAD_USERS);
     this.earliestLeave = moment();
@@ -126,9 +127,6 @@ export default {
       dayOfMonth.add(1, 'days');
     }
     
-    //Reload to get most recent data
-    store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
-
     //Get all leaves for this month
     //Make param for month's range
     var startOfMonth = moment().startOf('month');
@@ -164,6 +162,11 @@ export default {
   },
 
   computed: {
+    month_info: function () {
+      if(store.getters.month_info)
+        return store.getters.month_info;
+    },
+
     user: function() {
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
@@ -189,81 +192,6 @@ export default {
     work_schedule: function() {
       if(store.getters.user_work_schedule)
         return store.getters.user_work_schedule;
-    },
-
-
-    //Calculates amount of hours that should be worked according to the workschedule
-    totalHoursRequired: function() {
-      var total = 0;
-
-      //Loop over each entry in the schedule array
-      //Check for each property in the entry if it appears in the days var
-      //Multiply total hours with times that day appears in this month
-      if(this.work_schedule && this.leaves && store.getters.holidays) {
-
-        let ws = this.work_schedule;
-
-        //Add regular days to total
-        for(let w in ws) {
-          if(this.days[w])
-            total += parseFloat(ws[w]) * this.days[w];
-        }
-
-        //Correcting total with holidays 
-        let startOfMonth = moment().startOf('month');
-        let endOfMonth = moment().endOf('month');
-  
-        store.getters.holidays.forEach(holiday => {
-          if(this.user.country === holiday.country){
-            let date = moment(holiday.date).format('YYYY-MM-DD');
-
-            if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]'))
-              total -= 8;
-          }
-        });
-        
-        //Correcting total with leaves
-        this.leaves.forEach(lv => {
-          let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-          let endOfDay = moment(lv.leave_end).hour(17).minute(30);
-          let ld = moment(lv.leave_start).add(1, 'days');
-
-          let startDiff = lv.leave_start.diff(startOfDay, 'hours');
-          let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-
-          //Do not occur on the same day
-          if(lv.leave_start.date() !== lv.leave_end.date()) {
-
-            //Subtract either the hours gone, or the complete day
-            total -= (startDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - startDiff) : ws[lv.leave_start.format('dddd').toLowerCase()];
-            total -= (endDiff > 0) ? (ws[lv.leave_start.format('dddd').toLowerCase()] - endDiff) : ws[lv.leave_end.format('dddd').toLowerCase()];
-
-            //While the leavedate isn't equal to the enddate
-            while(ld.date() !== lv.leave_end.date()) {
-              total -= ws[ld.format('dddd').toLowerCase()];
-
-              ld = ld.add(1, 'days');
-            }
-          } else {
-            let leaveHours = (ws[lv.leave_start.format('dddd').toLowerCase()] - (startDiff + endDiff));
-            total -= (leaveHours > 0) ? leaveHours : 0;
-          }
-        });
-      }
-
-      return total;
-    },
-
-    //Calculates total hours of currently active projects
-    totalHoursPerformed: function() {
-      var total = 0;
-
-      if(this.contracts)  
-        this.contracts.forEach(x => { 
-          total += x.monthly_duration
-        });
-
-      return total;
     },
 
     // Alphabetical sort.
@@ -432,12 +360,6 @@ export default {
         });         
       });
     },
-    //Subtracts hours worked from hours supposed to work. Returns 0 if negative result
-    getHoursToFill: function() {
-      var remaining = this.totalHoursRequired - this.totalHoursPerformed;
-      return remaining > 0 ? remaining : 0;
-    }
-
   },
 
   watch: { }
