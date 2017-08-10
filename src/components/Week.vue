@@ -202,7 +202,7 @@ export default {
 
     // Gets the locations of this week
     timesheet_locations: function() {
-      if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts){
+      if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts && store.getters.timesheets){
         var day = this.daysOfWeek[0];
         var timesheet = store.getters.timesheets.find(x => 
           x.month == (day.month() + 1)
@@ -307,6 +307,17 @@ export default {
             mode: 'override'
           }
         );
+      }).catch((error) => {
+        console.log(error);
+        this.$toast('Something went wrong. Check console for more information', 
+          { 
+            id: 'standby-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          });
       });
     },
 
@@ -332,16 +343,18 @@ export default {
               transition: 'slide-down',
               mode: 'override'
             });
-        } else {
-          this.$toast('Something went wrong, check the console for more info.', {
-            id: 'wherabout-toast',
+        } 
+      }).catch((error) => {
+        console.log(error);
+        this.$toast('Something went wrong. Check console for more information', 
+          { 
+            id: 'standby-toast',
             horizontalPosition: 'right',
             verticalPosition: 'top',
-            duration: 3000,
-            transition: 'slide-dorn',
+            duration: 1000,
+            transition: 'slide-down',
             mode: 'override'
           });
-        }
       });
     },
 
@@ -380,7 +393,7 @@ export default {
             this.createWhereabout(location, day, timesheet.id);
           }
         }
-      })
+      });
     },
 
     getDailyQuota: function(day) {
@@ -495,18 +508,18 @@ export default {
                 mode: 'override'
               });
             this.onSubmitSuccess();
-          } else {
-            console.log( delRes );
-            this.$toast('Something went wrong. Check console for more information', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });  
           }
+        }).catch((error) => {
+          console.log( error );
+          this.$toast('Something went wrong. Check console for more information', 
+            { 
+              id: 'standby-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1000,
+              transition: 'slide-down',
+              mode: 'override'
+            });  
         });
     },
 
@@ -528,6 +541,7 @@ export default {
             method: 'POST',
             body: {
               timesheet: timesheet.id,
+              // TODO: implement contract
               day: day.date()
             },
             emulateJSON: true,
@@ -544,18 +558,18 @@ export default {
                 mode: 'override'
               });
             this.onSubmitSuccess();
-          } else {
-            console.log(response);
-            this.$toast('Something went wrong. Check console for more information', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });            
-          }
+          } 
+        }).catch((error) => {
+          console.log(error);
+          this.$toast('Something went wrong. Check console for more information', 
+            { 
+              id: 'standby-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1000,
+              transition: 'slide-down',
+              mode: 'override'
+            });            
         });
       } else {
         //Timesheet was not found, so a new one is made for that date
@@ -579,6 +593,7 @@ export default {
               method: 'POST',
               body: {
                 timesheet: tsRes.data.id,
+                // TODO: implement contract
                 day: day.date()
               },
               emulateJSON: true,
@@ -595,19 +610,30 @@ export default {
                   mode: 'override'
                 });
               this.onSubmitSuccess();
-            } else {
-              console.log(spRes);
-              this.$toast('Something went wrong. Check console for more information', 
-                { 
-                  id: 'standby-toast',
-                  horizontalPosition: 'right',
-                  verticalPosition: 'top',
-                  duration: 1000,
-                  transition: 'slide-down',
-                  mode: 'override'
-                });
             }
+          }).catch((error) => {
+            console.log(error);
+            this.$toast('Something went wrong. Check console for more information', 
+              { 
+                id: 'standby-toast',
+                horizontalPosition: 'right',
+                verticalPosition: 'top',
+                duration: 1000,
+                transition: 'slide-down',
+                mode: 'override'
+              });
           });
+        }).catch((error) => {
+          console.log(error);
+          this.$toast('Something went wrong. Check console for more information', 
+            { 
+              id: 'standby-toast',
+              horizontalPosition: 'right',
+              verticalPosition: 'top',
+              duration: 1000,
+              transition: 'slide-down',
+              mode: 'override'
+            });
         });
       }
 
@@ -622,6 +648,17 @@ export default {
           closed: false
         },
         emulateJSON: true,
+      }).catch((error) => {
+        console.log(error);
+        this.$toast('Something went wrong. Check console for more information', 
+          { 
+            id: 'standby-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          });
       });
     },
 
@@ -784,6 +821,17 @@ export default {
           else
             console.log( p );
         });
+      }).catch((error) => {
+        console.log(error);
+        this.$toast('Something went wrong. Check console for more information', 
+          { 
+            id: 'standby-toast',
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 1000,
+            transition: 'slide-down',
+            mode: 'override'
+          });
       });
     },
 
