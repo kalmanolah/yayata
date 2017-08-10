@@ -290,7 +290,7 @@ export default {
           total_allocated += estimate.hours_estimated;
           data.push(estimate.hours_estimated);
 
-          let cRole = store.getters.contract_roles.find(r => estimate.role === role.id); 
+          let cRole = store.getters.contract_roles.find(r => estimate.role === r.id); 
           labels.push(cRole.name || 'UNDEFINED');
         }
       });

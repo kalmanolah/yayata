@@ -27,7 +27,7 @@ div(class='calendar')
           i(class='fa fa-angle-double-right')
     .col-md-4
     h5.col-md-4.text-md-center
-      small <strong>Total:</strong> {{ totalHoursPerformed }} / {{ totalHoursRequired }}
+      small(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
     .col-md-4
   hr
 
@@ -262,7 +262,6 @@ export default {
 
     // Checks whether the day is a holiday
     isHoliday: function(day) {
-
       let holiday = false;
       let today = moment(store.getters.calendar_selected_month).date(day);
 
@@ -270,12 +269,10 @@ export default {
         let emplContr = store.getters.employment_contracts.find(ec => {
           return ec.user === this.user.id;
         });
-
         if(emplContr && store.getters.companies) {
           let comp = store.getters.companies.find(c => {
             return c.id === emplContr.company;
           });
-
           if(comp && store.getters.holidays) {
             holiday = store.getters.holidays.find(h => {
               return (today.format('YYYY-MM-DD') == h.date && h.country == comp.country);
@@ -392,6 +389,12 @@ export default {
       }
     },
 
+    month_info: function() {
+      if(store.getters.month_info && this.month){
+        return store.getters.month_info;
+      }
+    },
+
     // If no userId prop is passed get the details of the current user.
     user: function() {
       if(!this.userId && store.getters.user)
@@ -407,8 +410,14 @@ export default {
     },
 
     month: function() {
-      if(store.getters.calendar_selected_month)
+      if(store.getters.calendar_selected_month){
+        store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO, {
+          params: {
+            month: moment(store.getters.calendar_selected_month).format('MM')
+          }
+        });
         return moment(store.getters.calendar_selected_month).format('MMMM');
+      }
     },
 
     days: function() {
@@ -429,81 +438,6 @@ export default {
       }
 
       return daysInWeek;
-    },
-
-    //Hours required according to workschedule
-    totalHoursRequired: function() {
-      let total = 0;
-
-      // Get workschedule from active contracts
-      if(this.work_schedule && this.leaves && store.getters.holidays && this.selected_month) {
-
-        let ws = this.work_schedule;
-
-        //Add regular days to total
-        for(let w in ws) {
-          if(this.days[w] >= 0) {
-            total += parseFloat(ws[w]) * this.days[w];
-          }
-        }
-
-        // //Correcting total with holidays
-        let startOfMonth = moment(this.selected_month).startOf('month');
-        let endOfMonth = moment(this.selected_month).endOf('month');
-  
-        store.getters.holidays.forEach(holiday => {
-          if(this.user.country === holiday.country){
-            let date = moment(holiday.date).format('YYYY-MM-DD');
-
-            if(moment(date).isBetween(startOfMonth, endOfMonth, 'month', '[]')){
-              total -= 8;
-            }
-          }
-        });
-
-        // //Correcting total with leaves
-        this.leaves.forEach(lv => {
-          let startOfDay = moment(lv.leave_start).hour(9).startOf('hour');
-          let endOfDay = moment(lv.leave_end).hour(17).minute(30);
-          let ld = moment(lv.leave_start).add(1, 'days');
-
-          let startDiff = lv.leave_start.diff(startOfDay, 'hours');
-          let endDiff = endOfDay.diff(lv.leave_end, 'hours');
-
-          //Do not occur on the same day
-          if(lv.leave_start.date() !== lv.leave_end.date()) {
-
-            //Subtract either the hours gone, or the complete day
-            total -= (startDiff > 0) ? startDiff : ws[lv.leave_start.format('dddd').toLowerCase()];
-            total -= (endDiff > 0) ? endDiff : ws[lv.leave_end.format('dddd').toLowerCase()];
-
-            //While the leavedate isn't equal to the enddate
-            while(ld.date() !== lv.leave_end.date()) {
-              total -= ws[ld.format('dddd').toLowerCase()];
-
-              ld = ld.add(1, 'days');
-            }
-          } else {
-            total -= (startDiff > 0) ? startDiff : 0;
-            total -= (endDiff > 0) ? endDiff : 0;
-          }
-        });
-      }
-
-      return total;
-    },
-
-    //Hours already logged
-    totalHoursPerformed: function() {
-      let total = 0;
-
-      if(this.contracts) {
-        this.contracts.forEach(x => {
-          total += x.monthly_duration;
-        });
-      }
-      
-      return total;
     },
 
     contracts: function() {
