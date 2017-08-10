@@ -10,7 +10,7 @@ div(class='calendar')
         p <strong> {{ nearestLeave.leave_type }} </strong>
         p {{ nearestLeave.description }}
         hr
-        div
+        template(v-if='nearestLeave')
           | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
           | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
       p.alert.alert-info(v-else) 
@@ -23,28 +23,33 @@ div(class='calendar')
       cmpHolidays
 
       hr
+
   .row
     //- All leaves
     .col-lg-6
       h3.text-md-center All Leaves
       p.text-md-center An overview of all your leaves.
+
       #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
         .card.card-top-blue
-          .card-header(role='tab', v-bind:id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', v-bind:aria-controls='"allLeavesCollapse-" + year', v-bind:href='"#allLeavesCollapse-" + year')
+          .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
             h4.card-title.text-md-center <strong>{{ year }}</strong>
-          .collapse(role='tabpanel', v-bind:id='"allLeavesCollapse-" + year', v-bind:aria-labelledby='"leavesHeading-" + year')
+
+          .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
             .card-block
               table.table
                 tbody(v-for='(leaves, month) in yg')
                   tr
                     td &nbsp;
                     td
-                      h5 <strong>{{ month | moment('MMM') }}</strong>
+                      h5 <strong>{{ month | fullMonthString }}</strong>
+
                   template(v-for='leave in leaves')
                     tr
                       td <strong>{{ leave.leave_type }}</strong> 
                         .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
-                          | {{ leave.status }}
+                          .hidden-lg-down {{ leave.status }}
+                          .hidden-xl-up.fa(:class='getStatusStyleClass(leave)')
                       td.text-md-right {{ leave.leave_start | moment('DD MMM - HH:mm') }}  → {{ leave.leave_end | moment('DD MMM - HH:mm') }}
 
     //- Pending leaves
@@ -64,7 +69,7 @@ div(class='calendar')
                 .col-sm-9
                   a  <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
                 .col-sm-3 
-                  .tag.float-md-right(v-bind:class='getTagStyleClass(leave)') 
+                  .tag.float-md-right(:class='getTagStyleClass(leave)')
                     | {{ leave.status }}
                   
             .collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
@@ -78,11 +83,9 @@ div(class='calendar')
 
 </template>
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import Holidays from './Holidays.vue';
-import LeaveForm from './forms/LeaveForm.vue';
 import moment from 'moment';
 
 
@@ -125,9 +128,8 @@ export default {
     },
 
     pendingLeaves: function() {
-      var today = moment();
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0] && today.isSameOrBefore(x.leave_end)){
+        if(x.status === store.getters.leave_statuses[0] && moment().isSameOrBefore(x.leave_end, 'date')){
           return x;
         }
       });
@@ -140,36 +142,49 @@ export default {
         let leaves = this.leaves.filter(x => {
           if(x.status !== store.getters.leave_statuses[0] 
             && x.status !== store.getters.leave_statuses[3]) {
-              x.year = moment(x.leave_start).year();
-              x.month = moment(x.leave_start).month() + 1;
+              x.year = x.leave_start.year();
+              x.month = x.leave_start.month() + 1;
               return x;
             }
         });
-        this.sortLeaves(leaves);
+        
         leaves.forEach((leave) => {
-          if(!procLeaves[leave.year]){
+          if(!procLeaves[leave.year])
             procLeaves[leave.year] = {};
-          }
-          if(!procLeaves[leave.year][leave.month]){
+
+          if(!procLeaves[leave.year][leave.month])
             procLeaves[leave.year][leave.month] = [];
-          }
+
           procLeaves[leave.year][leave.month].push(leave);
         });
+
+        for(let year in procLeaves) {
+          for(let month in procLeaves[year]) {
+            this.sortLeaves(procLeaves[year][month]).reverse();
+          }
+        }
+
         return procLeaves;
       }
     },
 
     //Filters for upcoming leaves, sorts them & returns the first result
     nearestLeave: function(val) {
-      var upcoming = this.acceptedLeaves.filter(x => {
-        return moment().isSameOrBefore(x.leave_end)
+      let upcoming = this.acceptedLeaves.filter(x => {
+        return moment().isSameOrBefore(x.leave_end, 'date')
       });
 
       return this.sortLeaves(upcoming).reverse()[0];
     },
   },
 
-  filter: { },
+  filters: {
+
+    // Takes a month integer and returns a month-format
+    fullMonthString: function(val) {
+      return moment().month(val-1).format('MMM');
+    }
+  },
 
   methods: {
     //Displays a toast with message
@@ -222,7 +237,8 @@ export default {
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-          lv['leave_type'] = this.leaveTypes.find(x => { return x.id === lv.leave_type}).display_label;
+          let lType = this.leaveTypes.find(x => { return x.id === lv.leave_type});
+          lv['leave_type'] = lType ? lType.display_label : 'UNKNOWN';
         });
 
         this.leaves = response.data.results
@@ -234,8 +250,8 @@ export default {
     //Sorts the leaves from furthest in the future to furthest  in the past
     sortLeaves: function(val) {
       return val.sort(function(a, b) {
-        a = moment(a.leave_start);
-        b = moment(b.leave_start);
+        a = a.leave_start;
+        b = b.leave_start;
 
         return a > b ? -1 : (a < b ? 1 : 0);
       });
@@ -243,22 +259,32 @@ export default {
 
     //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
-      var tempObj = {
+      let tempObj = {
         [store.getters.leave_statuses[2]]: 'card-top-green',
         [store.getters.leave_statuses[1]]: 'card-top-red',
-      }
+      };
 
-      return (tempObj[leave.status]) ? tempObj[leave.status] : 'card-top-blue';                           
+      return tempObj[leave.status] || 'card-top-blue';                           
     },
 
     //Get the style class of the tag based on the leave_status
     getTagStyleClass: function(leave) {
-      var tempObj = {
+      let tempObj = {
         [store.getters.leave_statuses[2]]: 'tag-success',
         [store.getters.leave_statuses[1]]: 'tag-danger',
-      }
+      };
 
-      return (tempObj[leave.status]) ? tempObj[leave.status] : 'tag-primary';
+      return tempObj[leave.status] || 'tag-primary';
+    },
+
+    //Get the style based on the status of the leave
+    getStatusStyleClass: function(leave) {
+      let tempObj = {
+        [store.getters.leave_statuses[2]]: 'fa-check',
+        [store.getters.leave_statuses[1]]: 'fa-times'
+      };
+
+      return tempObj[leave.status] || 'fa-question';
     }
 
   },

@@ -1,44 +1,45 @@
 <template lang="pug">
   div
-    h3 My timesheets
-    p.subtitle Overview of all open timesheets
-    div(v-for="(year_group, year) in timesheets")
-      
-      br
-
-      div.card.card-top-blue
-
-        h3.card-header {{ year }}
+    .col-sm-12
+      h3 My timesheets
+      p.subtitle Overview of all open timesheets
+      div(v-for="(year_group, year) in timesheets")
         
-        .card-block.row
-          .col-lg-4(v-for='(sheet, i) in year_group')
+        br
 
-              .card
+        div.card.card-top-blue
 
-                .card-header
-                  h5.text-xs-center 
-                    router-link.month-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }') {{ sheet | outputCorrectMonth }}
-                    toggle-button.pull-right(
-                      @change='setPending(sheet)',
-                      :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
-                      :value='sheet.status === "PENDING"',
-                      :sync='true',
-                      :labels={
-                        checked: 'Pending',
-                        unchecked: 'Active'
-                      },
-                      :width='70',
-                      :disabled='sheet.status === "PENDING"'
-                    )
+          h3.card-header {{ year }}
+          
+          .card-block.row
+            .col-lg-4(v-for='(sheet, i) in year_group')
 
-                .card-block
-                  div
-                    strong Open hours:  
-                    .tag.pull-right(:class='getTagStyle(sheet)') {{ sheet.hours_required - sheet.hours_performed | negativeToZeroFilter  }}
-                    
-                  div 
-                    span Days with leave:
-                    .pull-right {{ getDaysWithLeave(sheet.id) }}
+                .card
+
+                  .card-header
+                    h5.text-xs-center 
+                      router-link.month-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }') {{ sheet | outputCorrectMonth }}
+                      toggle-button.pull-right(
+                        @change='setPending(sheet)',
+                        :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
+                        :value='sheet.status === "PENDING"',
+                        :sync='true',
+                        :labels={
+                          checked: 'Pending',
+                          unchecked: 'Active'
+                        },
+                        :width='70',
+                        :disabled='sheet.status === "PENDING"'
+                      )
+
+                  .card-block
+                    div
+                      strong Open hours:  
+                      .tag.pull-right(:class='getTagStyle(sheet)') {{ sheet.hours_required - sheet.hours_performed | negativeToZeroFilter  }}
+                      
+                    div 
+                      span Days with leave:
+                      .pull-right {{ getDaysWithLeave(sheet.id) }}
 
 </template>
 

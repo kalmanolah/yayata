@@ -1,14 +1,21 @@
 <template lang="pug">
 div
-  div(:class='showFilter ? "col-md-9" : "col-md-12"')
-    .row
-      h3 Colleagues
-        .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-left(aria-hidden='true')
-      p.subtitle Overview of all colleagues
+  //- Header
+  .col-sm-12
+    h3 Colleagues
+      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+    p.subtitle Overview of all colleagues
 
+  //- Advanced filter panel
+  .col-lg-3.pull-right(v-if='showFilter')
     .row
-      .col-md-8
+      ColleaguesFilterForm
+
+  //- Main page
+  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
+    .row
+      .col-lg-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
           .btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
           .btn.btn-secondary(v-else type='button' @click='reloadPage()') All
@@ -17,53 +24,51 @@ div
             .dropdown-menu(aria-labelledby='btnGroupDrop')
               a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
 
-      .col-md-4
+      .col-lg-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
 
-    .row#user-table(v-if='filtered_users')
-      .alert.alert-warning(v-if='noResultsFound') No results found
-      table.table.table-striped
-        thead#user-table-head
-          tr
-            th(@click='setTableSort("first_name")') Name
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("email")') Email
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__birth_date")') Birthdate
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__country")') Country
-              .pull-right.fa.fa-sort(aria-hidden='true')
-            th(@click='setTableSort("userinfo__join_date")') Joindate
-              .pull-right.fa.fa-sort(aria-hidden='true')
-        tbody
-          tr(v-for='(user, index) in queryUsers')
-            td {{ user.first_name }} {{ user.last_name }} 
-              span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
-            td.email-cell(@click='promptCopyEmail(user.email)')
-              span {{ user.email }}
-            td
-              span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
-              span(v-else) &nbsp;
-            td {{ user.country }}
-            td
-              span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
-              span(v-else) &nbsp;
+    .row
+      .col-sm-12
+        div#user-table(v-if='filtered_users')
+          .alert.alert-warning(v-if='noResultsFound') No results found
+          table.table.table-striped
+            thead#user-table-head
+              tr
+                th(@click='setTableSort("first_name")') Name
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("email")') Email
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__birth_date")') Birthdate
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__country")') Country
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+                th(@click='setTableSort("userinfo__join_date")') Joindate
+                  .pull-right.fa.fa-sort(aria-hidden='true')
+            tbody
+              tr(v-for='(user, index) in requestedUsers')
+                td {{ user.first_name }} {{ user.last_name }} 
+                  span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
+                td
+                  span {{ user.email }}
+                  a.pull-right(:href="`mailto:${user.email}`")
+                    i.fa.fa-envelope
+
+                td
+                  span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+                  span(v-else) &nbsp;
+                td {{ user.country }}
+                td
+                  span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+                  span(v-else) &nbsp;
 
     .row(v-if='users && users.length === 0')
       .col-md-3
       .col-md-6
         .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
       .col-md-3
-  .col-md-3.fixed(v-if='showFilter')
-    .row
-      h3 Advanced Filter
-        .btn.pull-right.hide-filter-button(v-if='showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-right(aria-hidden='true')
-      p.subtitle more advanced filtering here   
-    .row
-      ColleaguesFilterForm
+
 </template>
 
 <script>
@@ -125,6 +130,13 @@ export default {
         return store.getters.user_groups
     },
 
+    //Shows selected user by default or all as a fallback
+    requestedUsers: function() {
+      if(store.getters.users) {
+        return this.userId == 'all' ? this.queryUsers : [store.getters.users.find(u => u.id == this.userId)];
+      }
+    },
+
     // Filter users by input
     queryUsers: function(){
       if(store.getters.filtered_users && this.sortedUsers && this.userId === store.getters.colleagues_filter){
@@ -163,9 +175,6 @@ export default {
   },
 
   methods: {
-    promptCopyEmail: function(email) {
-      window.prompt('Here take this: ', email);
-    },
 
     // Sorts the table
     setTableSort: function(value) {
@@ -281,8 +290,5 @@ export default {
 #user-table-head>tr>th:hover {
   background-color: #d2d2d2;
   border-bottom: 2px solid #d2d2d2;
-}
-.show-filter-button {
-  margin-right: -33px;
 }
 </style>

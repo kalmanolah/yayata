@@ -1,14 +1,21 @@
 <template lang="pug">
 div
-  div(:class='showFilter ? "col-md-9" : "col-md-12"')
-    .row 
-      h3 Contracts
-        .btn.pull-right.show-filter-button(v-if='!showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-left(aria-hidden='true')
-      p.subtitle Overview of all contracts
+  //- Header
+  .col-sm-12
+    h3 Contracts
+      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+    p.subtitle Overview of all contracts
 
+  //- Advanced filter panel
+  .col-lg-3.pull-right(v-if='showFilter')
     .row
-      .col-md-8
+      ContractsFilterForm
+
+  //- Main page
+  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
+    .row
+      .col-lg-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
           .btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
           .btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
@@ -23,78 +30,71 @@ div
             .dropdown-menu(aria-labelledby='btnGroupDropContractType')
               a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
 
-      .col-md-4
+      .col-lg-4
         .input-group
           span.input-group-addon Search
           input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
 
     .row
-      .card-columns
-        div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
-          .card(v-bind:class='getRibbonStyleClass(contract)')
-            .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
-              div.contract-name {{ contract.name }} - {{ contract.end_date}}
-                span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
-                span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
-              small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+      .col-sm-12
+        .card-columns
+          div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
+            .card(v-bind:class='getRibbonStyleClass(contract)')
+              .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
+                div.contract-name {{ contract.name }} - {{ contract.end_date}}
+                  span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
+                  span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
+                small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
 
-            .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
-              .card-block
-                .col-md-6
-                  .card-text
-                    .row
-                      .col-md-4 <strong>Description:</strong> 
-                      .col-md-8.text-md-right {{ contract.description }}
-                    hr
-                    .row
-                      .col-md-4 <strong>This month:</strong>
-                      .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
-                    hr
-                    .row
-                      .col-md-4 <strong>Groups:</strong>
-                      .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
-                    hr
-                    .row
-                      .col-md-4 <strong>Users:</strong>
-                      .col-md-8.text-md-right 
-                        div(v-for='user in contract.contract_users') 
-                          router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
-                    div(v-if='contract.type !== "SupportContract"')
+              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
+                .card-block
+                  .col-md-6
+                    .card-text
+                      .row
+                        .col-md-4 <strong>Description:</strong> 
+                        .col-md-8.text-md-right {{ contract.description }}
                       hr
                       .row
-                        .col-md-5 <strong>Total hours spent:</strong>
-                        .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
-                    hr
-                    .row(v-if='contract.type === "ProjectContract"')
-                      .col-md-4 <strong>Project estimates:</strong>
-                      .col-md-8.text-md-right 
-                        div(v-for='estimate in contract.project_estimate') 
-                          .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
-                          .col-md-6.estimate {{ estimate[0] }} hours
-                    hr(v-if='contract.type === "ProjectContract"')
-                    .row(v-if='contract.type === "ProjectContract"')
-                      .col-md-4 <strong>Hours to fill in:</strong>
-                      .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.hours_left }} hours
-                    hr(v-if='contract.attachments')
-                    .row
-                      .col-md-4 <strong>Attachments</strong>
-                      .col-md-8.text.md-right
-                        div(v-for='attachment in contract.attachments')
-                          a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
-                .col-md-6
-                  template(v-if='contract.type === "ProjectContract"')
-                    PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
-                  template(v-else)
-                    PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
+                        .col-md-4 <strong>This month:</strong>
+                        .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
+                      hr
+                      .row
+                        .col-md-4 <strong>Groups:</strong>
+                        .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
+                      hr
+                      .row
+                        .col-md-4 <strong>Users:</strong>
+                        .col-md-8.text-md-right 
+                          div(v-for='user in contract.contract_users') 
+                            router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
+                      div(v-if='contract.type !== "SupportContract"')
+                        hr
+                        .row
+                          .col-md-5 <strong>Total hours spent:</strong>
+                          .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
+                      hr
+                      .row(v-if='contract.type === "ProjectContract"')
+                        .col-md-4 <strong>Project estimates:</strong>
+                        .col-md-8.text-md-right 
+                          div(v-for='estimate in contract.project_estimate') 
+                            .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
+                            .col-md-6.estimate {{ estimate[0] }} hours
+                      hr(v-if='contract.type === "ProjectContract"')
+                      .row(v-if='contract.type === "ProjectContract"')
+                        .col-md-4 <strong>Hours to fill in:</strong>
+                        .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.hours_left }} hours
+                      hr(v-if='contract.attachments')
+                      .row
+                        .col-md-4 <strong>Attachments</strong>
+                        .col-md-8.text.md-right
+                          div(v-for='attachment in contract.attachments')
+                            a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
+                  .col-md-6
+                    template(v-if='contract.type === "ProjectContract"')
+                      PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
+                    template(v-else)
+                      PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
-  .col-md-3.fixed(v-if='showFilter')
-    .row
-      h3 Advanced Filter
-        .btn.pull-right(v-if='showFilter' @click='showFilter = !showFilter')
-          i.fa.fa-angle-double-right(aria-hidden='true')
-      p.subtitle more advanced filtering here   
-    .row
-      ContractsFilterForm
 </template>
 
 <script>
@@ -440,11 +440,10 @@ export default {
 
 .card-columns {
   column-count: 1;
-  margin-right: 15px;
 }
 
 .show-filter-button {
-  margin-right: -33px;
+  margin-right: 0px;
 }
 
 .chart-container {

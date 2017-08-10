@@ -151,9 +151,9 @@ export default {
       this.isProjectContract = (store.getters.contracts.find(c => c.id === this.model.contract).contract_type === 'ProjectContract') ? true : false;
 
       // if the selected contract is not a project contract, give contract_role an empty value so we don't trip the validation.
-      if(!this.isProjectContract){
+      if(!this.isProjectContract)
         this.model.contract_role = '';
-      }
+
       var modelValidationCheck = Object.keys(this.model).every(x => {
           return this.model[x] != null;
       });
@@ -177,10 +177,11 @@ export default {
             {
               path: '/my_timesheets/',
               method: 'POST',
-              params: {
+              body: {
                 year: this.today.year(),
                 month: this.today.month() + 1
-              }
+              },
+              emulateJSON: true,
             }
           ).then((response) => {
             console.log( response );
@@ -196,6 +197,7 @@ export default {
     //Submits the form & makes correct call based on data
     submitForm: function(timesheetID) {
       var body = {};
+
       if(this.isProjectContract){
         body = {
           timesheet: timesheetID,

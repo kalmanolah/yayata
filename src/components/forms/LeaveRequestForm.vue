@@ -57,9 +57,7 @@ var upcoming_leaves = [];
 
 export default {
   name: 'leaverequestform',
-  components: {
-    // VueTimepicker
-  },
+  components: {},
   data() {
       return {
         // Date
@@ -84,7 +82,7 @@ export default {
 
   watch: {
     fromDate: function(newFromDate, oldFromdate) {
-      this.toDate = moment(newFromDate).format('DD MMM YYYY');
+      this.toDate = moment(newFromDate, 'DD MMM YYYY').format('DD MMM YYYY');
     },
     
     upcomingLeaves:function(newUpcomingLeaves, oldUpcomingLeaves) {
@@ -333,19 +331,19 @@ export default {
     },
 
     fromDateFeedback: function() {
-      return moment(this.fromDate).isValid() ? '' : 'Please provide a correct date'
+      return moment(this.fromDate, 'DD MMM YYYY').isValid() ? '' : 'Please provide a correct date'
     },
 
     fromDateState: function() {
-      return moment(this.fromDate).isValid() ? 'success' : 'warning'
+      return moment(this.fromDate, 'DD MMM YYYY').isValid() ? 'success' : 'warning'
     },
 
     toDateFeedback: function() {
-      return moment(this.toDate).isValid() ? '' : 'Please provide a correct date'
+      return moment(this.toDate, 'DD MMM YYYY').isValid() ? '' : 'Please provide a correct date'
     },
 
     toDateState: function() {
-      return moment(this.toDate).isValid() ? 'success' : 'warning'
+      return moment(this.toDate, 'DD MMM YYYY').isValid() ? 'success' : 'warning'
     },
     descriptionFeedback: function() {
       return this.description.length ? '' : 'Please provide a description'
@@ -390,7 +388,7 @@ export default {
           }
         });
 
-        this.fromDate = moment(today).format('DD MMM YYYY');
+        this.fromDate = today.format('DD MMM YYYY');
         upcoming_leaves = leavedate_arr;
         return store.getters.upcoming_leaves;
       }

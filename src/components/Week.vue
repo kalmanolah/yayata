@@ -28,23 +28,24 @@
   
   //- Buttons to toggle what to display
   .row
-    //- .col.align-self-start
     .btn-group-wrap
       div.btn-group.week-format-buttons
         button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
         button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
         button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
-    //- .col.align-self-end
+
   //- Cards
   .calendar-header
 
-    //- Header w days
+    //- Header
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
+
         .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations && timesheet')
-          button.btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
+          .btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
           .dropdown-menu(aria-labelledby='btnGroupDrop')
             a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
+
         .card-header.card-info
           .pull-left 
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
@@ -73,38 +74,44 @@
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
-          template(v-if='timesheet && timesheetActive')
+          template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+
             //- Performance creation is disabled for future activityPerformances
             hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
 
               //- Visible text
-              button.btn.btn-success.btn-submit
+              .btn.btn-success.btn-submit
                 i.fa.fa-plus
 
-            template(v-if='leaves')
-              small.text-muted
-                | {{ getDurationTotal(weekDay) }}<strong> / {{ getHoursTotal(weekDay) }} h</strong>
-            .pull-right.quota__icon
-              i.fa(:class='getDailyQuota(weekDay)')
-            hr.smaller-horizontal-hr.smaller-vertical-hr
+          
+          small.text-muted
+            | {{ getDurationTotal(weekDay) }}<strong> / 
+            | {{ getHoursTotal(weekDay) }} h</strong>
+          .pull-right.quota__icon
+            i.fa(:class='getDailyQuota(weekDay)')
+
+          hr.smaller-horizontal-hr.smaller-vertical-hr
 
           //- Body of performances
-          //- Check if timesheet status status is active
-          template( v-if='timesheet && timesheetActive')
+          //- Check if timesheet status is active
+          template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
             .card-block.performance-list
-              //- Add leaves if any
+
+              //- Leaves
               template(v-if='leaves')
-                li.list-group-item.performance_entry(
+                li.list-group-item.leave-entry(
                   v-for='leave in getDaysLeaves(weekDay.date())',
                   :class='[list-group, performance-list]'
                 )
                   .list-group-item-heading {{ leave.leave_type | leaveTypeAsString }}
                   .list-group-item-text
                     div {{ leave.description }}
-                    hr.small-vertical-hr
+                    hr.smaller-vertical-hr
                     small
-                      i.fa.fa-plane.pull-left
-                      .pull-right {{ leave.leaveDuration}} h 
+                      i.fa.fa-plane.pull-left 
+                      .pull-right {{ leave.leaveDuration}} h
+
+              //- Performances
               li.list-group-item.performance-entry(
                 v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
                 :key='perf.id',
@@ -119,6 +126,7 @@
                     small
                       .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
                       .pull-right {{ perf.duration }} h
+
 
           template(v-else)
             .card-block.performance-list
@@ -138,7 +146,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
@@ -269,8 +276,20 @@ export default {
   },
 
   methods: {
+
+    getTimesheetStatus: function(day) {
+      if(store.getters.timesheets) {
+        let ts = store.getters.timesheets.find(t => {
+          return t.month == day.month() + 1 && t.year == day.year()
+        });
+        
+        if(ts)
+          return ts.status == store.getters.timesheet_statuses[1];
+      }
+    },
+
+    // Check if status is active
     getWhereaboutClass: function() {
-      // Check if status is active
       return (this.timesheet && this.timesheetActive) ? '' : 'disabled';
     },
 
@@ -951,8 +970,17 @@ export default {
   border-color: rgba(0, 0, 0, 0.08);
 }
 
+.leave-entry {
+  padding: 5px;
+  padding-bottom: 20px;
+  margin: 2px;
+  position: relative;
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.08);  
+}
+
 .performance-entry.disabled {
-  height: 80px;
+  padding-bottom: 20px;
 }
 
 .smaller-horizontal-hr {
