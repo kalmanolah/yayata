@@ -10,9 +10,9 @@ div(class='calendar')
         p <strong> {{ nearestLeave.leave_type }} </strong>
         p {{ nearestLeave.description }}
         hr
-        //- template(v-if='nearestLeave')
-        //-   | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-        //-   | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+        template(v-if='nearestLeave')
+          | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+          | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
       p.alert.alert-info(v-else) 
         | No leaves coming up. Are you sure you don't need a break from all that hard work?
 
