@@ -236,7 +236,6 @@ div
     // Determines if the given day is a non working day and styles it accordingly.
     determineNonWorkingDay: function(day, user) {
       if(this.showNonWorkingDay) {
-        console.log( day );
         let nonWorkingDay = null;
         let workSchedule = null;
         let date = moment(store.getters.grid_date).date(day);
