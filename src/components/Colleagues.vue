@@ -215,7 +215,7 @@ export default {
     getGroupAsString: function(val) {
       if(store.getters.user_groups) {
         let userGr = store.getters.user_groups.find(gr => val === gr.id);
-        return userGr ? str(userGr.name) : 'Not found';
+        return userGr ? userGr.name.toString() : 'Not found';
       }
     },
 
