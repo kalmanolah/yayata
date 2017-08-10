@@ -93,6 +93,19 @@ export default {
                   },
                   {
                     // contractuser__user__groups__icontains
+                    type: "checklist",
+                    label: "Active days",
+                    model: "active_days",
+                    listBox: true,
+                    values: function() {
+                      if(store.getters.user_groups)
+                        return store.getters.user_groups.map(ug => {
+                          return ug.name;
+                        });
+                    }
+                  },
+                  {
+                    // contractuser__user__groups__icontains
                     type: "input",
                     inputType: "text",
                     // label: "User groups contract user",
@@ -144,17 +157,14 @@ export default {
                     validator: VueFormGenerator.validators.string
                   },
                   {
-                    // customer__internal
-                    type: "input",
-                    inputType: "text",
-                    // label: "Customer internal",
+                    type: "radios",
                     model: "customer__internal",
-                    readonly: false,
-                    required: false,
-                    disabled: false,
-                    placeholder: "Customer internal",
-                    styleClasses: 'no-label-field',                      
-                    validator: VueFormGenerator.validators.string
+                    values: [
+                        {name: "All", value:""},
+                        {name: "Internal", value:"true"},
+                        {name: "External", value:"false"}
+                    ],
+                    styleClasses: ['radio-field', 'no-label-field']
                   },
                   // COMPANY
                   {
@@ -163,7 +173,7 @@ export default {
                     label: "Company",                      
                     model: "company__internal",
                     selectOptions: {
-                      noneSelectedText: 'internal company'
+                      noneSelectedText: 'Select company'
                     },
                     values: function() {
                       if(store.getters.companies)
@@ -215,7 +225,7 @@ export default {
                     model: "performance_types__id",
                     styleClasses: 'no-label-field',
                     selectOptions: {
-                      noneSelectedText: 'performance type'
+                      noneSelectedText: 'Select performance type'
                     },
                     values: function() {
                       if(store.getters.performance_types)
@@ -281,7 +291,7 @@ export default {
 </script>
 <style>
 .form-group {
-  padding: 0px 6px;
+  padding-left: 0px;
 }
 .form-group > label {
   font-weight: bold;
@@ -299,6 +309,12 @@ export default {
 
 .filter-scrollable {
   max-height: 60vh;
+}
+.radio-field > .field-wrap > .radio-list > label {
+  padding: 2px 3px;
+}
+.radio-field > .field-wrap > .radio-list > label > input {
+  margin: 0px 3px;
 }
 
 </style>

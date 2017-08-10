@@ -224,7 +224,7 @@ export default {
     getGroupAsString: function(val) {
       if(store.getters.user_groups) {
         let userGr = store.getters.user_groups.find(gr => val === gr.id);
-        return userGr ? str(userGr.name) : 'Not found';
+        return userGr ? userGr.name.toString() : 'Not found';
       }
     },
 
@@ -290,8 +290,5 @@ export default {
 #user-table-head>tr>th:hover {
   background-color: #d2d2d2;
   border-bottom: 2px solid #d2d2d2;
-}
-.show-filter-button {
-  margin-right: -33px;
 }
 </style>

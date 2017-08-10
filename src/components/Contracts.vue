@@ -450,8 +450,4 @@ export default {
   max-height: 600px;
   max-width: 600px;
 }
-
-.show-btn {
-  margin-bottom: 40px;
-}
 </style>
