@@ -232,9 +232,8 @@ export default {
     },
 
     work_schedule: function() {
-      if(store.getters.work_schedule) {
-        return store.getters.work_schedule;
-      }
+      if(store.getters.user_work_schedule)
+        return store.getters.user_work_schedule;
     },
 
     //Get the month corresponding with the start of the week
@@ -493,7 +492,7 @@ export default {
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      if(this.work_schedule)
+      if(this.work_schedule) 
         return this.work_schedule[day.format('dddd').toLowerCase()];
     },
 
