@@ -47,13 +47,13 @@ export default {
   },
   methods: {
     //Get whether user is on standby
-    getStandbyStatus: function() {
-      return (this.standbyPerformances.findIndex(x => x.day == this.day) !== -1)
+    getStandbyStatus: function(contractId) {
+      return (this.standbyPerformances.findIndex(x => x.contract == contractId) !== -1)
     },
 
     //Make the call to standby
     toggleStandby: function(contractId) {
-      if(this.getStandbyStatus())
+      if(this.getStandbyStatus(contractId))
         this.deleteStandby(this.standbyPerformances.find(x => x.contract == contractId));
       else
         this.setStandby(contractId);
@@ -99,7 +99,6 @@ export default {
 
     //Set standbyperformance for specific day
     setStandby: function(contractId) {
-
       // is actually timesheet
       if(this.properties.performance) {
         store.dispatch(
