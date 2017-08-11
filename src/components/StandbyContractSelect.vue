@@ -59,6 +59,17 @@ export default {
         this.setStandby(contractId);
     },
 
+    presentToast: function(message) {
+      this.$toast(message, 
+        { 
+          id: 'standby-toast',
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 1000,
+          transition: 'slide-down',
+          mode: 'override'
+        });
+    },
     //Delete standbyperformance for specific day
     deleteStandby: function(standby) {
       store.dispatch(
@@ -73,27 +84,11 @@ export default {
           if(delRes.status == 204) {
             let index = this.standbyPerformances.findIndex(x => x.id == standby.id);
             this.standbyPerformances.splice(index, 1);
-            this.$toast('User no longer on standby', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
+            this.presentToast('User no longer on standby');
           }
         }).catch((error) => {
           console.log( error );
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });  
+          this.presentToast('Something went wrong. Check console for more information');  
         });
     },
 
@@ -116,27 +111,11 @@ export default {
         ).then((response) => {
           if(response.status == 201) {
             this.standbyPerformances.push(response.data)
-            this.$toast('User on standby', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
+            this.presentToast('User on standby');
           } 
         }).catch((error) => {
           console.log(error);
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });            
+          this.presentToast('Something went wrong. Check console for more information')
         });
       } else {
         //Timesheet was not found, so a new one is made for that date
@@ -168,39 +147,15 @@ export default {
             }
           ).then((spRes) => {
             if(spRes.status == 201) {
-              this.$toast('User on standby', 
-                { 
-                  id: 'standby-toast',
-                  horizontalPosition: 'right',
-                  verticalPosition: 'top',
-                  duration: 1000,
-                  transition: 'slide-down',
-                  mode: 'override'
-                });
+              this.presentToast('User on standby');
             }
           }).catch((error) => {
             console.log(error);
-            this.$toast('Something went wrong. Check console for more information', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
+            this.presentToast('Something went wrong. Check console for more information')
           });
         }).catch((error) => {
           console.log(error);
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
+          this.presentToast('Something went wrong. Check console for more information')
         });
       }
     }
