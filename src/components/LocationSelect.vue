@@ -1,5 +1,7 @@
 <template lang="pug">
 div.location-select
+  .text-md-center
+    strong Select location
   b-form-radio(:id='location_radio',v-model='selectedLocation', :options='whereaboutLocations', stacked)
 
 </template>

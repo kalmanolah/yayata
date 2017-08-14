@@ -1,5 +1,7 @@
 <template lang="pug">
 div.contract-select
+  .text-md-center 
+    strong Select contract
   div.custom-controls-stacked(v-for='(contract, index) in supportContracts') 
     label.custom-control.custom-label
       input(:id='"contract_" + index', :value='contract.id', type='checkbox', v-model='selectedContracts', @click='toggleStandby(contract.id)')
@@ -40,7 +42,6 @@ export default {
           this.selectedContracts.push(contract.id);
         }
       });
-      console.log(res)
     }).catch((error) => {
       console.log(error);
     });
@@ -85,6 +86,7 @@ export default {
             let index = this.standbyPerformances.findIndex(x => x.id == standby.id);
             this.standbyPerformances.splice(index, 1);
             this.presentToast('User no longer on standby');
+            store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
           }
         }).catch((error) => {
           console.log( error );
@@ -110,6 +112,7 @@ export default {
         ).then((response) => {
           if(response.status == 201) {
             this.standbyPerformances.push(response.data)
+            store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
             this.presentToast('User on standby');
           } 
         }).catch((error) => {
@@ -146,6 +149,7 @@ export default {
             }
           ).then((spRes) => {
             if(spRes.status == 201) {
+              store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
               this.presentToast('User on standby');
             }
           }).catch((error) => {
