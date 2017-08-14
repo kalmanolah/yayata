@@ -43,22 +43,20 @@
 
 
         .card-header.card-info
-          .pull-left 
-            h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
-            h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
-          .pull-right
-            hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
-              .btn.btn-outline-primary
-                i.fa.fa-phone
-          .pull-right
-            hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
-              .btn.btn-outline-primary
-                i.fa.fa-building-o
-            //- .btn-group(role='group' v-if='whereabouts && timesheet_locations && timesheet')
-            //-   .btn.btn-outline-primary#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()')
-            //-     i.fa.fa-building-o
-            //-   .dropdown-menu(aria-labelledby='btnGroupDrop')
-            //-     a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
+          .row
+            .col-md-6.col-sm-12
+              .pull-left 
+                h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
+                h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
+            .col-md-6.col-sm-12
+              .pull-right
+                hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                  .btn.btn-outline-primary.card-header-button
+                    i.fa.fa-phone
+              .pull-right
+                hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                  .btn.btn-outline-primary.card-header-button
+                    i.fa.fa-building-o
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
@@ -704,5 +702,17 @@ div.btn-group {
     text-align: center;
     width: inherit;
     display: inline-block;
+}
+
+.card-header-button {
+  margin-left: 3px;
+  margin-bottom: 3px;
+  color: #fff;
+  border-color: #fff;
+}
+.card-header-button:hover {
+  color: #5bc0de;
+  border-color: #5bc0de;
+  background: #fff;
 }
 </style>
