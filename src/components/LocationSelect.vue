@@ -19,7 +19,10 @@ export default {
   created () {
     store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS).then( () => {
       if(store.getters.whereabouts) {
-        this.selectedLocation = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.data.timesheet.id).location
+        let wb = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.data.timesheet.id);
+        if(wb) {
+          this.selectedLocation = wb.location;
+        }
       }
     }).catch( (error) => {
       console.log(error);
