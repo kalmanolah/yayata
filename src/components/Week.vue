@@ -50,13 +50,21 @@
                 h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
             .col-md-6.col-sm-12
               .pull-right
-                hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
-                  .btn.btn-outline-primary.card-header-button
-                    i.fa.fa-phone
+                b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
+                  hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                    .btn.btn-outline-primary.card-header-button
+                      i.fa.fa-phone
+                  div(slot='content')
+                    template(v-for='standby in getStandbys(weekDay, timesheet)') 
+                      div {{ standby.contract_label }}
               .pull-right
-                hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
-                  .btn.btn-outline-primary.card-header-button
-                    i.fa.fa-building-o
+                b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
+                  hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                    .btn.btn-outline-primary.card-header-button
+                      i.fa.fa-building-o
+                  div(slot='content')
+                    template(v-for='whereabout in getLocation(weekDay, timesheet)')
+                      div {{ whereabout }}
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
@@ -246,9 +254,30 @@ export default {
         }
       });
     }
+    store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
   },
 
   methods: {
+    getStandbys: function (day, timesheet) {
+      if(timesheet && store.getters.standby_performances && store.getters.contracts){
+        let resp = store.getters.standby_performances.filter(p => {
+          if(p.day == moment(day).date() && p.timesheet == timesheet.id) {
+            p.contract_label = store.getters.contracts.find((c) => c.id == p.contract).display_label
+            return p;
+          } 
+        });
+        return resp.length > 0 ? resp : [{'contract_label': 'Not on standby'}];
+      }
+    },
+
+    getLocation: function (day, timesheet) {
+      if(store.getters.whereabouts && timesheet) {
+        let resp = store.getters.whereabouts.find((wa) => {
+          return wa.day == moment(day).date() && wa.timesheet == timesheet.id;
+        });
+        return resp ? {'location': resp.location} : {'location': 'No location'};
+      }
+    },
 
     getTimesheetStatus: function(day) {
       if(store.getters.timesheets) {
@@ -715,4 +744,5 @@ div.btn-group {
   border-color: #5bc0de;
   background: #fff;
 }
+
 </style>
