@@ -41,43 +41,31 @@
     .card-group
       .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
 
-        .btn-group.whereabout(role='group' v-if='whereabouts && timesheet_locations && timesheet')
-          .btn.btn-secondary.btn-sm.dropdown-toggle.whereabout#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()') {{ timesheet_locations[i] }}
-          .dropdown-menu(aria-labelledby='btnGroupDrop')
-            a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
 
         .card-header.card-info
           .pull-left 
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
             h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
           .pull-right
-            .hidden-md-down
-              toggle-button(
-                @change='toggleStandby(weekDay)', 
-                :value='getStandbyStatus(weekDay)', 
-                color='#DB4C4C', 
-                :sync='true', 
-                :labels='toggleButtonLabels', 
-                :width='65',
-                :disabled='!timesheet || !timesheetActive'
-              )
-            .hidden-lg-up
-              toggle-button(
-                @change='toggleStandby(weekDay)', 
-                :value='getStandbyStatus(weekDay)', 
-                color='#DB4C4C', 
-                :sync='true',
-                :width='35',
-                :disabled='!timesheet || !timesheetActive'
-              )
-
+            hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, timesheet)', @success='onSubmitSuccess')
+              .btn.btn-outline-primary
+                i.fa.fa-phone
+          .pull-right
+            hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, timesheet)', @success='onSubmitSuccess')
+              .btn.btn-outline-primary
+                i.fa.fa-building-o
+            //- .btn-group(role='group' v-if='whereabouts && timesheet_locations && timesheet')
+            //-   .btn.btn-outline-primary#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" , :class='getWhereaboutClass()')
+            //-     i.fa.fa-building-o
+            //-   .dropdown-menu(aria-labelledby='btnGroupDrop')
+            //-     a.dropdown-item(v-for='location in whereabout_locations' @click='setWhereabout(location, weekDay, i)') {{ location }}
 
         .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
           template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
 
             //- Performance creation is disabled for future activityPerformances
-            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent(weekDay)', @success='onSubmitSuccess')
+            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
 
               //- Visible text
               .btn.btn-success.btn-submit
@@ -151,6 +139,8 @@ import store from '../store';
 import moment from 'moment';
 import HoverCard from './tools/HoverCard.vue';
 import PerformanceForm from './forms/PerformanceForm.vue';
+import StandbyContractSelect from './StandbyContractSelect.vue';
+import LocationSelect from './LocationSelect.vue';
 
 export default {
   name: 'week',
@@ -158,6 +148,8 @@ export default {
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,
+    StandbyContractSelect,
+    LocationSelect,
   },
 
   watch: {
@@ -191,22 +183,6 @@ export default {
         });
       }
     },
-
-    whereabouts: function() {
-      if(store.getters.whereabouts && this.daysOfWeek) {
-        let whereabouts = [];
-
-        store.getters.whereabouts.filter((w) => {
-          this.daysOfWeek.forEach((day) => {
-            if(day.format('D') == w.day)
-              whereabouts.push(w);
-          });
-        });
-
-        return whereabouts
-      }
-    },
-
     // Gets the locations of this week
     timesheet_locations: function() {
       if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts && store.getters.timesheets){
@@ -260,7 +236,6 @@ export default {
   },
 
   created: function() {
-    this.reloadWhereabouts();
     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
       params: {
         contractuser__user__id: store.getters.user.id
@@ -288,133 +263,6 @@ export default {
       }
     },
 
-    // Check if status is active
-    getWhereaboutClass: function() {
-      return (this.timesheet && this.timesheetActive) ? '' : 'disabled';
-    },
-
-    reloadWhereabouts: function() {
-      if(store.getters.user){
-        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-          filter_future_timesheets: false
-        });
-        
-        return store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
-        });
-      }
-    },
-    
-    patchWhereabout: function(whereaboutId, location, day, timesheetId) {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/whereabouts/' + whereaboutId + '/',
-        method: 'PATCH',
-        body: {
-          location: location,
-          day: day.date(),
-          timesheet: timesheetId
-        },
-        emulateJSON: true
-      }).then( () => {
-        this.reloadWhereabouts();
-        this.$toast('Updated whereabout to ' + location + '!', 
-          {
-            id: 'whereabout-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          }
-        );
-      }).catch((error) => {
-        console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
-      });
-    },
-
-    createWhereabout: function(location, day, timesheetId) {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/whereabouts/',
-        method: 'POST',
-        body: {
-          location: location,
-          day: day.date(),
-          timesheet: timesheetId
-        },
-        emulateJSON: true
-      }).then((res) => {
-        if(res) {
-          this.reloadWhereabouts();
-          this.$toast('Set whereabout to ' + location + '!',
-            { 
-              id: 'whereabout-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 2000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
-        } 
-      }).catch((error) => {
-        console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
-      });
-    },
-
-    // Create new whereabout
-    setWhereabout: function(location, day, index) {
-      // Get timesheet
-      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-        filter_future_timesheets: false,
-      }).then( () => {
-
-        var timesheet = store.getters.timesheets.find(x => 
-          x.month == (day.month() + 1)
-          &&
-          x.year == day.year()
-        );
-
-        // Timesheet not found; make a new one
-        if(!timesheet) {
-          this.createNewTimeSheet(day).then( (response) => {
-            var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === response.data.id)
-            // Whereabout already exists
-            if(whereabout){
-              this.patchWhereabout(whereabout.id, location, day, response.data.id);
-            // Whereabout does not exist
-            } else {
-              this.createWhereabout(location, day, response.data.id);
-            }
-          });
-        } else {
-          var whereabout = store.getters.whereabouts.find(w => w.day == day.format('D') && w.timesheet === timesheet.id)
-          // Whereabout already exists
-          if(whereabout){
-            this.patchWhereabout(whereabout.id, location, day, timesheet.id);
-          // Whereabout does not exist
-          } else {
-            this.createWhereabout(location, day, timesheet.id);
-          }
-        }
-      });
-    },
-
     getDailyQuota: function(day) {
       var performed = this.getDurationTotal(day);
       var required = this.getHoursTotal(day);
@@ -425,20 +273,14 @@ export default {
     },
 
     //Returns correct component for the hovercard
-    getHoverCardComponent: function(date, perf) {
-
+    getHoverCardComponent: function(name, date, perf) {
       return {
-        name: 'PerformanceForm',
+        name: name,
         properties: {
           performance: perf,
           date: date
         }
       };
-    },
-
-    //Get whether user is on standby
-    getStandbyStatus: function(day) {
-      return (this.standbyPerformances.findIndex(x => x.day == day.format('D')) !== -1)
     },
 
     //Get the amount of hours spent 
@@ -497,166 +339,6 @@ export default {
         return this.work_schedule[day.format('dddd').toLowerCase()];
     },
 
-    //Make the call to standby
-    toggleStandby: function(day) {
-      if(this.getStandbyStatus(day))
-        this.deleteStandby(this.standbyPerformances.find(x => x.day == day.format('D')));
-      else
-        this.setStandby(day);
-    },
-
-    //Delete standbyperformance for specific day
-    deleteStandby: function(standby) {
-      store.dispatch(
-        types.NINETOFIVER_API_REQUEST,
-        {
-          path: '/my_performances/standby/' + standby.id + '/',
-          method: 'DELETE',
-          params: {
-            id: standby.id
-          }
-        }).then((delRes) => {
-          if(delRes.status == 204) {
-            this.$toast('User no longer on standby', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
-            this.onSubmitSuccess();
-          }
-        }).catch((error) => {
-          console.log( error );
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });  
-        });
-    },
-
-    //Set standbyperformance for specific day
-    setStandby: function(day) {
-
-      //Get the timesheet corresponding to the date of the day
-      var timesheet = store.getters.timesheets.find(x => 
-        x.month == (day.month() + 1)
-        &&
-        x.year == day.year()
-      );
-
-      if(timesheet) {
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST,
-          {
-            path: '/my_performances/standby/',
-            method: 'POST',
-            body: {
-              timesheet: timesheet.id,
-              // TODO: implement contract
-              day: day.date()
-            },
-            emulateJSON: true,
-          }
-        ).then((response) => {
-          if(response.status == 201) {
-            this.$toast('User on standby', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
-            this.onSubmitSuccess();
-          } 
-        }).catch((error) => {
-          console.log(error);
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });            
-        });
-      } else {
-        //Timesheet was not found, so a new one is made for that date
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST,
-          {
-            path: '/my_timesheets/',
-            method: 'POST',
-            body: {
-              month: day.month() + 1,
-              year: day.year(),
-              closed: false
-            },
-            emulateJSON: true,
-          }
-        ).then((tsRes) => {
-          store.dispatch(
-            types.NINETOFIVER_API_REQUEST,
-            {
-              path: '/my_performances/standby/',
-              method: 'POST',
-              body: {
-                timesheet: tsRes.data.id,
-                // TODO: implement contract
-                day: day.date()
-              },
-              emulateJSON: true,
-            }
-          ).then((spRes) => {
-            if(spRes.status == 201) {
-              this.$toast('User on standby', 
-                { 
-                  id: 'standby-toast',
-                  horizontalPosition: 'right',
-                  verticalPosition: 'top',
-                  duration: 1000,
-                  transition: 'slide-down',
-                  mode: 'override'
-                });
-              this.onSubmitSuccess();
-            }
-          }).catch((error) => {
-            console.log(error);
-            this.$toast('Something went wrong. Check console for more information', 
-              { 
-                id: 'standby-toast',
-                horizontalPosition: 'right',
-                verticalPosition: 'top',
-                duration: 1000,
-                transition: 'slide-down',
-                mode: 'override'
-              });
-          });
-        }).catch((error) => {
-          console.log(error);
-          this.$toast('Something went wrong. Check console for more information', 
-            { 
-              id: 'standby-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 1000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
-        });
-      }
-
-    },
     createNewTimeSheet: function(day) {
       return store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_timesheets/',
@@ -923,7 +605,6 @@ export default {
         unchecked: 'Off call'
       },
 
-      whereabout_locations: store.getters.whereabout_locations,
     }
 
   },
@@ -1024,9 +705,4 @@ div.btn-group {
     width: inherit;
     display: inline-block;
 }
-
-.whereabout {
-  width: 100%
-}
-
 </style>
