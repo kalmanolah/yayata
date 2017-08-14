@@ -29,7 +29,7 @@ export default {
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/my_performances/standby/',
       params: {
-        timesheet: this.properties.performance.id,
+        timesheet: this.properties.data.timesheet.id,
         day: moment(this.properties.date).date()
       }
     }).then((res) => {
@@ -94,15 +94,14 @@ export default {
 
     //Set standbyperformance for specific day
     setStandby: function(contractId) {
-      // is actually timesheet
-      if(this.properties.performance) {
+      if(this.properties.data.timesheet) {
         store.dispatch(
           types.NINETOFIVER_API_REQUEST,
           {
             path: '/my_performances/standby/',
             method: 'POST',
             body: {
-              timesheet: this.properties.performance.id,
+              timesheet: this.properties.data.timesheet.id,
               contract: contractId,
               day: this.day
             },

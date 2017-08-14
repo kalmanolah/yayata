@@ -47,11 +47,11 @@
             h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
             h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
           .pull-right
-            hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, timesheet)', @success='onSubmitSuccess')
+            hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
               .btn.btn-outline-primary
                 i.fa.fa-phone
           .pull-right
-            hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, timesheet)', @success='onSubmitSuccess')
+            hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
               .btn.btn-outline-primary
                 i.fa.fa-building-o
             //- .btn-group(role='group' v-if='whereabouts && timesheet_locations && timesheet')
@@ -273,11 +273,11 @@ export default {
     },
 
     //Returns correct component for the hovercard
-    getHoverCardComponent: function(name, date, perf) {
+    getHoverCardComponent: function(name, date, data) {
       return {
         name: name,
         properties: {
-          performance: perf,
+          data: data,
           date: date
         }
       };
