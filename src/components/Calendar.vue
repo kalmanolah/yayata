@@ -1,5 +1,5 @@
 <template lang="pug">
-div(class='calendar').p-5
+div(class='calendar')
   //- Header with navigationbuttons
   .row
     .col

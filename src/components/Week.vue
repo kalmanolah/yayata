@@ -1,56 +1,73 @@
 <template lang="pug">
 .calendar
+
+  //- Header and control buttons
   .row
-
-    .col-sm-4.text-sm-left
-      .btn-group(role='group' aria-label='Calendar controls')
-        button.btn.btn-secondary(type='button' @click.prevent='selectPreviousWeek()')
-          i.fa.fa-angle-double-left
+    .col
+    .col-6.text-sm-center
+      h1 {{ selectedYear }} Week {{ selectedWeek }}
+    .col.align-self-center.text-right
+      .btn-group(
+        role='group'
+        v-if='!userId'
+      )
+        button(
+          class='btn btn-outline-dark'
+          type='button'
+          v-on:click.prevent='selectPreviousWeek()'
+        )
+          i(class='fa fa-angle-double-left')
           |  &nbsp;Previous
-
-    h1.col-sm-4.text-sm-center {{ selectedYear }} Week {{ selectedWeek }}
-
-    .col-sm-4.text-sm-right
-      .btn-group(role='group' aria-label='Calendar controls')
-        button.btn.btn-secondary(type='button' v-on:click.prevent='selectNextWeek()')
+        button(
+          class='btn btn-outline-dark'
+          type='button'
+          v-on:click.prevent='selectNextWeek()'
+        )
           | Next&nbsp;
-          i.fa.fa-angle-double-right
+          i(class='fa fa-angle-double-right')
+
       
-    //- Getting the months now shown and allowing routing back to where you came from
-    span.col-sm-12.text-sm-center
-      router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-        h3 {{ periodStartMonth | moment('MMMM')}}
-      div(v-if='periodEndMonth.month() != periodStartMonth.month()')
-        router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-          h3 {{ periodEndMonth | moment('MMMM')}}
+  //- Getting the months now shown and allowing routing back to where you came from
+  .row
+    .col.text-center
+      .row.justify-content-center
+        .col
+        .col-auto.text-center
+          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
+            h2 {{ periodStartMonth | moment('MMMM')}}
+        .col-auto.text-center
+          router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
+            h2 {{ periodEndMonth | moment('MMMM')}}
+        .col
 
       hr
   
   //- Buttons to toggle what to display
-  .row
+  .row.justify-content-center
     .btn-group-wrap
-      div.btn-group.week-format-buttons
-        button.btn.btn-secondary(v-on:click='setWeekFormat("workweek")') Workweek
-        button.btn.btn-secondary(v-on:click='setWeekFormat("weekend")') Weekend
-        button.btn.btn-secondary(v-on:click='setWeekFormat("fullweek")') Full week
+      .btn-group.week-format-buttons
+        button.btn.btn-outline-dark(v-on:click='setWeekFormat("workweek")') Workweek
+        button.btn.btn-outline-dark(v-on:click='setWeekFormat("weekend")') Weekend
+        button.btn.btn-outline-dark(v-on:click='setWeekFormat("fullweek")') Full week
 
   //- Cards
   .calendar-header
 
     //- Header
     .card-group
-      .card.card-inverse(v-for='(weekDay, i) in daysOfWeek')
+      .card(v-for='(weekDay, i) in daysOfWeek')
 
-
-        .card-header.card-info
+        .card-header.bg-info.text-white
           .row
-            .col-md-6.col-sm-12
+            .col
               .pull-left 
-                h6(class='hidden-lg-down') <strong>{{ weekDay | moment('dddd') }}</strong>
+                h6(class='d-none d-xl-inline') <strong>{{ weekDay | moment('dddd') }}</strong>
                 h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
-            .col-md-6.col-sm-12
+
+            .col
+              //- Standby
               .pull-right
-                template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+                template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
                   b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
                     hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
                       .btn.btn-outline-primary.card-header-button
@@ -59,13 +76,15 @@
                       template(v-for='standby in getStandbys(weekDay, timesheet)') 
                         div {{ standby.contract_label }}
                 template(v-else)
-                  .btn.btn-outline-primary.card-header-button.disabled
+                  button.btn.btn-outline-primary.card-header-button.disabled
                     i.fa.fa-phone
+
+              //- Whereabouts
               .pull-right
                 template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
                   b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
                     hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
-                      .btn.btn-outline-primary.card-header-button
+                      button.btn.btn-outline-primary.card-header-button
                         i.fa.fa-building-o
                     div(slot='content')
                       template(v-for='whereabout in getLocation(weekDay, timesheet)')
@@ -73,7 +92,8 @@
                 template(v-else)
                   .btn.btn-outline-primary.card-header-button.disabled
                     i.fa.fa-building-o
-        .card-head-foot.text-xs-center(v-if='weekDay < new Date()')
+
+        .card-head-foot.text-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
           template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
 
@@ -81,7 +101,7 @@
             hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
 
               //- Visible text
-              .btn.btn-success.btn-submit
+              button.btn.btn-success.btn-submit
                 i.fa.fa-plus
 
           
@@ -118,7 +138,7 @@
                 :key='perf.id',
                 :class='[list-group, performance-list]'
               )
-                hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+                hovercard(:component='getHoverCardComponent("PerformanceForm", weekDay, perf)', @success='onSubmitSuccess')
                   //- Visible text
                   .list-group-item-heading {{ findContractName(perf.contract) }}
                   .list-group-item-text 
