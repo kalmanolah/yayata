@@ -46,7 +46,7 @@ div(
               navbar
       .container-fluid
         .row
-          .main-app
+          .col.main-app
             router-view.p-3(v-if='user')
 </template>
 

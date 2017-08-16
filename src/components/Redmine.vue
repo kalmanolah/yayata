@@ -1,5 +1,5 @@
 <template lang="pug">
-div
+div.row
   .col
     .row
       .col
