@@ -3,16 +3,17 @@ div(
   id='app'
   class='container-fluid'
 )
-  .application-wrapper
-    .sidebar-wrapper
+  .row.application-wrapper
+    //- sidebar
+    .col-md-1
       .row
-        .col-md-12
+        .col
           router-link(
             :to='{ name: "home" }'
           )
             img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
       .row
-        .col-sm-8.offset-xs-1
+        .col
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
@@ -35,13 +36,15 @@ div(
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
-          div#container(ref='container')
-    .row
-      navbar
-    .row
-      .main-app
-        router-view(v-if='user')
-
+          #container(ref='container')
+    //- content
+    .col-md-11
+      .container-fluid
+        .row
+          navbar
+        .row
+          .main-app
+            router-view(v-if='user')
 </template>
 
 <script>
@@ -169,12 +172,18 @@ export default {
 <style lang="less">
 @datepickerHeight: 228px;
 @sidebar-width: 250px;
+@background-color: #FFF;
 .container-fluid{
-  background: #FAFAFA;
+  background: @background-color;
+}
+
+.application-wrapper {
+    height: 100vh;
 }
 
 .main-app {
-  padding: 2rem 1rem;
+  padding-left: 1rem;
+  width: 100vw;
 }
 
 .logo{
@@ -241,10 +250,6 @@ export default {
 
 #container>.pika-single>.pika-lendar {
   width: 100%;
-}
-
-.application-wrapper {
-    padding-left: @sidebar-width;
 }
 
 .sidebar-wrapper {

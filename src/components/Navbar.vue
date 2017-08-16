@@ -1,24 +1,21 @@
 <template lang="pug">
-nav(
-  class='navbar navbar-yayata'
-)
-  button(
-    class='navbar-toggler hidden-md-up'
-    type='button'
-    data-toggle='collapse'
-    data-target='#navbarResponsive'
-    aria-controls='navbarResponsive'
-    aria-expanded='false'
-    aria-label='Toggle navigation',
-    @click='clicked = !clicked',
+.col
+  nav(
+    class='navbar navbar-yayata'
   )
-    i.fa(
-    :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
+    button(
+      class='navbar-toggler hidden-md-up'
+      type='button'
+      data-toggle='collapse'
+      data-target='#navbarResponsive'
+      aria-controls='navbarResponsive'
+      aria-expanded='false'
+      aria-label='Toggle navigation',
+      @click='clicked = !clicked',
     )
-  div(
-    class='collapse navbar-toggleable-sm'
-    id='navbarResponsive'
-  )
+      i.fa(
+      :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
+      )
     ul(
       class='nav navbar-nav float-md-right'
     )
@@ -42,8 +39,8 @@ nav(
           router-link(
             :to='{ name: "auth.logout" }'
             class='dropdown-item'
-          ) Logout
-</template>
+            ) Logout
+  </template>
 
 <script>
 import store from '../store'
