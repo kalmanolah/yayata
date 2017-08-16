@@ -44,7 +44,7 @@ div(
           navbar
         .row
           .main-app
-            router-view(v-if='user')
+            router-view.p-3(v-if='user')
 </template>
 
 <script>
