@@ -5,7 +5,7 @@ div(
 )
   .row.application-wrapper
     //- sidebar
-    .col-md-auto.sidebar
+    .col-md-auto.sidebar.pr-5
       .row
         .col
           router-link(
@@ -38,12 +38,13 @@ div(
           input#datepicker(type='hidden' ref='datepicker')
           #container(ref='container')
     //- content
-    .col
-      .container-fluid
-        .row
+    .col.p-0
+      .container-fluid.pl-0.pr-0
+        .row.no-gutters
           .col
             .main-app
               navbar
+      .container-fluid
         .row
           .main-app
             router-view.p-3(v-if='user')

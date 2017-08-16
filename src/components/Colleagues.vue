@@ -1,5 +1,5 @@
 <template lang="pug">
-div
+div.row
   //- Header
   .col-12
     h3 Colleagues

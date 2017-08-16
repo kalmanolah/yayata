@@ -1,6 +1,6 @@
 <template lang="pug">
-div
-  .col-12
+div.row
+  .col
     h3 My timesheets
     p.subtitle Overview of all open timesheets
     div(v-for="(year_group, year) in timesheets")
