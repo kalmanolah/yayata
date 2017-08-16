@@ -1,17 +1,15 @@
 <template lang="pug">
   div
-    .text-xs-center
+    .text-center
       i.fa.fa-calendar-check-o
       span &nbsp; {{ today | moment('DD/MM/YYYY') }}
     vue-form-generator(:id='"vfg-" + i', :schema="schema", :model="model", :options="formOptions")
 
-    button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm', v-if='formHasData')
+    button.btn.btn-success.col(v-bind:class='submitButtonStyle', @click='validateForm', :disabled='!formHasData')
       i.fa.fa-check
       span &nbsp; Submit
-    button.btn.btn-success(v-bind:class='submitButtonStyle', @click='validateForm', v-if='!formHasData', disabled)
-      i.fa.fa-check
-      span &nbsp; Submit
-    button.btn.btn-danger.col-sm-6(v-if='defaultPerformance', @click='deleteEntry')
+
+    button.btn.btn-danger.col-6(v-if='defaultPerformance', @click='deleteEntry')
       i.fa.fa-remove
       span &nbsp; Delete
 </template>
@@ -32,6 +30,7 @@ export default {
       type: Object,
       default: null,
       validator(value) {
+        console.log( value );
         return (value !== null && value !== undefined && typeof value === 'object')
       }
     }
@@ -68,7 +67,7 @@ export default {
 
     defaultPerformance: function() {
       if(this.defaultProperties)
-        return Object.keys(this.defaultProperties).length > 0 ? this.defaultProperties.performance : null;
+        return Object.keys(this.defaultProperties).length > 0 ? this.defaultProperties.data : null;
     },
 
     defaultContract: function() {
@@ -147,12 +146,12 @@ export default {
 
     //Validates the form & sends data according to its value
     validateForm: function() {
-      // Check if the selected contract is a projectcontract
-      this.isProjectContract = (store.getters.contracts.find(c => c.id === this.model.contract).contract_type === 'ProjectContract') ? true : false;
+      // // Check if the selected contract is a projectcontract
+      // this.isProjectContract = (store.getters.contracts.find(c => c.id === this.model.contract).contract_type === 'ProjectContract') ? true : false;
 
-      // if the selected contract is not a project contract, give contract_role an empty value so we don't trip the validation.
-      if(!this.isProjectContract)
-        this.model.contract_role = '';
+      // // if the selected contract is not a project contract, give contract_role an empty value so we don't trip the validation.
+      // if(!this.isProjectContract)
+      //   this.model.contract_role = '';
 
       var modelValidationCheck = Object.keys(this.model).every(x => {
           return this.model[x] != null;
@@ -198,26 +197,17 @@ export default {
     submitForm: function(timesheetID) {
       var body = {};
 
-      if(this.isProjectContract){
-        body = {
-          timesheet: timesheetID,
-          day: this.today.date(),
-          duration: this.model.duration,
-          description: this.model.description,
-          performance_type: this.model.performance_type,
-          contract: this.model.contract,
-          contract_role: this.model.contract_role
-        };
-      } else {
-        body = {
-          timesheet: timesheetID,
-          day: this.today.date(),
-          duration: this.model.duration,
-          description: this.model.description,
-          performance_type: this.model.performance_type,
-          contract: this.model.contract,
-        };
-      }
+      console.log( this.model.contract_role );
+
+      body = {
+        timesheet: timesheetID,
+        day: this.today.date(),
+        duration: this.model.duration,
+        description: this.model.description,
+        performance_type: this.model.performance_type,
+        contract: this.model.contract,
+        contract_role: this.model.contract_role
+      };
 
       if(this.defaultPerformance)
         this.patchRequest(this.defaultPerformance['id'], body);
@@ -293,7 +283,7 @@ export default {
               }
             },
 
-            styleClasses: ['compact-field', 'col-md-8'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-8'],
           },
           {
             //DURATION
@@ -304,7 +294,7 @@ export default {
             step: 0.5,
             min: 0,
 
-            styleClasses: ['compact-field', 'col-md-4'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-4'],
           },
           {
             //DESCRIPTION
@@ -314,7 +304,7 @@ export default {
             max: 500,
             rows: 3,
 
-            styleClasses: ['compact-field', 'col-md-12'],
+            styleClasses: ['compact-field', 'col-12'],
           },
           {
             //PERFORMANCE_TYPE
@@ -331,6 +321,7 @@ export default {
                 });
               }
             },
+            styleClasses: ['compact-field', 'col-12'],
           },
           {
             //CONTRACT_ROLE
@@ -350,7 +341,7 @@ export default {
                 return contract_roles;
               }
             },
-            styleClasses: ['compact-field', 'col-md-12'],
+            styleClasses: ['compact-field', 'col-12'],
           },
         ]
       },
@@ -365,6 +356,11 @@ export default {
 </script>
 
 <style>
+
+  #vfg-undefined > fieldset {
+    padding-top: 1.5rem;
+    flex-direction: row;
+  }
 
   .compact-field {
     font-size: 10px;
