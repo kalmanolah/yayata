@@ -12,7 +12,7 @@ div
           .dropdown-menu(aria-labelledby='btnGroupDropContract')
             a.dropdown-item(v-for='contract in contracts' @click='selectContract(contract)') {{ contract.display_label }}
         .btn-group.pull-right
-          .btn.btn-primary(@click='importToYayata()') Import to Yayata
+          .btn.btn-primary(@click='importToYayata()') Import
     br
     .row
       h3.text-md-center Not imported

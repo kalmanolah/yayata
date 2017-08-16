@@ -13,6 +13,8 @@
 <script>
 /* UPDATE FOR MORE COMPONENT FORMS */
 import PerformanceForm from '../forms/PerformanceForm.vue';
+import StandbyContractSelect from '../StandbyContractSelect.vue';
+import LocationSelect from '../LocationSelect.vue';
 import { mixin as clickaway } from 'vue-clickaway';
 
 
@@ -23,6 +25,8 @@ export default {
   components: {
     /* UPDATE FOR MORE COMPONENT FORMS */
     PerformanceForm: PerformanceForm,
+    StandbyContractSelect,
+    LocationSelect
   },
 
   data () {
