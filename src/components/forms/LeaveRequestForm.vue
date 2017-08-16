@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  .card.card-top-blue.col-md-12
+  .card.card-top-blue.col-md-12.mb-3.p-2
     h4.card-title.text-md-center
       i.fa.fa-plane
       | &nbsp; Request a Leave

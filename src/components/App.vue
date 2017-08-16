@@ -5,7 +5,7 @@ div(
 )
   .row.application-wrapper
     //- sidebar
-    .col-md-1
+    .col-md-auto.sidebar
       .row
         .col
           router-link(
@@ -38,10 +38,12 @@ div(
           input#datepicker(type='hidden' ref='datepicker')
           #container(ref='container')
     //- content
-    .col-md-11
+    .col
       .container-fluid
         .row
-          navbar
+          .col
+            .main-app
+              navbar
         .row
           .main-app
             router-view.p-3(v-if='user')
@@ -183,7 +185,8 @@ export default {
 
 .main-app {
   padding-left: 1rem;
-  width: 100vw;
+  padding-left: 0;
+  // width: 100vw
 }
 
 .logo{
@@ -192,6 +195,10 @@ export default {
   max-width: 150px;
   overflow: hidden;
   padding-bottom: 30px;
+}
+
+.sidebar {
+  min-width: 100px
 }
 
 .card-top-blue{
@@ -225,10 +232,11 @@ export default {
 
 .fixed {
   position: fixed;
-  left: 77vw;
-  width: 21vw;
 }
 
+.filter-form {
+  width: 20%;
+}
 .wrapper{
   position: relative;
 }
@@ -236,7 +244,6 @@ export default {
 .bottom {
   position: absolute;
   bottom: 0;
-  width: 100%;
 }
 
 #container {

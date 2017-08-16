@@ -1,31 +1,31 @@
 <template lang="pug">
-.col-sm-12
-  .card
+.col
+  .card.p-3
     .card-block
       .row
-        .col-sm-12.text-sm-center
+        .col-12.text-center
           h3 Advanced Filter
           p.subtitle.hidden-md-down More indepth filtering
 
       .row
-        .col-md-6.form-buttons
-          .btn.btn-primary.btn-block(@click='submitUserFilterForm')
+        .col-6.form-buttons
+          button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
             i.fa.fa-filter(aria-hidden="true") &nbsp;
-            span.hidden-lg-down Submit
+            span.d-none.d-xl-inline Submit
 
-        .col-md-6.form-buttons
-          .btn.btn-danger.btn-block(@click='resetForm')
+        .col-6.form-buttons
+          button.btn.btn-danger.btn-block(@click='resetForm')
             i.fa.fa-refresh(aria-hidden="true") &nbsp; 
-            span.hidden-lg-down Reset
+            span.d-none.d-xl-inline Reset
       hr
 
       .pre-scrollable.filter-scrollable
         .row
-          .col-sm-12
+          .col-12
             strong.active-toggle User
-          .col-sm-12
+          .col-12
             toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
-          .col-sm-12
+          .col-12
             vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
       
 </template>

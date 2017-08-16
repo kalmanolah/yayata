@@ -1,15 +1,16 @@
 <template lang="pug">
-div(class='container')
-  div(class='row')
-    div(class='col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-sm-8 offset-sm-2')
-      div(class='my-1')
-      div(class='card')
+.container
+  .row
+    .col
+    .col-md-6.col-sm-12
+      .card.m-3
         router-link(:to='{ name: "home" }')
           img(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
         div(class='card-block')
           h4(class='card-title')
             block title
           router-view
+    .col
 </template>
 
 <script>
