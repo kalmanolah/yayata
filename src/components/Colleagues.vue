@@ -1,26 +1,26 @@
 <template lang="pug">
 div
   //- Header
-  .col-sm-12
+  .col-12
     h3 Colleagues
       .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
         i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
     p.subtitle Overview of all colleagues
 
   //- Advanced filter panel
-  .col-lg-3.pull-right(v-if='showFilter')
+  .col-3.pull-right(v-if='showFilter')
     .row
       ColleaguesFilterForm
 
   //- Main page
-  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
+  div(:class='showFilter ? "col-9" : "col-12"')
     .row
-      .col-lg-8
+      .col-8
         .btn-group(role='group' aria-label='Button group with nested dropdown')
-          .btn.btn-secondary(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
-          .btn.btn-secondary(v-else type='button' @click='reloadPage()') All
+          button.btn.btn-outline-dark(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
+          button.btn.btn-outline-dark(v-else type='button' @click='reloadPage()') All
           .btn-group(role='group')
-            .btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
+            button.btn.btn-outline-dark.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
             .dropdown-menu(aria-labelledby='btnGroupDrop')
               a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
 
@@ -49,7 +49,7 @@ div
             tbody
               tr(v-for='(user, index) in requestedUsers')
                 td {{ user.first_name }} {{ user.last_name }} 
-                  span.tag.pull-right(v-for='group in user.groups' v-bind:class='determineTagColor(group)') {{ group | getGroupAsString }}
+                  span.ml-1.badge.pull-right(v-for='group in user.groups' v-bind:class='determineBadgeColor(group)') {{ group | getGroupAsString }}
                 td
                   span {{ user.email }}
                   a.pull-right(:href="`mailto:${user.email}`")
@@ -201,18 +201,18 @@ export default {
       }
     },
 
-    // Determines the group tag color
-    determineTagColor: function(group_id) {
+    // Determines the group badge color
+    determineBadgeColor: function(group_id) {
       var group = store.getters.user_groups.find(group => group_id === group.id);
       var groupName = group.name || 'UNDEFINED';
       var tempObj = {
-        [store.getters.group_names[3]]: 'tag-primary',
-        [store.getters.group_names[2]]: 'tag-red',        
-        [store.getters.group_names[1]]: 'tag-blue',
-        [store.getters.group_names[0]]: 'tag-green',
+        [store.getters.group_names[3]]: 'badge-primary',
+        [store.getters.group_names[2]]: 'badge-danger',        
+        [store.getters.group_names[1]]: 'badge-info',
+        [store.getters.group_names[0]]: 'badge-success',
       }
 
-      return tempObj[groupName] || 'tag-primary';   
+      return tempObj[groupName] || 'badge-primary';   
     },
 
     reloadPage: function() {
@@ -239,23 +239,6 @@ export default {
 <style>
 .dropdown-item:hover {
   cursor: pointer;
-}
-
-.tag {
-  margin-left: 0.1rem;
-  margin-right: 0.1rem;
-}
-
-.tag-red {
-  background-color: #ff0000;
-}
-
-.tag-blue {
-  background-color: #000080;
-}
-
-.tag-green {
-  background-color: #006400;
 }
 
 .user-fullname {

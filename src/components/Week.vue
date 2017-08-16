@@ -118,7 +118,7 @@
                 :key='perf.id',
                 :class='[list-group, performance-list]'
               )
-                hovercard(:component='getHoverCardComponent(weekDay, perf)', @success='onSubmitSuccess')
+                hovercard(:component='getHoverCardComponent("PerformanceForm", weekDay, data={"perf": perf})', @success='onSubmitSuccess')
                   //- Visible text
                   .list-group-item-heading {{ findContractName(perf.contract) }}
                   .list-group-item-text 

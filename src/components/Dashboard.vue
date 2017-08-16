@@ -1,17 +1,16 @@
 <template lang="pug">
-
 div
   .row
-    .col-md-12
+    .col
       //- WARNING
-      .alert.alert-warning.card-top-red(v-if='open_timesheet_count > 0')
-        .text-xs-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+      .alert.alert-warning.card-top-red.mb-3(v-if='open_timesheet_count > 0')
+        .text-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
-    .col-lg-6
+    .col-6
       //- BIRTHDAYS
-      .card.card-top-blue
-        h4.card-title.text-xs-center Birthdays
-        .text-xs-center
+      .card.card-top-blue.mb-3.p-2
+        h4.card-title.text-center Birthdays
+        .text-center
           span(title='Go to previous day')
             i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlierBirthdays')
             | {{ selectedBirthday | moment('DD MMMM')}}
@@ -25,11 +24,11 @@ div
                   router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
                   .fa.fa-birthday-cake.pull-right
               tr(v-if='users && birthdaysSelectedDay.length === 0')
-                td.text-xs-center <strong>No rijsttaart today :(</strong>
+                td.text-center <strong>No rijsttaart today :(</strong>
 
       //- TIMESHEETS
-      .card.card-top-blue
-        h4.card-title.text-xs-center Timesheets for 
+      .card.card-top-blue.mb-3.p-2
+        h4.card-title.text-center Timesheets for 
           router-link(:to='{ name: "calendar_month_redirect" }')
             | {{ today | moment('MMMM YYYY') }}
         table.table
@@ -44,38 +43,40 @@ div
               td <strong>Open hours</strong>
               td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed }} hours ({{ month_info.hours_required - month_info.hours_performed | hoursToDaysFilter }} days)</strong>
    
-    .col-lg-6
-      //- ABSENT COLLEAGUES
-      .card.card-top-blue
-        h4.card-title.text-xs-center Absent colleagues
-        div.text-xs-center
-          span(title='Go to previous day')
-            i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
-            | {{ selectedDay | moment('DD MMMM') }}
-          span(title='Go to next day')
-            i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+    .col-6
+      .row
+        .col
+          //- ABSENT COLLEAGUES
+          .card.card-top-blue.mb-3.p-2
+            h4.card-title.text-center Absent colleagues
+            div.text-center
+              span(title='Go to previous day')
+                i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
+                | {{ selectedDay | moment('DD MMMM') }}
+              span(title='Go to next day')
+                i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
 
-        .card-block
-          table.table
-            tbody
-              tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
-                td
-                  router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
-                td.text-md-right {{ leave.leave_type }}
-              tr(v-if='sortedLeaves.length === 0')
-                td.text-xs-center <strong>No absent colleagues!</strong>
+            .card-block
+              table.table
+                tbody
+                  tr(v-if='sortedLeaves' v-for="(leave, index) in sortedLeaves" v-bind:key="leave.id")
+                    td
+                      router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
+                    td.text-md-right {{ leave.leave_type }}
+                  tr(v-if='sortedLeaves.length === 0')
+                    td.text-center <strong>No absent colleagues!</strong>
 
-          table.table
-            tbody
-              tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
-                td {{ holiday.name }} [{{ holiday.country }}]
-                td.text-md-right {{ holiday.date }}
-              tr(v-if='holidaysSelectedDay.length === 0')
-                td.text-xs-center <strong>No holidays!</strong>
-                
-    .col-lg-6
-      //- Leaverequest form
-      LeaveRequestForm
+              table.table
+                tbody
+                  tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
+                    td {{ holiday.name }} [{{ holiday.country }}]
+                    td.text-md-right {{ holiday.date }}
+                  tr(v-if='holidaysSelectedDay.length === 0')
+                    td.text-center <strong>No holidays!</strong>
+      .row 
+        .col         
+          //- Leaverequest form
+          LeaveRequestForm
 
 </template>
 

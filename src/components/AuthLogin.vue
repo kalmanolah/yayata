@@ -1,35 +1,37 @@
 <template lang="pug">
-form(v-on:submit.prevent="onSubmit")
-  div(
-    v-if='errorMessage'
-    class='alert alert-danger'
-    role='alert'
-  ) {{ errorMessage }}
+.row
+  .col
+    form.p-3(v-on:submit.prevent="onSubmit")
+      div(
+        v-if='errorMessage'
+        class='alert alert-danger'
+        role='alert'
+      ) {{ errorMessage }}
 
-  div(class="form-group")
-    label(for='username-input') Username
-    input(
-      required
-      id='username-input'
-      type="text"
-      class="form-control"
-      v-model='username'
-    )
+      div(class="form-group")
+        label(for='username-input') Username
+        input(
+          required
+          id='username-input'
+          type="text"
+          class="form-control"
+          v-model='username'
+        )
 
-  div(class="form-group")
-    label(for='password-input') Password
-    input(
-      required
-      id='password-input'
-      type="password"
-      class="form-control"
-      v-model='password'
-    )
+      div(class="form-group")
+        label(for='password-input') Password
+        input(
+          required
+          id='password-input'
+          type="password"
+          class="form-control mb-2"
+          v-model='password'
+        )
 
-  button(
-    type="submit"
-    class="btn btn-primary"
-  ) Submit
+      button(
+        type="submit"
+        class="btn btn-primary"
+      ) Submit
 </template>
 
 <script>

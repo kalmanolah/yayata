@@ -1,45 +1,44 @@
 <template lang="pug">
-.col
-  nav(
-    class='navbar navbar-yayata'
+nav(
+  class='navbar navbar-yayata mb-3'
+)
+  button(
+    class='navbar-toggler hidden-md-up'
+    type='button'
+    data-toggle='collapse'
+    data-target='#navbarResponsive'
+    aria-controls='navbarResponsive'
+    aria-expanded='false'
+    aria-label='Toggle navigation',
+    @click='clicked = !clicked',
   )
-    button(
-      class='navbar-toggler hidden-md-up'
-      type='button'
-      data-toggle='collapse'
-      data-target='#navbarResponsive'
-      aria-controls='navbarResponsive'
-      aria-expanded='false'
-      aria-label='Toggle navigation',
-      @click='clicked = !clicked',
+    i.fa(
+    :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
     )
-      i.fa(
-      :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
-      )
-    ul(
-      class='nav navbar-nav float-md-right'
+  ul(
+    class='nav navbar-nav float-md-right'
+  )
+    li(
+      class='nav-item dropdown'
+      v-if='user'
     )
-      li(
-        class='nav-item dropdown'
-        v-if='user'
+      a(
+        class='nav-link dropdown-toggle'
+        data-toggle='dropdown'
+        id='responsiveNavbarDropdown'
+        aria-haspop='true'
+        aria-expanded='false'
+        href='#'
+      ) {{ user.display_label }}
+      div(
+        class='dropdown-menu dropdown-menu-right'
+        aria-labelledby='responsiveNavbarDropdown'
       )
-        a(
-          class='nav-link dropdown-toggle'
-          data-toggle='dropdown'
-          id='responsiveNavbarDropdown'
-          aria-haspop='true'
-          aria-expanded='false'
-          href='#'
-        ) {{ user.display_label }}
-        div(
-          class='dropdown-menu dropdown-menu-right'
-          aria-labelledby='responsiveNavbarDropdown'
-        )
-          router-link.dropdown-item#admin-nav(:to='{ name: "admin" }') Admin
-          router-link(
-            :to='{ name: "auth.logout" }'
-            class='dropdown-item'
-            ) Logout
+        router-link.dropdown-item#admin-nav(:to='{ name: "admin" }') Admin
+        router-link(
+          :to='{ name: "auth.logout" }'
+          class='dropdown-item'
+          ) Logout
   </template>
 
 <script>

@@ -1,45 +1,45 @@
 <template lang="pug">
-  div
-    .col-sm-12
-      h3 My timesheets
-      p.subtitle Overview of all open timesheets
-      div(v-for="(year_group, year) in timesheets")
+div
+  .col-12
+    h3 My timesheets
+    p.subtitle Overview of all open timesheets
+    div(v-for="(year_group, year) in timesheets")
+      
+      br
+
+      div.card.card-top-blue.mb-3
+
+        h3.card-header {{ year }}
         
-        br
+        .card-block.row
+          .col-4(v-for='(sheet, i) in year_group')
 
-        div.card.card-top-blue
+              .card.m-3
 
-          h3.card-header {{ year }}
-          
-          .card-block.row
-            .col-lg-4(v-for='(sheet, i) in year_group')
+                .card-header
+                  h5.text-xs-center 
+                    router-link.month-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }') {{ sheet | outputCorrectMonth }}
+                    toggle-button.pull-right(
+                      @change='setPending(sheet)',
+                      :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
+                      :value='sheet.status === "PENDING"',
+                      :sync='true',
+                      :labels={
+                        checked: 'Pending',
+                        unchecked: 'Active'
+                      },
+                      :width='70',
+                      :disabled='sheet.status === "PENDING"'
+                    )
 
-                .card
-
-                  .card-header
-                    h5.text-xs-center 
-                      router-link.month-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }') {{ sheet | outputCorrectMonth }}
-                      toggle-button.pull-right(
-                        @change='setPending(sheet)',
-                        :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
-                        :value='sheet.status === "PENDING"',
-                        :sync='true',
-                        :labels={
-                          checked: 'Pending',
-                          unchecked: 'Active'
-                        },
-                        :width='70',
-                        :disabled='sheet.status === "PENDING"'
-                      )
-
-                  .card-block
-                    div
-                      strong Open hours:  
-                      .tag.pull-right(:class='getTagStyle(sheet)') {{ sheet.hours_required - sheet.hours_performed | negativeToZeroFilter  }}
-                      
-                    div 
-                      span Days with leave:
-                      .pull-right {{ getDaysWithLeave(sheet.id) }}
+                .card-block.p-2
+                  div
+                    strong Open hours:  
+                    .badge.pull-right(:class='getBadgeStyle(sheet)') {{ sheet.hours_required - sheet.hours_performed | negativeToZeroFilter  }}
+                    
+                  div 
+                    span Days with leave:
+                    .pull-right {{ getDaysWithLeave(sheet.id) }}
 
 </template>
 
@@ -221,8 +221,8 @@
       },
 
       //Get the tagstyle according to the quota
-      getTagStyle: function(timesheet) {
-        return timesheet.hours_required - timesheet.hours_performed > 0 ? 'tag-warning' : 'tag-success';
+      getBadgeStyle: function(timesheet) {
+        return timesheet.hours_required - timesheet.hours_performed > 0 ? 'badge-warning' : 'badge-success';
       },
     },
 

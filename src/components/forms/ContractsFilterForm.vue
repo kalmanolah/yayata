@@ -1,19 +1,18 @@
 <template lang="pug">
-.col-sm-12
-  .card
+  .card.p-3.fixed.filter-form
     .card-block
       .row
-        .col-sm-12.text-sm-center
+        .col.text-center
           h3 Advanced Filter
           p.subtitle.hidden-md-down More indepth filtering
 
       .row
-        .col-md-6.form-buttons
+        .col.form-buttons
           .btn.btn-primary.btn-block(@click='submitForm')
             i.fa.fa-filter(aria-hidden="true") &nbsp;
             span.hidden-lg-down Submit
 
-        .col-md-6.form-buttons
+        .col.form-buttons
           .btn.btn-danger.btn-block(@click='resetForm')
             i.fa.fa-refresh(aria-hidden="true") &nbsp; 
             span.hidden-lg-down Reset
@@ -21,11 +20,13 @@
 
       .pre-scrollable.filter-scrollable
         .row
-          .col-sm-12
+          .col
             strong.active-toggle Contract status
-          .col-sm-12
+        .row  
+          .col
             toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
-          .col-sm-12
+        .row  
+          .col
             vue-form-generator(:schema="schema", :model="model", :options="formOptions")
       
 </template>
@@ -308,7 +309,7 @@ export default {
 }
 
 .filter-scrollable {
-  max-height: 60vh;
+  /* max-height: 70vh; */
 }
 .radio-field > .field-wrap > .radio-list > label {
   padding: 2px 3px;
