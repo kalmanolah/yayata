@@ -1,48 +1,47 @@
 <template lang="pug">
-div(class='calendar')
+div(class='calendar').p-5
+  //- Header with navigationbuttons
   .row
-    .col-md-3
-    h1(v-if='params' class='col-md-6 text-md-center') {{ month }} {{ params.year }}
-    h1(v-else class='col-md-6 text-md-center') {{ month }}  {{ year }}
-    .col-md-3.text-md-right
-      div(
-        class='btn-group'
+    .col
+    .col-6.text-sm-center
+      h1(v-if='params') {{ month }}  {{ params.year }}
+      h1(v-else) {{ month }}  {{ year }}
+    .col.align-self-center.text-right
+      .btn-group(
         role='group'
         aria-label='Calendar controls'
         v-if='!userId'
       )
         button(
-          class='btn btn-secondary'
+          class='btn btn-outline-dark'
           type='button'
           v-on:click.prevent='selectPreviousMonth()'
         )
           i(class='fa fa-angle-double-left')
           |  &nbsp;Previous
         button(
-          class='btn btn-secondary'
+          class='btn btn-outline-dark'
           type='button'
           v-on:click.prevent='selectNextMonth()'
         )
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
-    .col-md-4
-    h5.col-md-4.text-md-center
-      small(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
-    .col-md-4
+
+  //- Quota overview
+  .row.justify-content-center
+    .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
   hr
 
   //- Day-names
-  div(class='calendar-header' class='hidden-sm-down')
-    div(v-for='weekDay in weekDays')
-      div(class='calendar-day') {{ weekDay }}
-  div(class='calendar-body')
-    div(
-      v-for='n in dayOffset'
-      class='calendar-day calendar-day-dummy hidden-sm-down'
-    )
+  .calendar-header.d-none.d-md-inline(v-for='weekDay in weekDays')
+    .calendar-day {{ weekDay }}
+
+  .calendar-body
+    //- Dummy day block
+    .calendar-day.calendar-day-dummy.d-none.d-md-inline(v-for='n in dayOffset')
 
     //- Day-blocks
-    .calendar-day(
+    .calendar-day.p-1(
       v-for='(n, i) in dayCount'
       v-bind:class='[{ \
         "calendar-day-weekend": isWeekendDay(n), \
@@ -54,27 +53,29 @@ div(class='calendar')
         router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
                     :event="!userId ? 'click' : ''"
                     :class="!userId ? '' : 'unclickable-days'")
-          .card.card-block
+          .card.card-block.p-3
             p {{ n }}
 
               //- Popover showing leaves
-              b-popover.pull-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='hidden-md-down')
+              b-popover.float-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='d-none d-lg-inline')
                 i.fa.fa-university(v-if='isHoliday(n)')
                 i.fa.fa-plane(v-else-if='getLeaveForDay(n)')
                 div(slot='content')
 
                   template(v-if='isHoliday(n)')
-                    .text-sm-center <strong>Holiday </strong>
-                    .text-sm-center {{ isHoliday(n).name }}
+                    .text-center <strong>Holiday </strong>
+                    .text-center {{ isHoliday(n).name }}
                   
                   template(v-for='leave in getLeaveForDay(n)')
-                    div.text-sm-center <strong> {{ leave.leave_type }} </strong>
+                    div.text-center <strong> {{ leave.leave_type }} </strong>
                     div <strong>From: </strong> {{ leave.leave_start | moment('DD MMMM  HH:mm') }}
                     div <strong>Until: </strong> {{ leave.leave_end | moment('DD MMMM  HH:mm') }}
 
-            small.tag.pull-right(v-bind:class='getDailyQuota(n)' class='hidden-md-down')
-              | {{ getPerformedHours(n) | roundHoursFilter }} /
-              | {{ getRequiredHours(n) | roundHoursFilter}}
+            .row
+              .col
+                small.badge.float-right(v-bind:class='getDailyQuota(n)' class='d-none d-lg-inline')
+                  | {{ getPerformedHours(n) | roundHoursFilter }} /
+                  | {{ getRequiredHours(n) | roundHoursFilter}}
 
 </template>
 
@@ -194,7 +195,7 @@ export default {
 
       let quota = required > 0 ? performed / required : 1;
 
-      return quota >= 1 ? 'tag-success' : quota <= 0.7 ? 'tag-danger' : 'tag-warning';
+      return quota >= 1 ? 'badge-success' : quota <= 0.7 ? 'badge-danger' : 'badge-warning';
     },
 
     //Get hours required per day, based on workschedule, holiday & leave
