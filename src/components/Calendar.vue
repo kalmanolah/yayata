@@ -401,8 +401,9 @@ export default {
       if(!this.userId && store.getters.user)
         return store.getters.user;
       
-      if(this.userId && store.getters.users)
+      if(this.userId && store.getters.users){
         return store.getters.users.find(u => u.id === this.userId);
+      }
     },
 
     year: function() {
@@ -411,9 +412,10 @@ export default {
     },
 
     month: function() {
-      if(store.getters.calendar_selected_month){
+      if(store.getters.calendar_selected_month, this.user){
         store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO, {
           params: {
+            user_id:this.user.id,
             month: moment(store.getters.calendar_selected_month).format('MM')
           }
         });
