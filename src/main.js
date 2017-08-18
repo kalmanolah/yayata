@@ -26,6 +26,7 @@ import Companies from './components/Companies.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
 import Redmine from './components/Redmine.vue'
+import LeaveOverviewGrid from './components/LeaveOverviewGrid.vue'
 
 // Vue.use(Vuex)
 Vue.use(Toast)
@@ -40,101 +41,103 @@ Vue.use(VueChartJs)
 export const cfg_file_path = '/cfg/config.json'
 
 export const router = new VueRouter({
-  routes: [
-    {
-      name: 'home',
-      path: '/',
-      component: App,
-      redirect: '/dashboard',
-      children: [
-        {
-          name: 'dashboard',
-          path: '/dashboard',
-          component: Dashboard,
+    routes: [{
+            name: 'home',
+            path: '/',
+            component: App,
+            redirect: '/dashboard',
+            children: [{
+                    name: 'dashboard',
+                    path: '/dashboard',
+                    component: Dashboard,
+                },
+                {
+                    name: 'calendar_month_redirect',
+                    path: '/calendar',
+                    redirect: `/calendar/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+                },
+                {
+                    name: 'calendar_month',
+                    path: '/calendar/month/:year/:month',
+                    component: Calendar,
+                },
+                {
+                    name: 'calendar_week_redirect',
+                    path: '/calendar/week',
+                    redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
+                },
+                {
+                    name: 'calendar_week',
+                    path: '/calendar/week/:year/:week',
+                    component: Week,
+                },
+                {
+                    name: 'colleagues',
+                    path: '/colleagues/:userId',
+                    component: Colleagues,
+                },
+                {
+                    name: 'leaves',
+                    path: '/leaves',
+                    component: Leaves,
+                },
+                {
+                    name: 'leave_overview_grid',
+                    path: '/leave_overview',
+                    component: LeaveOverviewGrid
+                },
+                {
+                    name: 'timesheets',
+                    path: '/timesheets',
+                    component: Timesheets,
+                },
+                {
+                    name: 'companies',
+                    path: '/companies',
+                    component: Companies,
+                },
+                {
+                    name: 'contracts',
+                    path: '/contracts',
+                    component: Contracts,
+                },
+                {
+                    name: 'admin',
+                    path: '/admin',
+                    component: Admin,
+                },
+                {
+                    name: 'redmine',
+                    path: '/redmine',
+                    component: Redmine,
+                }
+            ],
         },
         {
-          name: 'calendar_month_redirect',
-          path: '/calendar',
-          redirect: `/calendar/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+            name: 'auth',
+            path: '/auth',
+            component: Auth,
+            redirect: 'login',
+            children: [{
+                    name: 'auth.login',
+                    path: 'login',
+                    component: AuthLogin,
+                    meta: {
+                        anonymous: true
+                    },
+                },
+                {
+                    name: 'auth.logout',
+                    path: 'logout',
+                    component: AuthLogout,
+                    meta: {
+                        anonymous: true
+                    },
+                },
+            ]
         },
-        {
-          name: 'calendar_month',
-          path: '/calendar/month/:year/:month',
-          component: Calendar,
-        },
-        {
-          name: 'calendar_week_redirect',
-          path: '/calendar/week',
-          redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
-        },
-        {
-          name: 'calendar_week',
-          path: '/calendar/week/:year/:week',
-          component: Week,
-        },
-        {
-          name: 'colleagues',
-          path: '/colleagues/:userId',
-          component: Colleagues,
-        },
-        {
-          name: 'leaves',
-          path: '/leaves',
-          component: Leaves,
-        },
-        {
-          name: 'timesheets',
-          path: '/timesheets',
-          component: Timesheets,
-        },
-        {
-          name: 'companies',
-          path: '/companies',
-          component: Companies,
-        },
-        {
-          name: 'contracts',
-          path: '/contracts',
-          component: Contracts,
-        },
-        {
-          name: 'admin',
-          path: '/admin',
-          component: Admin,
-        },
-        {
-          name: 'redmine',
-          path: '/redmine',
-          component: Redmine,
-        }
-      ],
-    },
-    {
-      name: 'auth',
-      path: '/auth',
-      component: Auth,
-      redirect: 'login',
-      children: [
-        {
-          name: 'auth.login',
-          path: 'login',
-          component: AuthLogin,
-          meta: {
-            anonymous: true
-          },
-        },
-        {
-          name: 'auth.logout',
-          path: 'logout',
-          component: AuthLogout,
-          meta: {
-            anonymous: true
-          },
-        },
-      ]
-    },
-    { path: '*', redirect: { name: 'home' } }
-  ]
+        { path: '*', redirect: { name: 'home' } }
+    ]
 })
 
 // Sync store with router
@@ -143,21 +146,21 @@ sync(store, router)
 // If the user is navigating to a secured route,
 // verify authentication or redirect to login screen
 router.beforeEach((to, from, next) => {
-  if (!to.meta.anonymous && !store.state.oauth2.authenticated) {
-    next({ name: 'auth.login' })
-  } else {
-    next()
-  }
+    if (!to.meta.anonymous && !store.state.oauth2.authenticated) {
+        next({ name: 'auth.login' })
+    } else {
+        next()
+    }
 })
 
 Vue.http.get(cfg_file_path).then((response) => {
-  store.commit(types.OAUTH2_CONFIGURE, response.data.oauth2.config)
+    store.commit(types.OAUTH2_CONFIGURE, response.data.oauth2.config)
 
-  new Vue({
-    el: '#app',
-    router,
-    store
-  })
+    new Vue({
+        el: '#app',
+        router,
+        store
+    })
 }, (error) => {
-  console.error(`Could not load configuration file at ${cfg_file_path}!`)
+    console.error(`Could not load configuration file at ${cfg_file_path}!`)
 })

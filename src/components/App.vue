@@ -17,22 +17,25 @@ div(
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
-              p.small.hidden-md-down All open timesheets
+              p.small.d-none.d-lg-block All open timesheets
             router-link(:to='{ name: "contracts" }')
               h3 Contracts
-              p.small.hidden-md-down What am I working on
+              p.small.d-none.d-lg-block What am I working on
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
-              p.small.hidden-md-down Sickness / Vacation
+              p.small.d-none.d-lg-block Sickness / Vacation
+            router-link(:to='{ name: "leave_overview_grid" }')
+              h3 Leave overview
+              p.small.d-none.d-lg-block Who's on leave
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small.hidden-md-down The weirdos I work with
+              p.small.d-none.d-lg-block The weirdos I work with
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
-              p.small.hidden-md-down Monthly overview
+              p.small.d-none.d-lg-block Monthly overview
             router-link(:to='{ name: "redmine" }')
               h3 Redmine
-              p.small.hidden-md-down Time entries
+              p.small.d-none.d-lg-block Time entries
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')

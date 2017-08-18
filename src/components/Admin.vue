@@ -1,19 +1,16 @@
 <template lang="pug">
 div
-  .btn-group(role='group')
-    button.btn.btn-secondary(@click='currentView="LeaveOverviewGrid"') Leave Overview Grid
-    button.btn.btn-secondary(@click='currentView="Calendar"') Calendar 
   .btn-group.pull-right(role='group' v-if='currentView === "Calendar"')
     b-form-select(v-model='selected', :options='options')
     button(
-        class='btn btn-secondary'
+        class='btn btn-outline-dark'
         type='button'
         v-on:click.prevent='selectPreviousMonth()'
       )
         i(class='fa fa-angle-double-left')
         |  &nbsp;Previous
     button(
-        class='btn btn-secondary'
+        class='btn btn-outline-dark'
         type='button'
         v-on:click.prevent='selectNextMonth()'
       )
@@ -24,7 +21,6 @@ div
 </template>
 <script>
 import Vue from 'vue'
-import LeaveOverviewGrid from './LeaveOverviewGrid.vue'
 import Calendar from './Calendar.vue'
 import moment from 'moment'
 import store from '../store';
@@ -33,12 +29,11 @@ import * as types from '../store/mutation-types.js'
 export default {
   name: 'admin',
   components: {
-      LeaveOverviewGrid,
       Calendar
   },
   data() {
     return {
-      currentView: 'LeaveOverviewGrid',
+      currentView: 'Calendar',
       selected: 1,
       month: moment().startOf('month').format('YYYY-MM-DD')
     }
