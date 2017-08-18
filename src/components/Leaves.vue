@@ -60,8 +60,9 @@ div(class='calendar')
       p.text-center Still awaiting approval.
 
       div(v-if='showPendingLeaves')
-        p.text-center(v-if='pendingLeaves.length === 0') <strong>No leaves awaiting approval.</strong> 
-        #accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
+        p.text-center(v-if='pendingLeaves.length === 0') <strong>No leaves awaiting approval.</strong>
+
+        .p-1#accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
           .card(:class='getRibbonStyleClass(leave)')
             .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
               .row
@@ -71,13 +72,14 @@ div(class='calendar')
                   .badge.float-right(:class='getBadgeStyleClass(leave)')
                     | {{ leave.status }}
                   
-            .collapse(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
-              .card-block.row
-                .col-10
+            .collapse.p-2(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
+              .card-block.row.p-2
+                .col
                   | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                   | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-                .btn.btn-danger.col-md-2(@click='cancelPendingLeave(leave)')
-                  i.fa.fa-ban.text-sm-center
+                .col-3
+                  button.btn.btn-danger(@click='cancelPendingLeave(leave)')
+                    i.fa.fa-ban.text-center
 </template>
 <script>
 import * as types from '../store/mutation-types';
