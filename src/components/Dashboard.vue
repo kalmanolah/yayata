@@ -6,7 +6,7 @@ div
       .alert.alert-warning.card-top-red.mb-3(v-if='open_timesheet_count > 0')
         .text-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
   .row
-    .col-6
+    .col-xl-6
       //- BIRTHDAYS
       .card.card-top-blue.mb-3.p-2
         h4.card-title.text-center Birthdays
@@ -16,7 +16,7 @@ div
             | {{ selectedBirthday | moment('DD MMMM')}}
           span(title='Go to next day')
             i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLaterBirthdays')
-        .card-blocd
+        .card-block
           table.table
             tbody
               tr(v-for="(user, index) in birthdaysSelectedDay")
@@ -43,7 +43,7 @@ div
               td <strong>Open hours</strong>
               td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed }} hours ({{ month_info.hours_required - month_info.hours_performed | hoursToDaysFilter }} days)</strong>
    
-    .col-6
+    .col-xl-6
       .row
         .col
           //- ABSENT COLLEAGUES
@@ -74,7 +74,7 @@ div
                   tr(v-if='holidaysSelectedDay.length === 0')
                     td.text-center <strong>No holidays!</strong>
       .row 
-        .col         
+        .col
           //- Leaverequest form
           LeaveRequestForm
 
