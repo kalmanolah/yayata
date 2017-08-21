@@ -292,7 +292,7 @@ const getters = {
                     attachments: x.attachments,
                     customerName: state.companies.find(com => com.id == x.customer).name,
                     companyName: state.companies.find(com => com.id == x.company).name,
-                    total_duration: x.hours_spent
+                    total_duration: parseFloat(x.hours_spent)
                 };
             });
         }
@@ -321,7 +321,8 @@ const getters = {
                 });
 
                 // Calculate hours left to fill in
-                let hours_left = total_hours_allocated - c.hours_spent;
+                let hLeft = total_hours_allocated - c.hours_spent ;
+                let hours_left = hLeft >= 0 ? hLeft : 0;
 
                 // Get the contract users
                 let contract_users = [];
