@@ -159,11 +159,13 @@ export default {
     // Sort users by group
     sortedUsers: function() {
       if(this.filtered_users && this.sortBy !== store.getters.colleagues_filter){
-        var users = [];
+        let users = [];
+
+        console.log( this.sortBy );
 
         this.filtered_users.forEach(user => {
           user.groups.forEach( group => {
-              if(group === this.sortBy)
+              if(group.id === this.sortBy)
                 users.push(user);
             });
         });
@@ -202,9 +204,9 @@ export default {
     },
 
     // Determines the group badge color
-    determineBadgeColor: function(group_id) {
-      var group = store.getters.user_groups.find(group => group_id === group.id);
-      var groupName = group.name || 'UNDEFINED';
+    determineBadgeColor: function(grp) {
+      var group = store.getters.user_groups.find(g => grp.id === g.id);
+      var groupName = group ? group.name : 'UNDEFINED';
       var tempObj = {
         [store.getters.group_names[3]]: 'badge-primary',
         [store.getters.group_names[2]]: 'badge-danger',        
@@ -223,7 +225,7 @@ export default {
   filters: {
     getGroupAsString: function(val) {
       if(store.getters.user_groups) {
-        let userGr = store.getters.user_groups.find(gr => val === gr.id);
+        let userGr = store.getters.user_groups.find(gr => val.id === gr.id);
         return userGr ? userGr.name.toString() : 'Not found';
       }
     },
