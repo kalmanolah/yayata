@@ -314,18 +314,23 @@ export default {
       this.selectedUser = val;
     },
 
+    reloadPerformances: function(month) {
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/performances/activity',
+        params: {
+          timesheet__user_id: this.selectedUser.id,
+          timesheet__month: month,
+          timesheet__year: this.year
+        }
+      }).then((res) => {
+        this.performances = res.data.results;
+      }).catch((error) => {
+        console.log(error)
+      })
+    }
   },
 
   computed: {
-    //Get all performances for this month
-    performances: function() {
-      if(store.getters.activity_performances && this.timesheet) {
-          return store.getters.activity_performances.filter((p) => {
-            return p.timesheet == this.timesheet.id
-          });
-      }
-    },
-
     // Returns whether the currently authenticated user is selected.
     currentUserSelected: function() {
       if(this.user && this.selectedUser)
@@ -406,6 +411,7 @@ export default {
             year: this.$route.params.year
           }
         });
+        this.reloadPerformances(this.$route.params.month);
         return parseInt(this.$route.params.month)
       }
     },
@@ -496,6 +502,7 @@ export default {
 
     return {
       selectedUser: null,
+      performances: [],
       leaves: [],
       weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
       months: [
