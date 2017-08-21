@@ -140,13 +140,13 @@ div
 
     grid_month: function() {
       if(this.$route.params.month) {
-        return parseInt(this.$route.params.month);
+        return parseInt(this.$route.params.month - 1);
       }
     },
 
     grid_year: function() {
       if(this.$route.params.year){
-        return parseInt(this.$$route.params.year);
+        return parseInt(this.$route.params.year);
       }
     },
 
@@ -242,12 +242,12 @@ div
           workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
 
           if(workSchedule) {
-            let dw = moment().month(this.grid_month - 1).date(day).isoWeekday();
+            let dw = moment().month(this.grid_month).date(day).isoWeekday();
             dw = dw === 1 ? 'monday' : dw === 2 ? 'tuesday' : dw === 3 ? 'wednesday' : dw === 4 ? 'thursday' : dw === 5 ? 'friday' : dw === 6 ? 'saturday' : 'sunday' 
             nonWorkingDay = (workSchedule[dw] === "0.00"); 
           }
         }
-        if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5 || nonWorkingDay || !workSchedule)
+        if(moment().month(this.grid_month).date(day).isoWeekday() > 5 || nonWorkingDay || !workSchedule)
           return 'cell-nonWorkingDay';
       }
     },
@@ -263,7 +263,7 @@ div
           allLeaves.forEach((leave) => {
             var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
             var end = moment(leave.leavedate_set[leave.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD');
-            var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');          
+            var date = moment().year(this.grid_year).month(this.grid_month).date(day).format('YYYY-MM-DD');          
             if(moment(date).isBetween(start, end, null, [])){
               var temp = [
                 'cell-sickness',
@@ -305,18 +305,20 @@ div
     },
 
     reloadLeaves: function() {
-      this.loading = true;
-      // take griddate add and subtract 1 month, reload filtered leaves
-      var lowerBoundary = moment(this.grid_date).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-      var upperBoundary = moment(this.grid_date).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-      var range = lowerBoundary + ',' + upperBoundary;
-      var options = {
-        params: {
-          leavedate__range: range
+      if(this.grid_year && this.grid_month) {
+        this.loading = true;
+        // take griddate add and subtract 1 month, reload filtered leaves
+        var lowerBoundary = moment().year(this.grid_year).month(this.grid_month).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+        var upperBoundary = moment().year(this.grid_year).month(this.grid_month).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+        var range = lowerBoundary + ',' + upperBoundary;
+        var options = {
+          params: {
+            leavedate__range: range
+          }
         }
+        this.reloadWhereabouts(lowerBoundary, upperBoundary)
+        store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
       }
-      this.reloadWhereabouts(lowerBoundary, upperBoundary)
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
     },
 
     reloadWhereabouts: function(lowerBoundary, upperBoundary) {
