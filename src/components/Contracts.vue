@@ -78,9 +78,9 @@ div.row
                             .row(v-if='contract.type === "ProjectContract"')
                               .col-md-4 <strong>Project estimates:</strong>
                               .col-md-8.text-md-right 
-                                div(v-for='estimate in contract.project_estimate') 
-                                  .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
-                                  .col-md-6.estimate {{ estimate[0] }} hours
+                                .row(v-for='estimate in contract.project_estimate') 
+                                  .col-8.estimate {{ estimate[1] | getRoleAsString }}: 
+                                  .col.estimate {{ estimate[0] }} h
                             hr(v-if='contract.type === "ProjectContract"')
                             .row(v-if='contract.type === "ProjectContract"')
                               .col-md-4 <strong>Hours to fill in:</strong>
@@ -91,16 +91,17 @@ div.row
                               .col-md-8.text.md-right
                                 div(v-for='attachment in contract.attachments')
                                   a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
-                        .col.d-flex.justify-content-center
-                          template(v-if='contract.type === "ProjectContract"')
+
+
+                        .col(v-if='validChartData(contract)')
+                          div(v-if='contract.type === "ProjectContract"')
                             PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
-                          template(v-else)
+                          div(v-else)
                             PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import ContractsFilterForm from './forms/ContractsFilterForm.vue';
@@ -282,55 +283,58 @@ export default {
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
       if(this.project_estimates && store.getters.contract_roles && store.getters.activity_performances) {
-      let data = [];
-      let labels = [];
-      let total_allocated = 0;
-      let total_spent_per_role = {};
+        let data = [];
+        let labels = [];
+        let total_allocated = 0;
+        let total_spent_per_role = {};
 
-      this.project_estimates.forEach(estimate => {
-        if(estimate.project === contract.id) {
-          total_allocated += estimate.hours_estimated;
-          data.push(estimate.hours_estimated);
+        this.project_estimates.forEach(estimate => {
+          if(estimate.project === contract.id) {
+            data.push(estimate.hours_estimated);
 
-          let cRole = store.getters.contract_roles.find(r => estimate.role === r.id); 
-          labels.push(cRole.name || 'UNDEFINED');
-        }
-      });
+            let cRole = store.getters.contract_roles.find(r => estimate.role === r.id);
 
-      let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
-      if(performances) {
-        performances.forEach((perf) => {
-          if(!total_spent_per_role[perf.contract_role]){
-            total_spent_per_role[perf.contract_role] = 0;
+            if(cRole) {
+              // Push contractrole objects in labels so we can use their .name and .id properties later on
+              // Make the total_spent_per_role object with the names, so the ids dont get mixed up with the indices..
+              labels.push(cRole);
+              total_spent_per_role[cRole.name] = 0;              
+            }
           }
-          total_spent_per_role[perf.contract_role] += (perf.duration * 1);
-        });        
-      }
+        });
 
-      // Display hours spent per role and hours left
-      let time_spent_data = Object.values(total_spent_per_role);
-      labels.push('Hours left')
-      time_spent_data.push(contract.hours_left);
+        let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
 
-      // Should be hours allocated: project_estimates needs refactoring first.
-      let hoursToFillIn = total_allocated - contract.total_duration;
-      let datacollection = {
-        labels: labels,
-        datasets :[
-          {
-            label: 'Time left',
-            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
-            data: time_spent_data
-          },
-          {
-            label: 'Estimates',
-            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
-            data: data
-          },
-        ]
-      }
+        // Loop over performances and allocate each to the corresponding contractrole
+        performances.forEach((perf) => {
+          let crole = labels.find(x => { return perf.contract_role == x.id});
+          if(crole) {
+            total_spent_per_role[crole.name] += parseFloat(perf.duration);
+          }
+        });
 
-      return datacollection;
+        // Display hours spent per role and hours left
+        let time_spent_data = Object.values(total_spent_per_role);
+        let labellos = labels.map(x => {return x.name});
+
+        labellos.push('Hours left')
+        time_spent_data.push(contract.hours_left);
+
+        return {
+          labels: labellos,
+          datasets :[
+            {
+              label: 'Time left',
+              backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+              data: time_spent_data
+            },
+            {
+              label: 'Estimates',
+              backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+              data: data
+            },
+          ]
+        }
       }
     },
 
@@ -353,6 +357,12 @@ export default {
         ]
       }
       return datacollection;
+    },
+
+    //Checks to see if there is some actual data for the chart to be rendered
+    validChartData: function(contract) {
+      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : this.generateTimeLeftChart(contract);
+      return data ? data.datasets[0].data.length >= 2 : null;
     },
 
     setSortByCustomerName: function(value) {
