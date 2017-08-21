@@ -3,45 +3,51 @@ div(
   id='app'
   class='container-fluid'
 )
-  .application-wrapper
-    .sidebar-wrapper
+  .row.application-wrapper
+    //- sidebar
+    .col-md-auto.sidebar.pr-5
       .row
-        .col-md-12
+        .col
           router-link(
             :to='{ name: "home" }'
           )
             img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
       .row
-        .col-sm-8.offset-xs-1
+        .col
           nav
             router-link(:to='{ name: "timesheets" }')
               h3 Timesheets 
-              p.small.hidden-md-down All open timesheets
+              p.small.d-none.d-lg-block All open timesheets
             router-link(:to='{ name: "contracts" }')
               h3 Contracts
-              p.small.hidden-md-down What am I working on
+              p.small.d-none.d-lg-block What am I working on
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
-              p.small.hidden-md-down Sickness / Vacation
+              p.small.d-none.d-lg-block Sickness / Vacation
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
-              p.small.hidden-md-down The weirdos I work with
+              p.small.d-none.d-lg-block The weirdos I work with
             router-link(:to='{ name: "calendar_month_redirect" }')
               h3 Calendar
-              p.small.hidden-md-down Monthly overview
+              p.small.d-none.d-lg-block Monthly overview
             router-link(:to='{ name: "redmine" }')
               h3 Redmine
-              p.small.hidden-md-down Time entries
+              p.small.d-none.d-lg-block Time entries
       .row
         .bottom
           input#datepicker(type='hidden' ref='datepicker')
-          div#container(ref='container')
-    .row
-      navbar
-    .row
-      .main-app
-        router-view(v-if='user')
-
+          #container(ref='container')
+    //- content
+    .col.p-0
+      .container-fluid.pl-0.pr-0
+        .row.no-gutters
+          .col
+            .main-app
+              navbar
+      .container-fluid
+        .row
+          .col.main-app
+            router-view.p-3(v-if='user')
 </template>
 
 <script>
@@ -169,12 +175,19 @@ export default {
 <style lang="less">
 @datepickerHeight: 228px;
 @sidebar-width: 250px;
+@background-color: #FFF;
 .container-fluid{
-  background: #FAFAFA;
+  background: @background-color;
+}
+
+.application-wrapper {
+    height: 100vh;
 }
 
 .main-app {
-  padding: 2rem 1rem;
+  padding-left: 1rem;
+  padding-left: 0;
+  // width: 100vw
 }
 
 .logo{
@@ -183,6 +196,10 @@ export default {
   max-width: 150px;
   overflow: hidden;
   padding-bottom: 30px;
+}
+
+.sidebar {
+  min-width: 100px
 }
 
 .card-top-blue{
@@ -216,10 +233,11 @@ export default {
 
 .fixed {
   position: fixed;
-  left: 77vw;
-  width: 21vw;
 }
 
+.filter-form {
+  width: 20%;
+}
 .wrapper{
   position: relative;
 }
@@ -227,7 +245,6 @@ export default {
 .bottom {
   position: absolute;
   bottom: 0;
-  width: 100%;
 }
 
 #container {
@@ -241,10 +258,6 @@ export default {
 
 #container>.pika-single>.pika-lendar {
   width: 100%;
-}
-
-.application-wrapper {
-    padding-left: @sidebar-width;
 }
 
 .sidebar-wrapper {

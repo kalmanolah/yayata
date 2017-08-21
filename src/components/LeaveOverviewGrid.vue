@@ -1,94 +1,83 @@
 <template lang="pug">
 div
-  h1(class='col-md-12 text-md-center') {{ grid_month | fullMonthString }} {{ grid_year }}
-    .pull-right
-      i.fa.fa-spinner.fa-pulse.fa-fw(v-show='loading')
-      span.sr-only Loading...
-      div(
-        class='btn-group'
-        role='group'
-        aria-label='Button group with nested dropdown'
-      )
-        .btn-group(role='group')
-          button.btn.btn-secondary.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ cu_label }}
-          .dropdown-menu(aria-labelledby='btnGroupDrop')
-            a.dropdown-item(@click='cu_label = "Contract"; cu_filter="Contract"') All
-            a.dropdown-item(v-for='contract in contracts' @click='showContractUsers(contract)') {{ contract.display_label }}
-        .btn-group(role='group')
-          button.btn.btn-secondary.dropdown-toggle#countryBtnGroup(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ country_label }}
-          .dropdown-menu(aria-labelledby='countryBtnGroup')
-            a.dropdown-item(@click='country_label = "Country"; country_filter="Country"') All
-            a.dropdown-item(v-for='country in countries' @click='showCountryUsers(country)') {{ country }}
-        button(
-                class='btn btn-secondary'
-                type='button'
-                v-on:click.prevent='selectPreviousMonth()'
+  .row.mb-3
+    .col.mt-2
+      toggle-button(
+                @change='toggleSwitch("home")', 
+                :value='showHome', 
+                color='#ffbb33', 
+                :sync='true', 
+                :labels={
+                  checked: 'Home',
+                  unchecked: 'Home'
+                }, 
+                :width='65'
               )
-                i(class='fa fa-angle-double-left')
-                | Previous&nbsp;
-        button(
-          class='btn btn-secondary'
-          type='button'
-          v-on:click.prevent='selectNextMonth()'
+      toggle-button(
+                @change='toggleSwitch("sickness")', 
+                :value='showSickness', 
+                color='#ff4444', 
+                :sync='true', 
+                :labels={
+                  checked: 'Sickness',
+                  unchecked: 'Sickness'
+                }, 
+                :width='75'
+              )
+      toggle-button(
+                @change='toggleSwitch("leave")', 
+                :value='showLeave', 
+                color='#00c851', 
+                :sync='true', 
+                :labels={
+                  checked: 'Leave',
+                  unchecked: 'Leave'
+                }, 
+                :width='65'
+              )
+      toggle-button(
+                @change='toggleSwitch("nonWorkingDay")', 
+                :value='showNonWorkingDay', 
+                color='#37474f', 
+                :sync='true', 
+                :labels={
+                  checked: 'nonWorkingDay',
+                  unchecked: 'nonWorkingDay'
+                }, 
+                :width='110'
+              )
+    .col
+      .pull-right
+        i.fa.fa-spinner.fa-pulse.fa-fw(v-show='loading')
+        span.sr-only Loading...
+        div(
+          class='btn-group'
+          role='group'
+          aria-label='Button group with nested dropdown'
         )
-          | Next&nbsp;
-          i(class='fa fa-angle-double-right')
-
-  toggle-button(
-            @change='toggleSwitch("home")', 
-            :value='showHome', 
-            color='#ff4444', 
-            :sync='true', 
-            :labels={
-              checked: 'Home',
-              unchecked: 'Home'
-            }, 
-            :width='65'
-          )
-  toggle-button(
-            @change='toggleSwitch("sickness")', 
-            :value='showSickness', 
-            color='#ffbb33', 
-            :sync='true', 
-            :labels={
-              checked: 'Sickness',
-              unchecked: 'Sickness'
-            }, 
-            :width='75'
-          )
-  toggle-button(
-            @change='toggleSwitch("leave")', 
-            :value='showLeave', 
-            color='#00c851', 
-            :sync='true', 
-            :labels={
-              checked: 'Leave',
-              unchecked: 'Leave'
-            }, 
-            :width='65'
-          )
-  toggle-button(
-            @change='toggleSwitch("nonWorkingDay")', 
-            :value='showNonWorkingDay', 
-            color='#37474f', 
-            :sync='true', 
-            :labels={
-              checked: 'nonWorkingDay',
-              unchecked: 'nonWorkingDay'
-            }, 
-            :width='110'
-          )
-  table.table.table-bordered.table-sm
-    thead
-      tr
-        th.overviewgrid Name
-        th.overviewgrid(v-for='d in daysInMonth' v-bind:class='determineNonWorkingDay(d)') {{ d }}
-        th.overviewgrid.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
-    tbody
-      tr(v-if='country_users && leaves' v-for='user in country_users')
-        td 
-          router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
-        td.day-cell(v-for='d in 31' v-bind:class='[determineNonWorkingDay(d, user), determineCellColor(user, d)]') &nbsp;
+          .btn-group(role='group')
+            button.btn.btn-outline-dark.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ cu_label }}
+            .dropdown-menu(aria-labelledby='btnGroupDrop')
+              a.dropdown-item(@click='cu_label = "Contract"; cu_filter="Contract"') All
+              a.dropdown-item(v-for='contract in contracts' @click='showContractUsers(contract)') {{ contract.display_label }}
+          .btn-group(role='group')
+            button.btn.btn-outline-dark.dropdown-toggle#countryBtnGroup(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ country_label }}
+            .dropdown-menu(aria-labelledby='countryBtnGroup')
+              a.dropdown-item(@click='country_label = "Country"; country_filter="Country"') All
+              a.dropdown-item(v-for='country in countries' @click='showCountryUsers(country)') {{ country }}
+  .row.mb-3
+    .col
+      table.table.table-bordered.table-sm.table-responsive
+        thead
+          tr
+            th.overviewgrid Name
+            th.overviewgrid(v-for='d in daysInMonth' v-bind:class='determineNonWorkingDay(d)') {{ d }}
+            th.overviewgrid.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
+        tbody
+          tr(v-if='country_users && leaves' v-for='user in country_users')
+            td 
+              router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
+            td.day-cell(v-for='d in 31' v-bind:class='[determineNonWorkingDay(d, user), determineCellColor(user, d)]') &nbsp;
 </template>
 <script>
   import Vue from 'vue'
@@ -144,19 +133,21 @@ div
     },
 
     grid_date: function() {
-      if(store.getters.grid_date){
-        return store.getters.grid_date
+      if(this.grid_month && this.grid_year){
+        return moment().year(this.grid_year).month(this.grid_month);
       }
     },
 
     grid_month: function() {
-      if(this.grid_date)
-        return parseInt(moment(this.grid_date).format('MM'))
+      if(this.$route.params.month) {
+        return parseInt(this.$route.params.month - 1);
+      }
     },
 
     grid_year: function() {
-      if(this.grid_date)
-        return parseInt(moment(this.grid_date).format('YYYY'))
+      if(this.$route.params.year){
+        return parseInt(this.$route.params.year);
+      }
     },
 
     daysInMonth: function() {
@@ -251,12 +242,12 @@ div
           workSchedule = employmentContract ? store.getters.work_schedules.find((ws) => ws.id === employmentContract.work_schedule) : null;
 
           if(workSchedule) {
-            let dw = moment().month(this.grid_month - 1).date(day).isoWeekday();
+            let dw = moment().month(this.grid_month).date(day).isoWeekday();
             dw = dw === 1 ? 'monday' : dw === 2 ? 'tuesday' : dw === 3 ? 'wednesday' : dw === 4 ? 'thursday' : dw === 5 ? 'friday' : dw === 6 ? 'saturday' : 'sunday' 
             nonWorkingDay = (workSchedule[dw] === "0.00"); 
           }
         }
-        if(moment().month(this.grid_month - 1).date(day).isoWeekday() > 5 || nonWorkingDay || !workSchedule)
+        if(moment().month(this.grid_month).date(day).isoWeekday() > 5 || nonWorkingDay || !workSchedule)
           return 'cell-nonWorkingDay';
       }
     },
@@ -272,7 +263,7 @@ div
           allLeaves.forEach((leave) => {
             var start = moment(leave.leavedate_set[0].starts_at, 'YYYY-MM-DD');
             var end = moment(leave.leavedate_set[leave.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD');
-            var date = moment().year(this.grid_year).month(this.grid_month - 1).date(day).format('YYYY-MM-DD');          
+            var date = moment().year(this.grid_year).month(this.grid_month).date(day).format('YYYY-MM-DD');          
             if(moment(date).isBetween(start, end, null, [])){
               var temp = [
                 'cell-sickness',
@@ -312,44 +303,22 @@ div
         return cellClassR;
       }
     },
-    
-    // Reloads the grid date to one month later.
-    selectNextMonth: function() {
-      var options = { 
-        params: {
-          date: moment(this.grid_date).add(1, 'month')
-        } 
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
-        this.reloadLeaves();
-      })
-    },
-
-    // Reloads the grid date to one month earlier.
-    selectPreviousMonth: function() {
-      var options = { 
-        params: {
-          date: moment(this.grid_date).subtract(1, 'month')
-        } 
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
-        this.reloadLeaves();
-      })
-    },
 
     reloadLeaves: function() {
-      this.loading = true;
-      // take griddate add and subtract 1 month, reload filtered leaves
-      var lowerBoundary = moment(this.grid_date).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-      var upperBoundary = moment(this.grid_date).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-      var range = lowerBoundary + ',' + upperBoundary;
-      var options = {
-        params: {
-          leavedate__range: range
+      if(this.grid_year && this.grid_month) {
+        this.loading = true;
+        // take griddate add and subtract 1 month, reload filtered leaves
+        var lowerBoundary = moment().year(this.grid_year).month(this.grid_month).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+        var upperBoundary = moment().year(this.grid_year).month(this.grid_month).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
+        var range = lowerBoundary + ',' + upperBoundary;
+        var options = {
+          params: {
+            leavedate__range: range
+          }
         }
+        this.reloadWhereabouts(lowerBoundary, upperBoundary)
+        store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
       }
-      this.reloadWhereabouts(lowerBoundary, upperBoundary)
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
     },
 
     reloadWhereabouts: function(lowerBoundary, upperBoundary) {
@@ -384,11 +353,11 @@ th.overviewgrid {
   max-width: 15px;
 }
 .cell-home {
-  background-color: @danger;
+  background-color: @warining;
 }
 
 .cell-sickness{
-  background-color: @warining;
+  background-color: @danger;
 }
 
 .cell-leave{

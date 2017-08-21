@@ -1,49 +1,35 @@
 <template lang="pug">
-nav(
-  class='navbar navbar-yayata'
-)
-  button(
-    class='navbar-toggler hidden-md-up'
-    type='button'
-    data-toggle='collapse'
-    data-target='#navbarResponsive'
-    aria-controls='navbarResponsive'
-    aria-expanded='false'
-    aria-label='Toggle navigation',
-    @click='clicked = !clicked',
-  )
-    i.fa(
-    :class='clicked ? "fa-sort-asc" : "fa-sort-desc"'
-    )
-  div(
-    class='collapse navbar-toggleable-sm'
-    id='navbarResponsive'
-  )
-    ul(
-      class='nav navbar-nav float-md-right'
-    )
-      li(
-        class='nav-item dropdown'
-        v-if='user'
-      )
-        a(
-          class='nav-link dropdown-toggle'
-          data-toggle='dropdown'
-          id='responsiveNavbarDropdown'
-          aria-haspop='true'
-          aria-expanded='false'
-          href='#'
-        ) {{ user.display_label }}
-        div(
-          class='dropdown-menu dropdown-menu-right'
-          aria-labelledby='responsiveNavbarDropdown'
-        )
-          router-link.dropdown-item#admin-nav(:to='{ name: "admin" }') Admin
-          router-link(
-            :to='{ name: "auth.logout" }'
-            class='dropdown-item'
-          ) Logout
-</template>
+.row
+  .col.navbar-yayata.d-flex.justify-content-end
+    nav(
+      class='navbar navbar-expand'
+    ) 
+      .collapse.navbar-collapse#navbarDropdown
+        ul(
+          class='navbar-nav'
+        ) 
+          li(
+            class='nav-item dropdown'
+          )
+            a(
+              class='nav-link dropdown-toggle'
+              v-if='user'
+              href='#'
+              id='responsiveNavbarDropdown'
+              data-toggle='dropdown'
+              aria-haspopup='true'
+              aria-expanded='false'
+            ) {{ user.display_label }}
+            div(
+              class='dropdown-menu'
+              aria-labelledby='responsiveNavbarDropdown'
+            )
+              router-link.dropdown-item#admin-nav(:to='{ name: "admin" }') Admin
+              router-link(
+                :to='{ name: "auth.logout" }',
+                class='dropdown-item'
+              ) Logout
+  </template>
 
 <script>
 import store from '../store'

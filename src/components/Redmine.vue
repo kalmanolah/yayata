@@ -1,69 +1,68 @@
 <template lang="pug">
-div
-  .col-sm-12
+div.row
+  .col
     .row
-      .col-sm-12
+      .col
         h3 Redmine
         p.subtitle Overview of external entries
-    .row
-      .col-lg-12
+    .row.mb-3
+      .col
         .btn-group(role='group')
-          .btn.btn-secondary.dropdown-toggle#btnGroupDropContract(type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false') {{ selectedContract.displayLabel }}
+          button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropContract(type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false') {{ selectedContract.displayLabel }}
           .dropdown-menu(aria-labelledby='btnGroupDropContract')
             a.dropdown-item(v-for='contract in contracts' @click='selectContract(contract)') {{ contract.display_label }}
         .btn-group.pull-right
-          .btn.btn-primary(@click='importToYayata()') Import to Yayata
-    br
-    .row
-      h3.text-md-center Not imported
-      table.table.table-striped
-        thead
-          tr
-            th Activity
-            th Date
-            th Hours
-            th Issue
-            th Comments
-            th 
-              b-form-checkbox(v-model='checkedStateImported') &nbsp;
-        tbody(v-if='contractTimeEntries')
-          template(v-for='timeEntry in contractTimeEntries')
-            template(v-if='!getImportStatus(timeEntry)')
-              tr
-              td {{ timeEntry.activity.name }}
-              td {{ timeEntry.spent_on }}
-              td {{ timeEntry.hours }}
-              td 
-                a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
-              td {{ timeEntry.comments }}
-              td
-                b-form-checkbox(v-model='timeEntry.checked') &nbsp;
-    br
-    .row
-      h3.text-md-center Imported
-      table.table.table-striped
-        thead
-          tr
-            th Activity
-            th Date
-            th Hours
-            th Issue
-            th Comments
-            th 
-              b-form-checkbox(v-model='checkedStateNotImported') &nbsp;
-        tbody(v-if='contractTimeEntries')
-          template(v-for='timeEntry in contractTimeEntries')
-            template(v-if='getImportStatus(timeEntry)')
-              tr
-                td(:class='checkDiff(timeEntry)') {{ timeEntry.activity.name }}
+          button.btn.btn-outline-primary(@click='importToYayata()') Import
+    .row.mb-3
+      .col
+        h3.text-center Not imported
+        table.table.table-striped
+          thead
+            tr
+              th Activity
+              th Date
+              th Hours
+              th Issue
+              th Comments
+              th 
+                b-form-checkbox(v-model='checkedStateImported') &nbsp;
+          tbody(v-if='contractTimeEntries')
+            template(v-for='timeEntry in contractTimeEntries')
+              template(v-if='!getImportStatus(timeEntry)')
+                tr
+                td {{ timeEntry.activity.name }}
                 td {{ timeEntry.spent_on }}
-                td(:class='checkDiffHours(timeEntry)') {{ timeEntry.hours }}
-                td(:class='checkDiff(timeEntry)') 
+                td {{ timeEntry.hours }}
+                td 
                   a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
-                td(:class='checkDiffComments(timeEntry)') {{ timeEntry.comments }}
-                td(:class='checkDiff(timeEntry)')
+                td {{ timeEntry.comments }}
+                td
                   b-form-checkbox(v-model='timeEntry.checked') &nbsp;
-    br
+    .row.mb-3
+      .col
+        h3.text-md-center Imported
+        table.table.table-striped
+          thead
+            tr
+              th Activity
+              th Date
+              th Hours
+              th Issue
+              th Comments
+              th 
+                b-form-checkbox(v-model='checkedStateNotImported') &nbsp;
+          tbody(v-if='contractTimeEntries')
+            template(v-for='timeEntry in contractTimeEntries')
+              template(v-if='getImportStatus(timeEntry)')
+                tr
+                  td(:class='checkDiff(timeEntry)') {{ timeEntry.activity.name }}
+                  td {{ timeEntry.spent_on }}
+                  td(:class='checkDiffHours(timeEntry)') {{ timeEntry.hours }}
+                  td(:class='checkDiff(timeEntry)') 
+                    a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id", target='_blank') {{ timeEntry.issue.id }}
+                  td(:class='checkDiffComments(timeEntry)') {{ timeEntry.comments }}
+                  td(:class='checkDiff(timeEntry)')
+                    b-form-checkbox(v-model='timeEntry.checked') &nbsp;
     .alert.alert-info.text-md-center(v-if='!selectedContract.value') Please select a contract
 </template>
 <script>

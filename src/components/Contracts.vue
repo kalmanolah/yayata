@@ -1,104 +1,107 @@
 <template lang="pug">
-div
-  //- Header
-  .col-sm-12
-    h3 Contracts
-      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
-        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
-    p.subtitle Overview of all contracts
-
-  //- Advanced filter panel
-  .col-lg-3.pull-right(v-if='showFilter')
+div.row
+  .col
+    //- Header
     .row
-      ContractsFilterForm
+      .col
+        h3 Contracts
+          .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+            i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+        p.subtitle Overview of all contracts
 
-  //- Main page
-  div(:class='showFilter ? "col-sm-9" : "col-sm-12"')
+    //- Advanced filter panel
     .row
-      .col-lg-8
-        .btn-group(role='group' aria-label='Button group with nested dropdown')
-          .btn.btn-secondary(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
-          .btn.btn-secondary(type='button' @click='setSortByCustomerName("all")') All
+      .col#contract-filter(v-if='showFilter')
+        ContractsFilterForm
+      //- Main page
+      #contracts(:class='showFilter ? "col-9" : "col"')
+        .row
+          .col-8
+            .btn-group(role='group' aria-label='Button group with nested dropdown')
+              button.btn.btn-outline-dark(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
+              button.btn.btn-outline-dark(type='button' @click='setSortByCustomerName("all")') All
 
-          .btn-group(role='group')
-            .btn.btn-secondary.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
-            .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
-              a.dropdown-item(v-for='name in customers' @click='setSortByCustomerName(name)') {{ name }}
+              .btn-group(role='group')
+                button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
+                .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
+                  a.dropdown-item(v-for='name in customers' @click='setSortByCustomerName(name)') {{ name }}
 
-          .btn-group(role='group')
-            .btn.btn-secondary.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
-            .dropdown-menu(aria-labelledby='btnGroupDropContractType')
-              a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
+              .btn-group(role='group')
+                button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
+                .dropdown-menu(aria-labelledby='btnGroupDropContractType')
+                  a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
 
-      .col-lg-4
-        .input-group
-          span.input-group-addon Search
-          input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
+          .col-lg-4
+            .input-group
+              span.input-group-addon Search
+              input(type='text', class='form-control', placeholder='Name, description, ...', v-model='query')
 
-    .row
-      .col-sm-12
-        .card-columns
-          div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
-            .card(v-bind:class='getRibbonStyleClass(contract)')
-              .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
-                div.contract-name {{ contract.name }} - {{ contract.end_date}}
-                  span.tag.float-md-right(v-bind:class='getTagStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
-                  span.tag.float-md-right(v-bind:class='getTagStyleClassContractType(contract)') {{ contract.type }}
-                small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+        .row
+          .col-sm-12
+            .card-columns
+              div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
+                .card(v-bind:class='getRibbonStyleClass(contract)')
+                  .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
+                    div.contract-name {{ contract.name }} - {{ contract.end_date}}
+                      span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
+                      span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClassContractType(contract)') {{ contract.type }}
+                    small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
 
-              .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
-                .card-block
-                  .col-md-6
-                    .card-text
+                  .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
+                    .card-block.p-3
                       .row
-                        .col-md-4 <strong>Description:</strong> 
-                        .col-md-8.text-md-right {{ contract.description }}
-                      hr
-                      .row
-                        .col-md-4 <strong>This month:</strong>
-                        .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
-                      hr
-                      .row
-                        .col-md-4 <strong>Groups:</strong>
-                        .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
-                      hr
-                      .row
-                        .col-md-4 <strong>Users:</strong>
-                        .col-md-8.text-md-right 
-                          div(v-for='user in contract.contract_users') 
-                            router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
-                      div(v-if='contract.type !== "SupportContract"')
-                        hr
-                        .row
-                          .col-md-5 <strong>Total hours spent:</strong>
-                          .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
-                      hr
-                      .row(v-if='contract.type === "ProjectContract"')
-                        .col-md-4 <strong>Project estimates:</strong>
-                        .col-md-8.text-md-right 
-                          div(v-for='estimate in contract.project_estimate') 
-                            .col-md-6.estimate {{ estimate[1] | getRoleAsString }}: 
-                            .col-md-6.estimate {{ estimate[0] }} hours
-                      hr(v-if='contract.type === "ProjectContract"')
-                      .row(v-if='contract.type === "ProjectContract"')
-                        .col-md-4 <strong>Hours to fill in:</strong>
-                        .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.hours_left }} hours
-                      hr(v-if='contract.attachments')
-                      .row
-                        .col-md-4 <strong>Attachments</strong>
-                        .col-md-8.text.md-right
-                          div(v-for='attachment in contract.attachments')
-                            a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
-                  .col-md-6
-                    template(v-if='contract.type === "ProjectContract"')
-                      PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
-                    template(v-else)
-                      PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
+                        .col
+                          .card-text
+                            .row
+                              .col-md-4 <strong>Description:</strong> 
+                              .col-md-8.text-md-right {{ contract.description }}
+                            hr
+                            .row
+                              .col-md-4 <strong>This month:</strong>
+                              .col-md-8.text-md-right {{ contract.hours_spent_this_month}} hours
+                            hr
+                            .row
+                              .col-md-4 <strong>Groups:</strong>
+                              .col-md-8.text-md-right {{ contract.contract_groups | getContractGroupAsString }}
+                            hr
+                            .row
+                              .col-md-4 <strong>Users:</strong>
+                              .col-md-8.text-md-right 
+                                div(v-for='user in contract.contract_users') 
+                                  router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
+                            div(v-if='contract.type !== "SupportContract"')
+                              hr
+                              .row
+                                .col-md-5 <strong>Total hours spent:</strong>
+                                .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
+                            hr
+                            .row(v-if='contract.type === "ProjectContract"')
+                              .col-md-4 <strong>Project estimates:</strong>
+                              .col-md-8.text-md-right 
+                                .row(v-for='estimate in contract.project_estimate') 
+                                  .col-8.estimate {{ estimate[1] | getRoleAsString }}: 
+                                  .col.estimate {{ estimate[0] }} h
+                            hr(v-if='contract.type === "ProjectContract"')
+                            .row(v-if='contract.type === "ProjectContract"')
+                              .col-md-4 <strong>Hours to fill in:</strong>
+                              .col-md-8.text-md-right(v-bind:class='getStyleClassHoursLeft(contract)') {{ contract.hours_left }} hours
+                            hr(v-if='contract.attachments')
+                            .row
+                              .col-md-4 <strong>Attachments</strong>
+                              .col-md-8.text.md-right
+                                div(v-for='attachment in contract.attachments')
+                                  a(:href='attachment | urlFilter' ) {{ attachment.display_label }}
+
+
+                        .col(v-if='validChartData(contract)')
+                          div(v-if='contract.type === "ProjectContract"')
+                            PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
+                          div(v-else)
+                            PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import * as types from '../store/mutation-types';
 import store from '../store';
 import ContractsFilterForm from './forms/ContractsFilterForm.vue';
@@ -280,55 +283,58 @@ export default {
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
       if(this.project_estimates && store.getters.contract_roles && store.getters.activity_performances) {
-      let data = [];
-      let labels = [];
-      let total_allocated = 0;
-      let total_spent_per_role = {};
+        let data = [];
+        let labels = [];
+        let total_allocated = 0;
+        let total_spent_per_role = {};
 
-      this.project_estimates.forEach(estimate => {
-        if(estimate.project === contract.id) {
-          total_allocated += estimate.hours_estimated;
-          data.push(estimate.hours_estimated);
+        this.project_estimates.forEach(estimate => {
+          if(estimate.project === contract.id) {
+            data.push(estimate.hours_estimated);
 
-          let cRole = store.getters.contract_roles.find(r => estimate.role === r.id); 
-          labels.push(cRole.name || 'UNDEFINED');
-        }
-      });
+            let cRole = store.getters.contract_roles.find(r => estimate.role === r.id);
 
-      let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
-      if(performances) {
-        performances.forEach((perf) => {
-          if(!total_spent_per_role[perf.contract_role]){
-            total_spent_per_role[perf.contract_role] = 0;
+            if(cRole) {
+              // Push contractrole objects in labels so we can use their .name and .id properties later on
+              // Make the total_spent_per_role object with the names, so the ids dont get mixed up with the indices..
+              labels.push(cRole);
+              total_spent_per_role[cRole.name] = 0;              
+            }
           }
-          total_spent_per_role[perf.contract_role] += (perf.duration * 1);
-        });        
-      }
+        });
 
-      // Display hours spent per role and hours left
-      let time_spent_data = Object.values(total_spent_per_role);
-      labels.push('Hours left')
-      time_spent_data.push(contract.hours_left);
+        let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
 
-      // Should be hours allocated: project_estimates needs refactoring first.
-      let hoursToFillIn = total_allocated - contract.total_duration;
-      let datacollection = {
-        labels: labels,
-        datasets :[
-          {
-            label: 'Time left',
-            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
-            data: time_spent_data
-          },
-          {
-            label: 'Estimates',
-            backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
-            data: data
-          },
-        ]
-      }
+        // Loop over performances and allocate each to the corresponding contractrole
+        performances.forEach((perf) => {
+          let crole = labels.find(x => { return perf.contract_role == x.id});
+          if(crole) {
+            total_spent_per_role[crole.name] += parseFloat(perf.duration);
+          }
+        });
 
-      return datacollection;
+        // Display hours spent per role and hours left
+        let time_spent_data = Object.values(total_spent_per_role);
+        let labellos = labels.map(x => {return x.name});
+
+        labellos.push('Hours left')
+        time_spent_data.push(contract.hours_left);
+
+        return {
+          labels: labellos,
+          datasets :[
+            {
+              label: 'Time left',
+              backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+              data: time_spent_data
+            },
+            {
+              label: 'Estimates',
+              backgroundColor: ['#41B883', '#E46651', '#00D8FF'],
+              data: data
+            },
+          ]
+        }
       }
     },
 
@@ -351,6 +357,12 @@ export default {
         ]
       }
       return datacollection;
+    },
+
+    //Checks to see if there is some actual data for the chart to be rendered
+    validChartData: function(contract) {
+      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : this.generateTimeLeftChart(contract);
+      return data ? data.datasets[0].data.length >= 2 : null;
     },
 
     setSortByCustomerName: function(value) {
@@ -398,19 +410,19 @@ export default {
       return contract.active ? 'card-top-green' : 'card-top-red';                           
     },
 
-    getTagStyleClass: function(contract) {
-      return contract.active ? 'tag-success' : 'tag-danger';
+    getBadgeStyleClass: function(contract) {
+      return contract.active ? 'badge-success' : 'badge-danger';
     },
 
-    getTagStyleClassContractType: function(contract) {
+    getBadgeStyleClassContractType: function(contract) {
       // var contract_type = store.getters.contract_types.find(c => contract.type === c);
       if(contract){
         var tempObj = {
-          [store.getters.contract_types[2]]: 'tag-danger',        
-          [store.getters.contract_types[1]]: 'tag-primary',
-          [store.getters.contract_types[0]]: 'tag-success',
+          [store.getters.contract_types[2]]: 'badge-danger',        
+          [store.getters.contract_types[1]]: 'badge-primary',
+          [store.getters.contract_types[0]]: 'badge-success',
         }
-        return (tempObj[contract.type]) ? tempObj[contract.type] : 'tag-primary';   
+        return (tempObj[contract.type]) ? tempObj[contract.type] : 'badge-primary';   
       }
     },
 
@@ -422,12 +434,16 @@ export default {
 </script>
 
 <style>
-.dropdown-item:hover {
-  cursor: pointer;
+#contracts {
+  order: 1;
 }
 
-.card {
-  width: 100%;
+#contract-filter {
+  order: 2;
+}
+
+.dropdown-item:hover {
+  cursor: pointer;
 }
 
 .contract-name {
