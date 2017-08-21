@@ -24,9 +24,6 @@ div(
             router-link(:to='{ name: "leaves" }')
               h3 Leaves
               p.small.d-none.d-lg-block Sickness / Vacation
-            router-link(:to='{ name: "leave_overview_grid" }')
-              h3 Leave overview
-              p.small.d-none.d-lg-block Who's on leave
             router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
               h3 Colleagues
               p.small.d-none.d-lg-block The weirdos I work with

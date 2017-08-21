@@ -33,7 +33,7 @@
       .row.justify-content-center
         .col
         .col-auto.text-center
-          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
+          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }', @click='setCalendarSelectedMonth(selectedYear, periodStartMonth().month() +1)')
             h2 {{ periodStartMonth | moment('MMMM')}}
         .col-auto.text-center
           router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
@@ -284,6 +284,10 @@ export default {
   },
 
   methods: {
+    setCalendarSelectedMonth: function(year, month) {
+
+    },
+
     getStandbys: function (day, timesheet) {
       if(timesheet && store.getters.standby_performances && store.getters.contracts){
         let resp = store.getters.standby_performances.filter(p => {
