@@ -41,7 +41,7 @@ div
               td.text-sm-right <strong>{{ month_info.hours_performed | roundHoursFilter }} hours ({{ month_info.hours_performed | hoursToDaysFilter }} days)</strong>
             tr(v-if='month_info')
               td <strong>Open hours</strong>
-              td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed }} hours ({{ month_info.hours_required - month_info.hours_performed | hoursToDaysFilter }} days)</strong>
+              td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed | realisticNumberFilter }} hours ({{ month_info.hours_required - month_info.hours_performed | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
    
     .col-xl-6
       .row
@@ -260,6 +260,10 @@ export default {
       if(store.getters.users){
         return store.getters.users.find(u => u.id === val).display_label
       }
+    },
+
+    realisticNumberFilter: function(val) {
+      return val >= 0 ? val : 0;
     },
 
     //Calculates amount of days in hours
