@@ -11,7 +11,7 @@ div.row
 
         h3.card-header {{ year }}
         
-        .card-block.row
+        .card-block.row.no-gutters
           .col-4(v-for='(sheet, i) in year_group')
 
               .card.m-3

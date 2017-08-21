@@ -37,8 +37,8 @@ div(class='calendar')
     .calendar-day {{ weekDay }}
 
   .calendar-body
-    //- Dummy day block
-    .calendar-day.calendar-day-dummy.d-none.d-md-inline(v-for='n in dayOffset')
+    //- Dummy day bloc
+    .calendar-day.calendar-day-dummy.d-none.d-md-inline.mt-1(v-for='n in dayOffset')
 
     //- Day-blocks
     .calendar-day.p-1(
