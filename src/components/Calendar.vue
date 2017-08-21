@@ -4,8 +4,8 @@ div(class='calendar')
   .row
     .col
     .col-6.text-sm-center
-      h1(v-if='params') {{ month }}  {{ params.year }}
-      h1(v-else) {{ month }}  {{ year }}
+      h1(v-if='params') {{ selected_month | moment('MMMM') }}  {{ params.year }}
+      h1(v-else) {{ selected_month | moment('MMMM') }}  {{ year }}
     .col.align-self-center.text-right
       .btn-group(
         role='group'
@@ -334,7 +334,7 @@ export default {
     //Calls setSelectedMonth with the next month
     selectNextMonth: function () {
       let date = moment(this.selected_month).add(1, 'month');
-      let options = { params: { date:date }};
+      let options = { params: { date: date }};
 
       store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
       this.setSelectedMonth(date.year(), date.month());
@@ -343,7 +343,7 @@ export default {
     //Calls setSelectedMonth with the previous month
     selectPreviousMonth: function () {
       let date = moment(this.selected_month).subtract(1, 'month');
-      let options = { params: { date:date }};
+      let options = { params: { date: date }};
 
       store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, options);
       this.setSelectedMonth(date.year(), date.month());
@@ -352,18 +352,13 @@ export default {
     //Pushes the new date into the router, so the view navigates to a new page
     //If no selectedUser is provided
     setSelectedMonth: function (year, month) {
-      if(!this.selectedUser) {
-        this.$router.push({
-          name: 'calendar_month',
-          params: {
-            year: year,
-            month: month + 1,
-          },
-        })
-      } else {
-        this.getPerformances();
-        this.getLeaves();
-      }
+      this.$router.push({
+        name: 'calendar_month',
+        params: {
+          year: year,
+          month: month + 1,
+        },
+      });
     },
 
     //Gets the ISO year, not just the selected year, for specific dates like Jan 1st 2017 its necessary
@@ -417,13 +412,20 @@ export default {
     },
 
     selected_month: function() {
-      if(store.getters.calendar_selected_month){
+      if(store.getters.calendar_selected_month && this.selectedUser) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO, {
+          params: {
+            user_id:this.selectedUser.id,
+            month: moment(store.getters.calendar_selected_month).format('MM')
+          }
+        });
+
         return store.getters.calendar_selected_month;
       }
     },
 
     month_info: function() {
-      if(store.getters.month_info && this.month){
+      if(store.getters.month_info && this.selected_month){
         return store.getters.month_info;
       }
     },
@@ -443,18 +445,6 @@ export default {
     year: function() {
       if(store.getters.calendar_selected_month)
         return moment(store.getters.calendar_selected_month).format('YYYY');
-    },
-
-    month: function() {
-      if(store.getters.calendar_selected_month && this.user) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO, {
-          params: {
-            user_id:this.selectedUser.id,
-            month: moment(store.getters.calendar_selected_month).format('MM')
-          }
-        });
-        return moment(store.getters.calendar_selected_month).format('MMMM');
-      }
     },
 
     days: function() {
