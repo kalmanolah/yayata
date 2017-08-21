@@ -1,9 +1,7 @@
 <template lang="pug">
 div
   .row.mb-3
-    h1.col.text-center {{ grid_month | fullMonthString }} {{ grid_year }}
-  .row.mb-3
-    .col
+    .col.mt-2
       toggle-button(
                 @change='toggleSwitch("home")', 
                 :value='showHome', 
@@ -67,20 +65,6 @@ div
             .dropdown-menu(aria-labelledby='countryBtnGroup')
               a.dropdown-item(@click='country_label = "Country"; country_filter="Country"') All
               a.dropdown-item(v-for='country in countries' @click='showCountryUsers(country)') {{ country }}
-          button(
-                  class='btn btn-outline-dark'
-                  type='button'
-                  v-on:click.prevent='selectPreviousMonth()'
-                )
-                  i(class='fa fa-angle-double-left')
-                  | Previous&nbsp;
-          button(
-            class='btn btn-outline-dark'
-            type='button'
-            v-on:click.prevent='selectNextMonth()'
-          )
-            | Next&nbsp;
-            i(class='fa fa-angle-double-right')
   .row.mb-3
     .col
       table.table.table-bordered.table-sm.table-responsive
@@ -149,19 +133,21 @@ div
     },
 
     grid_date: function() {
-      if(store.getters.grid_date){
-        return store.getters.grid_date
+      if(this.grid_month && this.grid_year){
+        return moment().year(this.grid_year).month(this.grid_month);
       }
     },
 
     grid_month: function() {
-      if(this.grid_date)
-        return parseInt(moment(this.grid_date).format('MM'))
+      if(this.$route.params.month) {
+        return parseInt(this.$route.params.month);
+      }
     },
 
     grid_year: function() {
-      if(this.grid_date)
-        return parseInt(moment(this.grid_date).format('YYYY'))
+      if(this.$route.params.year){
+        return parseInt(this.$$route.params.year);
+      }
     },
 
     daysInMonth: function() {
@@ -316,30 +302,6 @@ div
         }
         return cellClassR;
       }
-    },
-    
-    // Reloads the grid date to one month later.
-    selectNextMonth: function() {
-      var options = { 
-        params: {
-          date: moment(this.grid_date).add(1, 'month')
-        } 
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
-        this.reloadLeaves();
-      })
-    },
-
-    // Reloads the grid date to one month earlier.
-    selectPreviousMonth: function() {
-      var options = { 
-        params: {
-          date: moment(this.grid_date).subtract(1, 'month')
-        } 
-      };
-      store.dispatch(types.NINETOFIVER_RELOAD_GRID_DATE, options).then( () => {
-        this.reloadLeaves();
-      })
     },
 
     reloadLeaves: function() {
