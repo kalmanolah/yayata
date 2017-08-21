@@ -10,7 +10,6 @@ div(class='calendar')
       .btn-group(
         role='group'
         aria-label='Calendar controls'
-        v-if='!userId'
       )
         button(
           class='btn btn-outline-dark'
@@ -28,8 +27,21 @@ div(class='calendar')
           i(class='fa fa-angle-double-right')
 
   //- Quota overview
-  .row.justify-content-center
-    .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
+  .row
+    .col
+    .col-6.justify-content-center.text-center
+      .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
+    .col.align-self-center.text-right
+      template(v-if='isAdmin')  
+        .btn-group(
+          role='group'
+          aria-label='Button group with nested dropdown'
+        )
+          .btn-group
+            button.btn.btn-outline-dark.dropdown-toggle#btnUserDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ selectedUser.display_label }}
+            .dropdown-menu(aria-labelledby='btnUserDrop')
+              a.dropdown-item(v-for='u in users' @click='selectUser(u)') {{ u.display_label }}
+
   hr
 
   //- Day-names
@@ -51,8 +63,8 @@ div(class='calendar')
 
       template
         router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
-                    :event="!userId ? 'click' : ''"
-                    :class="!userId ? '' : 'unclickable-days'")
+                    :event="currentUserSelected ? 'click' : ''"
+                    :class="currentUserSelected ? '' : 'unclickable-days'")
           .card.card-block.p-3
             p {{ n }}
 
@@ -60,7 +72,7 @@ div(class='calendar')
               b-popover.float-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='d-none d-lg-inline')
                 i.fa.fa-university(v-if='isHoliday(n)')
                 i.fa.fa-plane(v-else-if='getLeaveForDay(n)')
-                div(slot='content')
+                div.p-2(slot='content')
 
                   template(v-if='isHoliday(n)')
                     .text-center <strong>Holiday </strong>
@@ -87,15 +99,10 @@ import moment from 'moment';
 export default {
   name: 'calendar',
 
-  props: [
-    'userId',
-    'selectedMonthProp'
-  ],
-
   watch: {
 
     // Watches selected user from parent component.
-    userId: function(oldUserid, newUserId) {
+    selectedUser: function(oldUserid, newUserId) {
       this.buildPageInfo();
     },
 
@@ -120,19 +127,21 @@ export default {
 
     //Reload the user's employment contracts
     reloadEmploymentContracts: function() {
-      let ec_user = this.userId || this.user.id;
+      if(this.selectedUser || this.user) {
+        let ec_user = this.selectedUser.id || this.user.id;
 
-      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-        params: {
-          user: ec_user,
-          ended_at__isnull: 'True'
-        }
-      });
+        store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+          params: {
+            user: ec_user,
+            ended_at__isnull: 'True'
+          }
+        });        
+      }
     },
 
     //Get all leaves for this month
     getLeaves: function() {
-      if(store.getters.calendar_selected_month) {
+      if(store.getters.calendar_selected_month && this.selectedUser) {
         //Make param for month's range
         let startOfMonth = moment(store.getters.calendar_selected_month).startOf('month');
         let endOfMonth = moment(store.getters.calendar_selected_month).endOf('month');
@@ -141,7 +150,7 @@ export default {
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
           path: '/leaves/',
           params: {
-            user_id: this.user.id,
+            user_id: this.selectedUser.id,
             status: store.getters.leave_statuses[2],
             leavedate__range: range,
           }
@@ -170,22 +179,23 @@ export default {
 
     //Get all performances for this month
     getPerformances: function() {
+      if(this.selectedUser) {
+        let month = moment(store.getters.calendar_selected_month).month() + 1;
+        let year = moment(store.getters.calendar_selected_month).year();
 
-      let month = moment(store.getters.calendar_selected_month).month() + 1;
-      let year = moment(store.getters.calendar_selected_month).year();
-
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/performances/',
-        params: {
-          timesheet__user_id: this.user.id,
-          timesheet__month: month,
-          timesheet__year: year,
-        }
-      }).then((response) => {
-        this.performances = response.data.results;
-      }, () => {
-        this.loading = false;
-      });
+        store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: '/performances/',
+          params: {
+            timesheet__user_id: this.selectedUser.id,
+            timesheet__month: month,
+            timesheet__year: year,
+          }
+        }).then((response) => {
+          this.performances = response.data.results;
+        }, () => {
+          this.loading = false;
+        });        
+      }
     },
 
     //Return style based on quota
@@ -268,7 +278,7 @@ export default {
 
       if(store.getters.employment_contracts) {
         let emplContr = store.getters.employment_contracts.find(ec => {
-          return ec.user === this.user.id;
+          return ec.user === this.selectedUser.id;
         });
         if(emplContr && store.getters.companies) {
           let comp = store.getters.companies.find(c => {
@@ -304,13 +314,13 @@ export default {
 
     //Returns the day of the week on which the day provided resides
     getDayOfWeek: function (day) {
-      return (this.dayOffset + day) % 7
+      return (this.dayOffset + day) % 7;
     },
 
     //Checks if the day provided is in the weekend
     isWeekendDay: function (day) {
-      let dow = this.getDayOfWeek(day)
-      return dow > 5 || dow < 1
+      let dow = this.getDayOfWeek(day);
+      return dow > 5 || dow < 1;
     },
 
     //Checks if the day provided is the current day
@@ -340,9 +350,9 @@ export default {
     },
 
     //Pushes the new date into the router, so the view navigates to a new page
-    //If no userID is provided
+    //If no selectedUser is provided
     setSelectedMonth: function (year, month) {
-      if(!this.userId) {
+      if(!this.selectedUser) {
         this.$router.push({
           name: 'calendar_month',
           params: {
@@ -364,11 +374,33 @@ export default {
     //Calculate the current weeknumber
     getWeekNumber: function(val) {
       return moment(store.getters.calendar_selected_month).date(val).isoWeek();
-    }
+    },
+
+    selectUser: function(val) {
+      this.selectedUser = val;
+    },
 
   },
 
   computed: {
+
+    // Returns whether the currently authenticated user is selected.
+    currentUserSelected: function() {
+      if(this.user && this.selectedUser)
+        return this.user.id == this.selectedUser.id;
+    },
+
+    // Builds an array for the dropdown
+    options: function() {
+      return this.users.map(u => {
+        return { text: u.display_label, value: u.id }
+      });
+    },
+
+    // Returns true if the currently authenticated user belongs to the admin-group
+    isAdmin: function() {
+      return store.getters.user.groups.find(g => g.name == 'admin');
+    },
 
     params: function() {
       if(this.$route.params.year) {
@@ -396,13 +428,15 @@ export default {
       }
     },
 
-    // If no userId prop is passed get the details of the current user.
+    users: function() {
+      if(store.getters.users)
+        return store.getters.users;
+    },
+
     user: function() {
-      if(!this.userId && store.getters.user)
+      if(store.getters.user) {
+        this.selectUser(store.getters.user);
         return store.getters.user;
-      
-      if(this.userId && store.getters.users){
-        return store.getters.users.find(u => u.id === this.userId);
       }
     },
 
@@ -412,10 +446,10 @@ export default {
     },
 
     month: function() {
-      if(store.getters.calendar_selected_month, this.user){
+      if(store.getters.calendar_selected_month && this.user) {
         store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO, {
           params: {
-            user_id:this.user.id,
+            user_id:this.selectedUser.id,
             month: moment(store.getters.calendar_selected_month).format('MM')
           }
         });
@@ -502,6 +536,7 @@ export default {
   data () {
 
     return {
+      selectedUser: null,
       leaves: [],
       performances: [],
       weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
@@ -548,7 +583,7 @@ export default {
 
 .calendar-day-on-leave {
   .card {
-    background: rgba(150, 150, 150, 0.1);
+    background: rgba(150, 150, 150, 0.15);
   }
 }
 
