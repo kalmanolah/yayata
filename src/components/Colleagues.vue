@@ -1,73 +1,75 @@
 <template lang="pug">
 div.row
-  //- Header
-  .col-12
-    h3 Colleagues
-      .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
-        i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
-    p.subtitle Overview of all colleagues
-
-  //- Advanced filter panel
-  .col-3.pull-right(v-if='showFilter')
+  .col
+    //- Header
     .row
-      ColleaguesFilterForm
+      .col
+        h3 Colleagues
+          .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+            i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
+        p.subtitle Overview of all colleagues
 
-  //- Main page
-  div(:class='showFilter ? "col-9" : "col-12"')
+    //- Advanced filter panel
     .row
-      .col-8
-        .btn-group(role='group' aria-label='Button group with nested dropdown')
-          button.btn.btn-outline-dark(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
-          button.btn.btn-outline-dark(v-else type='button' @click='reloadPage()') All
-          .btn-group(role='group')
-            button.btn.btn-outline-dark.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
-            .dropdown-menu(aria-labelledby='btnGroupDrop')
-              a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
+      #colleagues_filter.col.order-12(v-if='showFilter')
+        ColleaguesFilterForm
+      //- Main page
+      #colleagues.order-1(:class='showFilter ? "col-9" : "col"')
+        .row
+          .col-8
+            .btn-group(role='group' aria-label='Button group with nested dropdown')
+              button.btn.btn-outline-dark(v-if='userId === "all"' type='button' @click='setSortByGroup("all")') All
+              button.btn.btn-outline-dark(v-else type='button' @click='reloadPage()') All
+              
+              .btn-group(role='group')
+                button.btn.btn-outline-dark.dropdown-toggle#btnGroupDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ groupLabel }}
+                .dropdown-menu(aria-labelledby='btnGroupDrop')
+                  a.dropdown-item(v-for='group in groups' @click='setSortByGroup(group)') {{ group.name }}
 
-      .col-lg-4
-        .input-group
-          span.input-group-addon Search
-          input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
+          .col-lg-4
+            .input-group
+              span.input-group-addon Search
+              input(type='text', class='form-control', placeholder='Name, email, ...', v-model='query')
 
-    .row
-      .col-sm-12
-        div#user-table(v-if='filtered_users')
-          .alert.alert-warning(v-if='noResultsFound') No results found
-          table.table.table-striped
-            thead#user-table-head
-              tr
-                th(@click='setTableSort("first_name")') Name
-                  .pull-right.fa.fa-sort(aria-hidden='true')
-                th(@click='setTableSort("email")') Email
-                  .pull-right.fa.fa-sort(aria-hidden='true')
-                th(@click='setTableSort("userinfo__birth_date")') Birthdate
-                  .pull-right.fa.fa-sort(aria-hidden='true')
-                th(@click='setTableSort("userinfo__country")') Country
-                  .pull-right.fa.fa-sort(aria-hidden='true')
-                th(@click='setTableSort("userinfo__join_date")') Joindate
-                  .pull-right.fa.fa-sort(aria-hidden='true')
-            tbody
-              tr(v-for='(user, index) in requestedUsers')
-                td {{ user.first_name }} {{ user.last_name }} 
-                  span.ml-1.badge.pull-right(v-for='group in user.groups' v-bind:class='determineBadgeColor(group)') {{ group | getGroupAsString }}
-                td
-                  span {{ user.email }}
-                  a.pull-right(:href="`mailto:${user.email}`")
-                    i.fa.fa-envelope
+        .row
+          .col-sm-12
+            div#user-table(v-if='filtered_users')
+              .alert.alert-warning(v-if='noResultsFound') No results found
+              table.table.table-striped
+                thead#user-table-head
+                  tr
+                    th(@click='setTableSort("first_name")') Name
+                      .pull-right.fa.fa-sort(aria-hidden='true')
+                    th(@click='setTableSort("email")') Email
+                      .pull-right.fa.fa-sort(aria-hidden='true')
+                    th(@click='setTableSort("userinfo__birth_date")') Birthdate
+                      .pull-right.fa.fa-sort(aria-hidden='true')
+                    th(@click='setTableSort("userinfo__country")') Country
+                      .pull-right.fa.fa-sort(aria-hidden='true')
+                    th(@click='setTableSort("userinfo__join_date")') Joindate
+                      .pull-right.fa.fa-sort(aria-hidden='true')
+                tbody
+                  tr(v-for='(user, index) in requestedUsers')
+                    td {{ user.first_name }} {{ user.last_name }} 
+                      span.ml-1.badge.pull-right(v-for='group in user.groups' v-bind:class='determineBadgeColor(group)') {{ group | getGroupAsString }}
+                    td
+                      span {{ user.email }}
+                      a.pull-right(:href="`mailto:${user.email}`")
+                        i.fa.fa-envelope
 
-                td
-                  span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
-                  span(v-else) &nbsp;
-                td {{ user.country }}
-                td
-                  span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
-                  span(v-else) &nbsp;
+                    td
+                      span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+                      span(v-else) &nbsp;
+                    td {{ user.country }}
+                    td
+                      span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+                      span(v-else) &nbsp;
 
-    .row(v-if='users && users.length === 0')
-      .col-md-3
-      .col-md-6
-        .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
-      .col-md-3
+        .row(v-if='users && users.length === 0')
+          .col-md-3
+          .col-md-6
+            .text-md-center.alert.alert-info <strong> No colleagues found! </strong>
+          .col-md-3
 
 </template>
 
@@ -239,6 +241,13 @@ export default {
 </script>
 
 <style>
+#colleagues {
+  order: 1;
+}
+
+#colleagues-filter {
+  order: 2;
+}
 .dropdown-item:hover {
   cursor: pointer;
 }

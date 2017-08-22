@@ -11,10 +11,10 @@ div.row
 
     //- Advanced filter panel
     .row
-      .col#contract-filter(v-if='showFilter')
+      #contract-filter.col.order-12(v-if='showFilter')
         ContractsFilterForm
       //- Main page
-      #contracts(:class='showFilter ? "col-9" : "col"')
+      #contracts.order-1(:class='showFilter ? "col-9" : "col"')
         .row
           .col-8
             .btn-group(role='group' aria-label='Button group with nested dropdown')

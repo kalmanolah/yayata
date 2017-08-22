@@ -4,16 +4,16 @@
       .row
         .col.text-center
           h3 Advanced Filter
-          p.subtitle.hidden-md-down More indepth filtering
+          p.subtitle More indepth filtering
 
       .row
-        .col.form-buttons
-          .btn.btn-primary.btn-block(@click='submitForm')
+        .col-6.form-buttons
+          button.btn.btn-primary.btn-block(@click='submitForm')
             i.fa.fa-filter(aria-hidden="true") &nbsp;
             span.hidden-lg-down Submit
 
-        .col.form-buttons
-          .btn.btn-danger.btn-block(@click='resetForm')
+        .col-6.form-buttons
+          button.btn.btn-danger.btn-block(@click='resetForm')
             i.fa.fa-refresh(aria-hidden="true") &nbsp; 
             span.hidden-lg-down Reset
       hr

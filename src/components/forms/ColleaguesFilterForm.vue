@@ -1,32 +1,33 @@
 <template lang="pug">
-.col
-  .card.p-3
-    .card-block
+.card.p-3.fixed.filter-form
+  .card-block
+    .row
+      .col.text-center
+        h3 Advanced Filter
+        p.subtitle More indepth filtering
+
+    .row
+      .col-6.form-buttons
+        button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
+          i.fa.fa-filter(aria-hidden="true") &nbsp;
+          span.d-none.d-xl-inline Submit
+
+      .col-6.form-buttons
+        button.btn.btn-danger.btn-block(@click='resetForm')
+          i.fa.fa-refresh(aria-hidden="true") &nbsp; 
+          span.d-none.d-xl-inline Reset
+    hr
+
+    .pre-scrollable.filter-scrollable
       .row
-        .col-12.text-center
-          h3 Advanced Filter
-          p.subtitle.hidden-md-down More indepth filtering
-
+        .col
+          strong.active-toggle User
       .row
-        .col-6.form-buttons
-          button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
-            i.fa.fa-filter(aria-hidden="true") &nbsp;
-            span.d-none.d-xl-inline Submit
-
-        .col-6.form-buttons
-          button.btn.btn-danger.btn-block(@click='resetForm')
-            i.fa.fa-refresh(aria-hidden="true") &nbsp; 
-            span.d-none.d-xl-inline Reset
-      hr
-
-      .pre-scrollable.filter-scrollable
-        .row
-          .col-12
-            strong.active-toggle User
-          .col-12
-            toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
-          .col-12
-            vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
+        .col
+          toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
+      .row
+        .col
+          vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
       
 </template>
 <script>
