@@ -94,7 +94,6 @@ export default {
 
     //Requests all data
     buildPageInfo: function() {
-      this.getLeaves();
       this.reloadEmploymentContracts();
     },
 
