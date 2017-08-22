@@ -69,10 +69,12 @@ div(class='calendar')
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
+import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
 
 export default {
   name: 'calendar',
-
+  mixins: [RequiredPerformedDayMixin],
+  
   watch: {
 
     // Watches selected user from parent component.
@@ -163,60 +165,19 @@ export default {
 
     //Get hours required per day, based on workschedule, holiday & leave
     getRequiredHours: function(day) {
-      let total = 0;
 
       if(this.work_schedule && this.month && this.year) {
-        let wHours = store.getters.working_hours;
         let date = moment().year(this.year).month(this.month - 1).date(day);
-        let dayTotal = parseFloat(this.work_schedule[date.format('dddd').toLowerCase()])
-
-        total += dayTotal;
-
-        if(total === 0)
-          return total;
-
-        if(this.leaves) {
-          this.leaves.forEach((leave) => {
-            //Check whether the day corresponds to the startdate of a leave
-            //If so, calculate the hourdifference && update total for this day
-            if(leave.leave_start.isSame(date, 'day') || leave.leave_end.isSame(date, 'day')) {
-
-              let startOfDay = moment(date).hour(wHours.start.hour).minute(wHours.start.minute);
-              let endOfDay = moment(date).hour(wHours.end.hour).minute(wHours.end.minute);
-
-              let lvStart = moment(leave.leave_start).startOf('hour');
-              let lvEnd = moment(leave.leave_end).startOf('hour');
-
-              let startDiff = lvStart.diff(startOfDay, 'hours');
-              let endDiff = endOfDay.diff(lvEnd, 'hours');
-
-              startDiff = startDiff > 0 ? startDiff : 0;
-              endDiff = endDiff > 0 ? endDiff : 0;
-
-              total -= dayTotal - (startDiff + endDiff);
-
-            } else if(date.isBetween(leave.leave_start, leave.leave_end)) {
-              total = 0;
-            }
-          });
-        }
+        return this.getHoursTotal(date);
       }
-
-      return total >= 0 ? total : 0;
     },
 
     //Get hours performed per day
     getPerformedHours: function(day) {
-      let total = 0;
-
-      if(this.performances) {
-        this.performances.forEach(x => {
-          if(x.duration && x.day === day)
-            total += parseFloat(x.duration);
-        });
+      if(this.work_schedule && this.month && this.year) {
+        let date = moment().year(this.year).month(this.month - 1).date(day);
+        return this.getDurationTotal(date);
       }
-
-      return total;
     },
 
     //Check whether holiday / user is on leave
@@ -290,11 +251,6 @@ export default {
       }
     },
 
-
-
-    //Pushes the new date into the router, so the view navigates to a new page
-    //If no selectedUser is provided
-
     //Gets the ISO year, not just the selected year, for specific dates like Jan 1st 2017 its necessary
     getISOYear: function(val) {
       if(this.year && this.month){
@@ -322,7 +278,7 @@ export default {
           timesheet__year: this.year
         }
       }).then((res) => {
-        this.performances = res.data.results;
+        this.activityPerformances = res.data.results;
       }).catch((error) => {
         console.log(error)
       })
@@ -380,6 +336,14 @@ export default {
       }
     },
 
+    holidays: function() {
+      if(store.getters.holidays && this.selectedUser && this.month) {
+        return store.getters.holidays.filter((holiday) => {
+          return moment(holiday.date).month() == this.month && holiday.country == this.selectedUser.country;
+        });
+      }
+    },
+
     year: function() {
       if(this.$route.params.year) {
         return parseInt(this.$route.params.year);
@@ -432,13 +396,13 @@ export default {
     },
 
     contracts: function() {
-      if(store.getters.contracts && this.performances) {
+      if(store.getters.contracts && this.activtyPerformances) {
         let contrs = store.getters.contracts;
         //Calculate total perf duration for each entry
         contrs.forEach(c => {
           let total = 0;
 
-          this.performances.forEach(p => {
+          this.activityPerformances.forEach(p => {
             if(p.contract === c.id)
               total += parseFloat(p.duration);
           });
@@ -487,7 +451,11 @@ export default {
   filters: {
 
     roundHoursFilter: function(val) {
-      return Math.round(val * 2) / 2;
+      if(val % 1 != 0) {
+        return parseFloat(val).toFixed(1);
+      } else {
+        return parseInt(val);
+      }
     },
   },
 
@@ -495,7 +463,7 @@ export default {
 
     return {
       selectedUser: null,
-      performances: [],
+      activityPerformances: [],
       leaves: [],
       weekDays: Object.keys(store.getters.days).map(x => { return x[0].toUpperCase() + x.slice(1); }),
       months: [

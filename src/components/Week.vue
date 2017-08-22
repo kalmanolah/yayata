@@ -132,7 +132,7 @@
               //- Leaves
               template(v-if='leaves')
                 li.list-group-item.leave-entry(
-                  v-for='leave in getDaysLeaves(weekDay.date())',
+                  v-for='leave in getDaysLeaves(weekDay)',
                   :class='[list-group, performance-list]'
                 )
                   .list-group-item-heading {{ leave.leave_type | leaveTypeAsString }}
@@ -185,10 +185,11 @@ import HoverCard from './tools/HoverCard.vue';
 import PerformanceForm from './forms/PerformanceForm.vue';
 import StandbyContractSelect from './StandbyContractSelect.vue';
 import LocationSelect from './LocationSelect.vue';
+import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
 
 export default {
   name: 'week',
-
+  mixins: [RequiredPerformedDayMixin],
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,
@@ -354,36 +355,6 @@ export default {
           date: date
         }
       };
-    },
-
-    //Get the amount of hours spent 
-    getDurationTotal: function(day) {
-      let total = 0;
-      for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
-        total += parseFloat(val.duration);
-      }
-      
-      return total;
-    },
-
-    //Get total hours/day from the work_schedule per user
-    getHoursTotal: function(day) {
-      if(this.work_schedule) {
-        let total = this.work_schedule[day.format('dddd').toLowerCase()];
-        if(this.getDaysHolidays(day.date()).length > 0){
-          let weekday = day.format('dddd').toLowerCase()
-          total -= parseInt(this.work_schedule[weekday]);
-        }
-        let date = day.date();
-        // Add hours with leave of this day to total
-        if(this.leaves) {
-          let leaves = this.getDaysLeaves(day.format('D'));
-          leaves.forEach((leave) => {
-            total -= parseFloat(leave.leaveDuration)
-          })
-        }
-        return total
-      } 
     },
 
     createNewTimeSheet: function(day) {
@@ -594,37 +565,9 @@ export default {
       return result.reverse();
     },
 
-    getDaysHolidays: function(day) {
-      let result = [];
-      this.holidays.forEach((holiday) => {
-        if(moment(holiday.date).date() == day) {
-          result.push(holiday)
-        }
-      });
-      return result;
-    },
 
-    getDaysLeaves: function(day) {
-      let result = [];
-      let month = moment().week(this.selectedWeek).month();
-      this.leaves.forEach((leave) => {
-        let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, month, day ]), 'day'));
-        if(ld) {
-          let leaveDuration = null;
-          // Leave spans multiple days
-          if(leave.leavedate_set.length > 1) {
-            // Subtract full workday from total
-            let weekday = moment().day(day).format('dddd').toLowerCase()
-            leaveDuration = parseInt(this.work_schedule[weekday]);
-          } else {
-            leaveDuration = (moment(ld.ends_at).diff(moment(ld.starts_at), 'minutes')/60);
-          }
-          leave.leaveDuration = leaveDuration;
-          result.push(leave)
-        }
-      });
-      return result;
-    }
+
+
   },
 
   data () {
