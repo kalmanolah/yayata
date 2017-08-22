@@ -35,7 +35,7 @@ div.row
                 .card-block.p-2
                   div
                     strong Open hours:  
-                    .badge.pull-right(:class='getBadgeStyle(sheet)') {{ sheet.hours_required - sheet.hours_performed | negativeToZeroFilter  }}
+                    .badge.pull-right(:class='getBadgeStyle(sheet)') {{ (sheet.hours_required - sheet.hours_performed).toFixed(1) | negativeToZeroFilter  }}
                     
                   div 
                     span Days with leave:

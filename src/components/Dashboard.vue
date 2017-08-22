@@ -41,7 +41,7 @@ div
               td.text-sm-right <strong>{{ month_info.hours_performed | roundHoursFilter }} hours ({{ month_info.hours_performed | hoursToDaysFilter }} days)</strong>
             tr(v-if='month_info')
               td <strong>Open hours</strong>
-              td.text-sm-right <strong>{{ month_info.hours_required - month_info.hours_performed | realisticNumberFilter }} hours ({{ month_info.hours_required - month_info.hours_performed | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
+              td.text-sm-right <strong>{{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter }} hours ({{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
    
     .col-xl-6
       .row
