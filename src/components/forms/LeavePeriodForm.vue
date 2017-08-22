@@ -179,6 +179,10 @@ export default {
                   }
                   // reset form
                   this.resetForm();
+                }, (res) => {
+                  this.requestLoading = false;
+                  this.showToast("ERROR: " + res.bodyText);
+                  console.log(res);
                 });
               }
             } else {
@@ -193,6 +197,10 @@ export default {
             console.log(lvdResponse);
           }
 
+        }, (res) => {
+            this.requestLoading = false;
+            this.showToast("ERROR: " + res.bodyText);
+            console.log(res);
         });
 
       //Model did not properly validate
@@ -209,7 +217,7 @@ export default {
           id: 'leave-toast',
           horizontalPosition: 'right',
           verticalPosition: 'top',
-          duration: 2000,
+          duration: 2500,
           transition: 'slide-down',
           mode: 'override'
       });
