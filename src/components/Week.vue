@@ -33,7 +33,7 @@
       .row.justify-content-center
         .col
         .col-auto.text-center
-          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }', @click='setCalendarSelectedMonth(selectedYear, periodStartMonth().month() +1)')
+          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
             h2 {{ periodStartMonth | moment('MMMM')}}
         .col-auto.text-center
           router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
@@ -117,7 +117,18 @@
           //- Check if timesheet status is active
           template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
             .card-block.performance-list
-
+              //- Holidays
+              template(v-if='holidays')
+                li.list-group-item.leave-entry(
+                  v-for='holiday in getDaysHolidays(weekDay.date())',
+                  :class='[list-group, performances-list]'
+                )
+                  .list-group-item-heading {{ holiday.name }}
+                  .list-group-item-text
+                    hr.smaller-vertical-hr
+                    small
+                      i.fa.fa-university.pull-left
+                      .pull-right 8 h
               //- Leaves
               template(v-if='leaves')
                 li.list-group-item.leave-entry(
@@ -193,6 +204,15 @@ export default {
   },
 
   computed: {
+    holidays: function() {
+      if(store.getters.holidays && this.selectedYear && this.selectedWeek) {
+        let month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month();
+        return store.getters.holidays.filter((holiday) => {
+          return moment(holiday.date).month() == month && holiday.country == store.getters.user.country;
+        });
+      }
+    },
+
     leaves: function() {
       if(store.getters.leaves) {
         return store.getters.leaves.filter((leave) => {
@@ -284,10 +304,6 @@ export default {
   },
 
   methods: {
-    setCalendarSelectedMonth: function(year, month) {
-
-    },
-
     getStandbys: function (day, timesheet) {
       if(timesheet && store.getters.standby_performances && store.getters.contracts){
         let resp = store.getters.standby_performances.filter(p => {
@@ -321,10 +337,10 @@ export default {
     },
 
     getDailyQuota: function(day) {
-      var performed = this.getDurationTotal(day);
-      var required = this.getHoursTotal(day);
+      let performed = this.getDurationTotal(day);
+      let required = this.getHoursTotal(day);
 
-      var quota = required > 0 ? (performed / required) : 1;
+      let quota = required > 0 ? (performed / required) : 1;
 
       return quota >= 1 ? 'fa-check' : '';
     },
@@ -595,13 +611,23 @@ export default {
 
     //Get the activityPerformances linked to a day
     getDaysPerformances: function(day) {
-      var result = [];
+      let result = [];
 
-      for(var i = 0; i < this.activityPerformances.length; i++)
+      for(let i = 0; i < this.activityPerformances.length; i++)
         if(this.activityPerformances[i].day == day)
           result.push(this.activityPerformances[i]);
 
       return result.reverse();
+    },
+
+    getDaysHolidays: function(day) {
+      let result = [];
+      this.holidays.forEach((holiday) => {
+        if(moment(holiday.date).date() == day) {
+          result.push(holiday)
+        }
+      });
+      return result;
     },
 
     getDaysLeaves: function(day) {
