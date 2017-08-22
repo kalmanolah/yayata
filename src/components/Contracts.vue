@@ -96,6 +96,7 @@ div.row
                         .col(v-if='validChartData(contract)')
                           div(v-if='contract.type === "ProjectContract"')
                             PieChart.chart-container(v-if='generate', :chart-data='generateProjectChart(contract)')
+                            p.pt-2.text-center.small.text-muted DISCLAIMER: Outer circle is actual, inner circle is estimate
                           div(v-else)
                             PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
 

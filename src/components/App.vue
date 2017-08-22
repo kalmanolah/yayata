@@ -5,38 +5,8 @@ div(
 )
   .row.application-wrapper
     //- sidebar
-    .col-md-auto.sidebar.pr-5
-      .row
-        .col
-          router-link(
-            :to='{ name: "home" }'
-          )
-            img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
-      .row
-        .col
-          nav
-            router-link(:to='{ name: "timesheets" }')
-              h3 Timesheets 
-              p.small.d-none.d-lg-block All open timesheets
-            router-link(:to='{ name: "contracts" }')
-              h3 Contracts
-              p.small.d-none.d-lg-block What am I working on
-            router-link(:to='{ name: "leaves" }')
-              h3 Leaves
-              p.small.d-none.d-lg-block Sickness / Vacation
-            router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
-              h3 Colleagues
-              p.small.d-none.d-lg-block The weirdos I work with
-            router-link(:to='{ name: "calendar_month_redirect" }')
-              h3 Calendar
-              p.small.d-none.d-lg-block Monthly overview
-            router-link(:to='{ name: "redmine" }')
-              h3 Redmine
-              p.small.d-none.d-lg-block Time entries
-      .row
-        .bottom
-          input#datepicker(type='hidden' ref='datepicker')
-          #container(ref='container')
+    sidebar.d-none.d-md-block
+
     //- content
     .col.p-0
       .container-fluid.pl-0.pr-0
@@ -51,14 +21,16 @@ div(
 </template>
 
 <script>
-import * as types from '../store/mutation-types'
-import Navbar from './Navbar.vue'
-import store from '../store'
+import * as types from '../store/mutation-types';
+import Navbar from './Navbar.vue';
+import Sidebar from './Sidebar.vue';
+import store from '../store';
 
 export default {
   name: 'app',
   components: {
-    navbar: Navbar
+    navbar: Navbar,
+    sidebar: Sidebar
   },
   created: () => {
 
@@ -128,32 +100,6 @@ export default {
         date: moment()
       });
   },
-  mounted: function() {
-    var vm = this;
-    this.picker = new Pikaday({
-      field: this.$refs.datepicker,
-      container: this.$refs.container,
-      firstDay: 1,
-      minDate: new Date(2000, 0, 1),
-      maxDate: new Date(2020, 12, 31),
-      yearRange: [2000, 2020],
-      bound: false,
-      format: 'D MMM YYYY',
-      onSelect: function() {
-        var date = this.getMoment();
-        vm.$router.push({ name: 'calendar_week', params: { year: date.get('year'), week: date.get('isoWeek') }})
-      }
-    });
-
-    // HACK WARING: pikaday added arrowkey support for accessability reasons, this is something we don't want however
-    // as the pikaday is used to navigate. This would mean that whenever the user uses his arrowkeys after using the pikaday
-    // he leaves his current page.
-    // This feature is not not yet optional but will be in the future after the merge request that fixes this is accepted.
-    document.removeEventListener('keydown', this.picker._onKeyChange);
-    document.removeEventListener('keyup', this.picker._onKeyChange);
-    document.removeEventListener('keyleft', this.picker._onKeyChange);
-    document.removeEventListener('keyright', this.picker._onKeyChange);
-  },
   methods: {},
 
   computed: {
@@ -196,10 +142,6 @@ export default {
   max-width: 150px;
   overflow: hidden;
   padding-bottom: 30px;
-}
-
-.sidebar {
-  min-width: 100px
 }
 
 .card-top-blue{
@@ -269,11 +211,6 @@ export default {
     margin-left: -@sidebar-width;
     overflow-y: auto;
     overflow-x: hidden;
-    background: white;
-    -webkit-transition: all 0.5s ease;
-    -moz-transition: all 0.5s ease;
-    -o-transition: all 0.5s ease;
-    transition: all 0.5s ease;
 }
 /*a {
   color: #0aa6c9;
