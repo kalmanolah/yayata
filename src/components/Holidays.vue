@@ -4,8 +4,10 @@ div
   p.text-md-center.subtitle This is a list of all upcoming holidays in the next few months.
   ul.list-group(v-if='holidays.length > 0')
     li.list-group-item(v-for='holiday in holidays')
-      | {{ [ holiday.date, 'YYYY-MM-DD' ] | moment('DD MMMM YYYY') }}  
-      span.pull-right {{ holiday.display_label }}
+      .row
+        .col-auto.align-self-center
+          | {{ [ holiday.date, 'YYYY-MM-DD' ] | moment('DD MMMM YYYY') }}  
+        .col.pull-right {{ holiday.display_label }}
 
   p.text-center(v-else) <strong>No leaves awaiting approval.</strong>
 </template>
