@@ -359,60 +359,31 @@ export default {
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
       let total = 0;
-      if(this.getDaysHolidays(day.date()).length > 0){
-        let weekday = day.format('dddd').toLowerCase()
-        total += parseInt(this.work_schedule[weekday]);
-      }
       for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
         total += parseFloat(val.duration);
       }
       
-      let date = day.date();
-      // Add hours with leave of this day to total
-      if(this.leaves) {
-        this.leaves.forEach((leave) => {
-          let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, 5, date ]), 'day'));
-          let leaveDuration = 0;
-          if(ld && leave.leavedate_set.length > 1){
-            // do things with leaves that span multiple days here
-            // if ld is the first or last leavedate calculate amount of hours in leave
-            if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
-              let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
-              let startOfDay = moment([this.selectedYear, 5, date, 9]);
-              
-              let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
-              let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
-
-              startDiff = startDiff > 0 ? startDiff : 0;
-              endDiff = endDiff > 0 ? endDiff : 0;
-
-              let leaveHours = startDiff + endDiff;
-              leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
-              leaveDuration = 8 - leaveHours;
-            } else {
-              // else assume that 8 leave hours are consumed
-              leaveDuration = 8;
-            }
-            total += leaveDuration;
-          } else if (ld) {
-            let endOfDay = moment([this.selectedYear, 5, date, 17, 30]);
-            let startOfDay = moment([this.selectedYear, 5, date, 9]);
-
-            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
-            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
-            leaveDuration = (8 - (startDiff + endDiff));
-
-            startDiff < 0 ? total += 8 : total += leaveDuration;
-          }
-        });
-      }
       return total;
     },
 
     //Get total hours/day from the work_schedule per user
     getHoursTotal: function(day) {
-      if(this.work_schedule) 
-        return this.work_schedule[day.format('dddd').toLowerCase()];
+      if(this.work_schedule) {
+        let total = this.work_schedule[day.format('dddd').toLowerCase()];
+        if(this.getDaysHolidays(day.date()).length > 0){
+          let weekday = day.format('dddd').toLowerCase()
+          total -= parseInt(this.work_schedule[weekday]);
+        }
+        let date = day.date();
+        // Add hours with leave of this day to total
+        if(this.leaves) {
+          let leaves = this.getDaysLeaves(day.format('D'));
+          leaves.forEach((leave) => {
+            total -= parseFloat(leave.leaveDuration)
+          })
+        }
+        return total
+      } 
     },
 
     createNewTimeSheet: function(day) {
@@ -638,40 +609,20 @@ export default {
       let month = moment().week(this.selectedWeek).month();
       this.leaves.forEach((leave) => {
         let ld = leave.leavedate_set.find((ld) => moment(ld.starts_at).isSame(moment([this.selectedYear, month, day ]), 'day'));
-        let leaveDuration = 0;
-        if(ld && leave.leavedate_set.length > 1) {
-          // if ld is the first or last leavedate calculate amount of hours in leave
-          if(ld === leave.leavedate_set[0] || ld === leave.leavedate_set[leave.leavedate_set.length -1]){
-            let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
-            let startOfDay = moment([this.selectedYear, month, day, 9]);
-
-            let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
-            let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
-
-            startDiff = startDiff > 0 ? startDiff : 0;
-            endDiff = endDiff > 0 ? endDiff : 0;
-
-            let leaveHours = startDiff + endDiff;
-            leaveHours = leaveHours < 0 || leaveHours > 8 ? 0 : leaveHours;
-            leaveDuration = 8 - leaveHours;
+        if(ld) {
+          let leaveDuration = null;
+          // Leave spans multiple days
+          if(leave.leavedate_set.length > 1) {
+            // Subtract full workday from total
+            let weekday = moment().day(day).format('dddd').toLowerCase()
+            leaveDuration = parseInt(this.work_schedule[weekday]);
           } else {
-            // else assume that 8 leave hours are consumed
-            leaveDuration = 8;
+            leaveDuration = (moment(ld.ends_at).diff(moment(ld.starts_at), 'minutes')/60);
           }
-          leave.leaveDuration = leaveDuration + '.00';
+          leave.leaveDuration = leaveDuration;
           result.push(leave)
-        } else if (ld) {
-          let endOfDay = moment([this.selectedYear, month, day, 17, 30]);
-          let startOfDay = moment([this.selectedYear, month, day, 9]);
-
-          let startDiff = moment(ld.starts_at).subtract(2, 'hours').diff(startOfDay, 'hours');
-          let endDiff = moment(endOfDay).add(2, 'hours').diff(ld.ends_at, 'hours');
-
-          leaveDuration = (8 - (startDiff + endDiff));
-          leave.leaveDuration = leaveDuration + '.00';
-          result.push(leave);
         }
-      })
+      });
       return result;
     }
   },
