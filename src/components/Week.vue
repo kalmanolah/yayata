@@ -359,7 +359,10 @@ export default {
     //Get the amount of hours spent 
     getDurationTotal: function(day) {
       let total = 0;
-
+      if(this.getDaysHolidays(day.date()).length > 0){
+        let weekday = day.format('dddd').toLowerCase()
+        total += parseInt(this.work_schedule[weekday]);
+      }
       for(let val of this.activityPerformances.filter(x => x.day == day.format('D'))){
         total += parseFloat(val.duration);
       }
