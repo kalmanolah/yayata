@@ -1,85 +1,90 @@
 <template lang="pug">
 div(class='calendar')
   .row
-    //- Upcoming leave
-    .col-6
-      h3.text-center Upcoming leave
-      p.text-center The first one upcoming, or currently active.
+    .col-lg-6.p-0.pt-2
+      //- Upcoming leave
+      .col
+        h3.text-center Upcoming leave
+        p.text-center The first one upcoming, or currently active.
 
-      .list-group-item.text-center(v-if='nearestLeave')
-        p <strong> {{ nearestLeave.leave_type }} </strong>
-        p {{ nearestLeave.description }}
-        hr
-        template(v-if='nearestLeave')
-          | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-          | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-      p.alert.alert-info(v-else) 
-        | No leaves coming up. Are you sure you don't need a break from all that hard work?
+        .list-group-item.text-center(v-if='nearestLeave')
+          p <strong> {{ nearestLeave.leave_type }} </strong>
+          p {{ nearestLeave.description }}
+          hr
+          template(v-if='nearestLeave')
+            | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+            | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+        p.alert.alert-info(v-else) 
+          | No leaves coming up. Are you sure you don't need a break from all that hard work?
 
-      hr
+        hr.pb-4
 
-    //- Holidays
-    .col-6
-      cmpHolidays
+      //- All leaves
+      .col
+        h3.text-center All Leaves
+        p.text-center An overview of all your leaves.
 
-      hr
+        #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
+          .card.card-top-blue.mb-3
+            .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
+              h4.card-title.text-md-center <strong>{{ year }}</strong>
 
-  .row
-    //- All leaves
-    .col-6
-      h3.text-center All Leaves
-      p.text-center An overview of all your leaves.
-
-      #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
-        .card.card-top-blue.mb-3
-          .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
-            h4.card-title.text-md-center <strong>{{ year }}</strong>
-
-          .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
-            .card-block.pl-2.pr-2
-              table.table
-                tbody(v-for='(leaves, month) in yg')
-                  tr
-                    td &nbsp;
-                    td
-                      h5 <strong>{{ month | fullMonthString }}</strong>
-
-                  template(v-for='leave in leaves')
+            .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
+              .card-block.pl-2.pr-2
+                table.table
+                  tbody(v-for='(leaves, month) in yg')
                     tr
-                      td <strong>{{ leave.leave_type }}</strong> 
-                        .badge.float-md-right(v-bind:class='getBadgeStyleClass(leave)') 
-                          .d-none.d-xl-block {{ leave.status }}
-                          .fa(:class='getStatusStyleClass(leave)')
-                      td.text-right {{ leave.leave_start | moment('DD MMM - HH:mm') }}  → {{ leave.leave_end | moment('DD MMM - HH:mm') }}
+                      td(colspan='2').text-center
+                        h5 <strong>{{ month | fullMonthString }}</strong>
 
-    //- Pending leaves
-    .col-6
-      h3.text-center(@click='showPendingLeaves = !showPendingLeaves') Pending leaves
-        .btn.btn-default.pull-right
-          i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
-      p.text-center Still awaiting approval.
+                    template(v-for='leave in leaves')
+                      tr
+                        td <strong>{{ leave.leave_type }}</strong> 
+                          .badge.float-md-left.p-1.mr-4(v-bind:class='getBadgeStyleClass(leave)') 
+                            //- .d-none.d-xl-block {{ leave.status }}
+                            .fa(:class='getStatusStyleClass(leave)')
+                        td.text-right.row.justify-content-center.pr-0.mr-2
+                          .col-auto.col-md-auto {{ leave.leave_start | moment('DD MMM - HH:mm') }}
+                          .col-auto.d-xl-inline.d-none →
+                          .col-auto.col-md-auto {{ leave.leave_end | moment('DD MMM - HH:mm') }}
+        hr.d-lg-inline.pb-4
 
-      div(v-if='showPendingLeaves')
-        p.text-center(v-if='pendingLeaves.length === 0') <strong>No leaves awaiting approval.</strong>
+    .col-lg-6.p-0.pt-2
 
-        .p-1#accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
-          .card(:class='getRibbonStyleClass(leave)')
-            .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
-              .row
-                .col-9
-                  a  <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                .col-3 
-                  .badge.float-right(:class='getBadgeStyleClass(leave)')
-                    | {{ leave.status }}
-                  
-            .collapse.p-2(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
-              .card-block.row.p-2
-                .col
-                  | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-                  | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-                .col-3
-                  button.btn.btn-danger(@click='cancelPendingLeave(leave)')
-                    i.fa.fa-ban.text-center
+      //- Holidays
+      .col
+        cmpHolidays
+
+        hr.pb-4
+
+      //- Pending leaves
+      .col
+        h3.text-center(@click='showPendingLeaves = !showPendingLeaves') Pending leaves
+          .btn.btn-default.pull-right
+            i.fa(v-bind:class='[showPendingLeaves ? "fa-chevron-up" : "fa-chevron-down"]')
+        p.text-center Still awaiting approval.
+
+        div(v-if='showPendingLeaves')
+          p.text-center(v-if='pendingLeaves.length === 0') <strong>No leaves awaiting approval.</strong>
+
+          .p-1#accordion(v-for='(leave, i) in sortLeaves(pendingLeaves)' role='tablist', aria-multiselectable='true')
+            .card(:class='getRibbonStyleClass(leave)')
+              .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
+                .row
+                  .col-9
+                    a  <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
+                  .col-3 
+                    .badge.float-right(:class='getBadgeStyleClass(leave)')
+                      | {{ leave.status }}
+                    
+              .collapse.p-2(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
+                .card-block.row.p-2
+                  .col
+                    | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                    | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+                  .col-3
+                    button.btn.btn-danger(@click='cancelPendingLeave(leave)')
+                      i.fa.fa-ban.text-center
 </template>
 <script>
 import * as types from '../store/mutation-types';
