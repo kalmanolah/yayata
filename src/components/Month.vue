@@ -113,39 +113,39 @@ export default {
     },
 
     //Get all leaves for this month
-    getLeaves: function() {
-      if(this.month && this.year && this.selectedUser) {
+    getLeaves: function(month) {
         //Make param for month's range
-        let startOfMonth = moment().year(this.year).month(this.month - 1).startOf('month');
-        let endOfMonth = moment().year(this.year).month(this.month - 1).endOf('month');
-        let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
+        if(this.selectedUser && this.leaveTypes) {
+          let startOfMonth = moment().year(this.year).month(month - 1).startOf('month');
+          let endOfMonth = moment().year(this.year).month(month - 1).endOf('month');
+          let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
 
-        store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/leaves/',
-          params: {
-            user_id: this.selectedUser.id,
-            status: store.getters.leave_statuses[2],
-            leavedate__range: range,
-          }
-        }).then((response) => {
+          store.dispatch(types.NINETOFIVER_API_REQUEST, {
+            path: '/leaves/',
+            params: {
+              user_id: this.selectedUser.id,
+              status: store.getters.leave_statuses[2],
+              leavedate__range: range,
+            }
+          }).then((response) => {
 
-          response.data.results.forEach(lv => {
-            lv.leavedate_set.forEach(lvd => {
-              lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
-              lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+            response.data.results.forEach(lv => {
+              lv.leavedate_set.forEach(lvd => {
+                lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
+                lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
+              });
+            
+              lv['leave_start'] = lv.leavedate_set[0].starts_at;
+              lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+
+              lv['leave_type'] = !this.leaveTypes ? 'UNKNOWN TYPE' : this.leaveTypes.find(x => {
+                return x.id === lv.leave_type; 
+              }).display_label;
             });
-          
-            lv['leave_start'] = lv.leavedate_set[0].starts_at;
-            lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
 
-            lv['leave_type'] = !this.leaveTypes ? 'UNKNOWN TYPE' : this.leaveTypes.find(x => {
-              return x.id === lv.leave_type; 
-            }).display_label;
-          });
-
-          this.leaves = response.data.results;
-        }, () => {
-          this.loading = false;
+            this.leaves = response.data.results;
+          }, () => {
+            this.loading = false;
         });
       }
     },
@@ -363,13 +363,6 @@ export default {
       }
     },
 
-    selected_month: function() {
-      if(store.getters.calendar_selected_month){
-        let selected_month = store.getters.calendar_selected_month;
-        return selected_month;
-      }
-    },
-
     month_info: function() {
       if(store.getters.month_info && this.month){
         return store.getters.month_info;
@@ -411,6 +404,7 @@ export default {
             year: this.$route.params.year
           }
         });
+        this.getLeaves(this.$route.params.month);
         this.reloadPerformances(this.$route.params.month);
         return parseInt(this.$route.params.month)
       }
