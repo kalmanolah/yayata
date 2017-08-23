@@ -32,13 +32,15 @@ export default {
     },
 
     getDaysHolidays: function(day) {
-      let result = [];
-      this.holidays.forEach((holiday) => {
-        if(moment(holiday.date).date() == day) {
-          result.push(holiday)
-        }
-      });
-      return result;
+      if(this.holidays) {
+        let result = [];
+        this.holidays.forEach((holiday) => {
+          if(moment(holiday.date).date() == day) {
+            result.push(holiday)
+          }
+        });
+        return result;
+      }
     },
 
     getDaysLeaves: function(day) {
