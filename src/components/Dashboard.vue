@@ -119,7 +119,9 @@ export default {
   created: function () {
     store.dispatch(types.NINETOFIVER_RELOAD_MONTH_INFO);
     // Reload the users in the store which may have been changed by the colleagues filter
-    store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then(() => {
+      this.filterBirthdays();
+    });
     this.earliestLeave = moment();
     this.latestLeave = moment();
     this.selectedDay = moment();
@@ -257,8 +259,9 @@ export default {
     },
 
     users: function() {
-      if(store.getters.users)
+      if(store.getters.users){
         return store.getters.users;
+      }
     },
 
     leave_types: function() {
@@ -315,8 +318,8 @@ export default {
 
     filterBirthdays: function() {
       this.birthdaysSelectedDay = [];
-      this.users.filter((user) => {
-        if(moment(user.birth_date).isSame(this.selectedBirthday, 'day')){
+      this.users.forEach((user) => {
+        if(moment(user.birth_date).month() === moment(this.selectedBirthday).month() && moment(user.birth_date).date() === moment(this.selectedBirthday).date()){
           this.birthdaysSelectedDay.push(user);
         }
       });
