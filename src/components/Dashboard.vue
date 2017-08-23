@@ -44,7 +44,7 @@ div
               td.text-sm-right <strong>{{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter }} hours ({{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
       .card.card-top-blue.mb-3.p-3
         h4.card-title-blue.text-center Log performance
-        PerformanceForm
+        PerformanceForm(v-if='loaded')
 
     .col-xl-6
       .row
@@ -174,6 +174,14 @@ export default {
   },
 
   computed: {
+    loaded: function() {
+      if(store.getters.performance_types && store.getters.contract_roles){
+        return true;
+      } else {
+        return false;
+      }
+    },
+
     month_info: function () {
       if(store.getters.month_info)
         return store.getters.month_info;
