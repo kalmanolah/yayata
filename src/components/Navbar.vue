@@ -41,7 +41,6 @@
             .dropdown-menu(
               aria-labelledby='responsiveNavbarDropdown'
             )
-              router-link.dropdown-item#admin-nav(:to='{ name: "admin" }') Admin
               router-link(
                 :to='{ name: "auth.logout" }',
                 class='dropdown-item'

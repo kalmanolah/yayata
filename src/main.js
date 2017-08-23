@@ -13,7 +13,6 @@ import ToggleButton from 'vue-js-toggle-button'
 import Toast from 'vue-easy-toast'
 
 import App from './components/App.vue'
-import Admin from './components/Admin.vue'
 import Auth from './components/Auth.vue'
 import AuthLogin from './components/AuthLogin.vue'
 import AuthLogout from './components/AuthLogout.vue'
@@ -100,11 +99,6 @@ export const router = new VueRouter({
                     name: 'contracts',
                     path: '/contracts',
                     component: Contracts,
-                },
-                {
-                    name: 'admin',
-                    path: '/admin',
-                    component: Admin,
                 },
                 {
                     name: 'redmine',
