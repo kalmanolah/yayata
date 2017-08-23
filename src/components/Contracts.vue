@@ -345,7 +345,7 @@ export default {
       var daysLeft = moment().diff(moment(contract.end_date), 'days');
       daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
       var daysSinceStart = moment(contract.start_date).diff(moment(), 'days');
-      daysSinceStart = daysSinceStart < 0 ? moment(contract.end_date).diff(moment(contract.start_date), 'days') :daysSinceStart;
+      daysSinceStart = daysSinceStart < 0 ? 0 :daysSinceStart;
       
       var datacollection = {
         labels: ['Days left', 'Days spent'],
