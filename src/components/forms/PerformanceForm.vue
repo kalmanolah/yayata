@@ -19,11 +19,11 @@ import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
-
+import ToastMixin from '../mixins/ToastMixin.vue';
 var model = { contract: null };
 
 export default {
-
+  mixins: [ToastMixin],
   props: {
 
     properties: {
@@ -110,20 +110,6 @@ export default {
   watch: {},
 
   methods: {
-
-    //Displays a toast with message
-    showToast(text) {
-      this.$toast(text, 
-        { 
-          id: 'performance-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 1000,
-          transition: 'slide-down',
-          mode: 'override'
-        });
-    },
-
     //Deletes performance-entry
     deleteEntry: function() {
       store.dispatch(
@@ -135,10 +121,10 @@ export default {
       ).then((response) => {
         if(response.status == 200 || response.status == 204) {
             this.$emit('success', response);
-            this.showToast('Performance successfully deleted.');
+            this.showInfoToast('Performance successfully deleted.');
           } else {
             console.log(response);
-            this.showToast('Error deleting performance. Console has more information.');
+            this.showDangerToast('Error deleting performance. Console has more information.');
           }
 
       })
@@ -158,7 +144,7 @@ export default {
       });
 
       if( !modelValidationCheck || this.model.duration <= 0) {
-        this.showToast('Please fill in all information before submitting.');
+        this.showWarningToast('Please fill in all information before submitting.');
       } else {
 
         var timesheet = this.timesheets.find(x => 
@@ -187,7 +173,7 @@ export default {
             if(response.status == 201)
               this.submitForm(response.data.id);
             else
-              this.showToast('Timesheet could not be created for this performance');
+              this.showDangerToast('Timesheet could not be created for this performance');
           });
         }
       }
@@ -229,10 +215,10 @@ export default {
 
           if(response.status == 200) {
             this.$emit('success', response);
-            this.showToast('Performance successfully patched.');
+            this.showInfoToast('Performance successfully patched.');
           } else {
             console.log(response);
-            this.showToast('Error patching performance. Console has more information.');
+            this.showDangerToast('Error patching performance. Console has more information.');
           }
         });
     },
@@ -251,10 +237,10 @@ export default {
         console.log(response)
         if(response.status == 201) {
           this.$emit('success', response);
-          this.showToast('Performance successfully added');
+          this.showSuccessToast('Performance successfully added');
         } else {
           console.log(response);
-          this.showToast('Error adding performance. Console has more information.');
+          this.showDangerToast('Error adding performance. Console has more information.');
         }
       });
     }
@@ -283,7 +269,7 @@ export default {
               }
             },
 
-            styleClasses: ['compact-field', 'd-inline-flex', 'col-8'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-9'],
           },
           {
             //DURATION
@@ -294,7 +280,7 @@ export default {
             step: 0.5,
             min: 0,
 
-            styleClasses: ['compact-field', 'd-inline-flex', 'col-4'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-3'],
           },
           {
             //DESCRIPTION

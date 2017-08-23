@@ -44,9 +44,10 @@ div.row
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  import store from '../store'
-  import * as types from '../store/mutation-types'
+  import { mapState } from 'vuex';
+  import store from '../store';
+  import * as types from '../store/mutation-types';
+  import ToastMixin from './mixins/ToastMixin.vue';
 
 
   export default {
@@ -146,14 +147,7 @@ div.row
         ).then((res) => {
 
           if(res.status == 200) {
-            this.$toast('Timesheet is now pending, you can\'t modify it anymore.', {
-              id: 'pending-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 3000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
+            this.showInfoToast('Timesheet is now pending, you can\'t modify it anymore.');
 
             store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
               filter_future_timesheets: true
@@ -161,14 +155,7 @@ div.row
             
           } else {
             console.error(res);
-            this.$toast('Something went wrong while setting timesheet to pending. Check the console for more information', {
-              id: 'pending-failed-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 3000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
+            this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
           }
         });
       },

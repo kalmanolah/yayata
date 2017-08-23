@@ -69,6 +69,7 @@ div.row
 import store from '../store';
 import moment from 'moment';
 import * as types from '../store/mutation-types'
+import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'redmine',
@@ -203,7 +204,7 @@ export default {
             this.importToYayata();
           } else {
             console.log(response);
-            this.showToast('Could not create a new timesheet, check the console for more information.');
+            this.showDangerToast('Could not create a new timesheet, check the console for more information.');
           }
         });
       } else {
@@ -267,7 +268,7 @@ export default {
         };
       });
       let message = success ? 'Time entries imported!' : 'Something went wrong.';
-      this.showToast(message);
+      success ? this.showSuccessToast(message) : this.showDangerToast(message);
       this.reload_time_entries();
       store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
     },
@@ -280,19 +281,6 @@ export default {
           year: moment().year(),
           month: moment().month() + 1
         }
-      });
-    },
-
-    showToast: function(message) {
-      this.$toast(
-        message,
-        { 
-          id: 'import-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 2000,
-          transition: 'slide-down',
-          mode: 'override'
       });
     },
 

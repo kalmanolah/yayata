@@ -41,6 +41,7 @@ div
 <script>
 import store from '../../store';
 import * as types from '../../store/mutation-types.js';
+import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
   name: 'leaveperiodform',
@@ -139,7 +140,7 @@ export default {
           //SUCCESS
           if(lvdResponse.status == 201) {
 
-            this.showToast('Leave successfully requested.');
+            this.showSuccessToast('Leave successfully requested.');
             store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
             this.requestLoading = false;
 
@@ -181,7 +182,7 @@ export default {
                   this.resetForm();
                 }, (res) => {
                   this.requestLoading = false;
-                  this.showToast("ERROR: " + res.bodyText);
+                  this.showDangerToast("ERROR: " + res.bodyText);
                   console.log(res);
                 });
               }
@@ -193,36 +194,21 @@ export default {
           // Leaverequest did not go through properly
           } else {
             this.requestLoading = false;
-            this.showToast('Something went wrong during the request. Check console for more info.');
+            this.showDangerToast('Something went wrong during the request. Check console for more info.');
             console.log(lvdResponse);
           }
 
         }, (res) => {
             this.requestLoading = false;
-            this.showToast("ERROR: " + res.bodyText);
+            this.showDangerToast("ERROR: " + res.bodyText);
             console.log(res);
         });
 
       //Model did not properly validate
       } else {
-        this.showToast('Properly fill out the form please.')
+        this.showWarningToast('Properly fill out the form please.')
       }
     },
-
-    //Shows a toast with a message
-    showToast: function(message) {
-      this.$toast(
-        message,
-        { 
-          id: 'leave-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 2500,
-          transition: 'slide-down',
-          mode: 'override'
-      });
-    },
-
     resetForm: function() {
 
       this.determineMinDate(this.upcomingLeaves);

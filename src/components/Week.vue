@@ -186,6 +186,7 @@ import PerformanceForm from './forms/PerformanceForm.vue';
 import StandbyContractSelect from './StandbyContractSelect.vue';
 import LocationSelect from './LocationSelect.vue';
 import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
+import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'week',
@@ -369,15 +370,7 @@ export default {
         emulateJSON: true,
       }).catch((error) => {
         console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
+        this.showDangerToast('Something went wrong. Check console for more information');
       });
     },
 
@@ -542,15 +535,7 @@ export default {
         });
       }).catch((error) => {
         console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
+        this.showDangerToast('Something went wrong. Check console for more information');
       });
     },
 

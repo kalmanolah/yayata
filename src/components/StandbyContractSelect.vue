@@ -12,6 +12,7 @@ import Vue from 'vue';
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment'
+import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'standbycontractselect',
@@ -60,17 +61,6 @@ export default {
         this.setStandby(contractId);
     },
 
-    presentToast: function(message) {
-      this.$toast(message, 
-        { 
-          id: 'standby-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 1000,
-          transition: 'slide-down',
-          mode: 'override'
-        });
-    },
     //Delete standbyperformance for specific day
     deleteStandby: function(standby) {
       store.dispatch(
@@ -85,12 +75,12 @@ export default {
           if(delRes.status == 204) {
             let index = this.standbyPerformances.findIndex(x => x.id == standby.id);
             this.standbyPerformances.splice(index, 1);
-            this.presentToast('User no longer on standby');
+            this.showInfoToast('User no longer on standby');
             store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
           }
         }).catch((error) => {
           console.log( error );
-          this.presentToast('Something went wrong. Check console for more information');  
+          this.showDangerToast('Something went wrong. Check console for more information');  
         });
     },
 
@@ -113,11 +103,11 @@ export default {
           if(response.status == 201) {
             this.standbyPerformances.push(response.data)
             store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-            this.presentToast('User on standby');
+            this.showSuccessToast('User on standby');
           } 
         }).catch((error) => {
           console.log(error);
-          this.presentToast('Something went wrong. Check console for more information')
+          this.showDangerToast('Something went wrong. Check console for more information')
         });
       } else {
         //Timesheet was not found, so a new one is made for that date
@@ -150,15 +140,15 @@ export default {
           ).then((spRes) => {
             if(spRes.status == 201) {
               store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-              this.presentToast('User on standby');
+              this.showSuccessToast('User on standby');
             }
           }).catch((error) => {
             console.log(error);
-            this.presentToast('Something went wrong. Check console for more information')
+            this.showDangerToast('Something went wrong. Check console for more information')
           });
         }).catch((error) => {
           console.log(error);
-          this.presentToast('Something went wrong. Check console for more information')
+          this.showDangerToast('Something went wrong. Check console for more information')
         });
       }
     }

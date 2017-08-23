@@ -91,6 +91,7 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import Holidays from './Holidays.vue';
 import moment from 'moment';
+import ToastMixin from './mixins/ToastMixin.vue';
 
 
 export default {
@@ -191,19 +192,7 @@ export default {
   },
 
   methods: {
-    //Displays a toast with message
-    showToast(text) {
-      this.$toast(text, 
-        { 
-          id: 'performance-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 1000,
-          transition: 'slide-down',
-          mode: 'override'
-        });
-    },
-
+    
     //Cancels the pending
     cancelPendingLeave: function(lv) {
 
@@ -216,10 +205,10 @@ export default {
       ).then((response) => {
         if(response.status == 200 || response.status == 204) {
             this.getLeaves();
-            this.showToast('Leave successfully deleted.');
+            this.showSuccessToast('Leave successfully deleted.');
           } else {
             console.log(response);
-            this.showToast('Error deleting Leave. Console has more information.');
+            this.showDangerToast('Error deleting Leave. Console has more information.');
           }
       });
     },

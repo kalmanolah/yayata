@@ -10,6 +10,7 @@ import Vue from 'vue';
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
+import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'locationselect',
@@ -28,15 +29,7 @@ export default {
       }
     }).catch( (error) => {
       console.log(error);
-      this.$toast('Something went wrong when reloading location. Check console for more information', 
-        { 
-          id: 'standby-toast',
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 1000,
-          transition: 'slide-down',
-          mode: 'override'
-        });
+      this.showWarningtoast('Something went wrong when reloading location. Check console for more information') 
     });
   },
   props: {
@@ -65,27 +58,10 @@ export default {
         emulateJSON: true
       }).then( () => {
         store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
-        this.$toast('Updated whereabout to ' + this.selectedLocation + '!', 
-          {
-            id: 'whereabout-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          }
-        );
+        this.showInfoToast('Updated whereabout to ' + this.selectedLocation + '!');
       }).catch((error) => {
         console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
+        this.showDangerToast('Something went wrong. Check console for more information');
       });
     },
 
@@ -102,27 +78,11 @@ export default {
       }).then((res) => {
         if(res) {
           store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
-          this.$toast('Set whereabout to ' + this.selectedLocation + '!',
-            { 
-              id: 'whereabout-toast',
-              horizontalPosition: 'right',
-              verticalPosition: 'top',
-              duration: 2000,
-              transition: 'slide-down',
-              mode: 'override'
-            });
+          this.showSuccessToast('Set whereabout to ' + this.selectedLocation + '!');
         } 
       }).catch((error) => {
         console.log(error);
-        this.$toast('Something went wrong. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
+        this.showDangerToast('Something went wrong. Check console for more information');
       });
     },
 
@@ -139,15 +99,7 @@ export default {
         }
       }).catch( (error) => {
         console.log(error);
-        this.$toast('Something went wrong when reloading locations. Check console for more information', 
-          { 
-            id: 'standby-toast',
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 1000,
-            transition: 'slide-down',
-            mode: 'override'
-          });
+        this.showDangerToast('Something went wrong when reloading locations. Check console for more information');
       });
     }
   },
