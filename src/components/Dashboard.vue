@@ -42,7 +42,10 @@ div
             tr(v-if='month_info')
               td <strong>Open hours</strong>
               td.text-sm-right <strong>{{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter }} hours ({{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
-   
+      .card.card-top-blue.mb-3.p-3
+        h4.card-title-blue.text-center Log performance
+        PerformanceForm
+
     .col-xl-6
       .row
         .col
@@ -64,13 +67,13 @@ div
                       router-link(:to='{ name: "colleagues", params: { userId: leave.user }}') {{ leave.user | getUsername }}
                     td.text-md-right {{ leave.leave_type }}
                   tr(v-if='sortedLeaves.length === 0')
-                    td.text-center <strong>No absent colleagues!</strong>
+                    td.text-center <strong>No colleagues on leave!</strong>
 
               table.table
                 tbody
                   tr(v-if='holidays' v-for='holiday in holidaysSelectedDay')
                     td {{ holiday.name }} [{{ holiday.country }}]
-                    td.text-md-right {{ holiday.date }}
+                    td.text-md-right {{ holiday.date | moment('DD MMM YYYY') }}
                   tr(v-if='holidaysSelectedDay.length === 0')
                     td.text-center <strong>No holidays!</strong>
       .row 
@@ -81,17 +84,19 @@ div
 </template>
 
 <script>
-import LeaveRequestForm from './forms/LeaveRequestForm.vue'
+import LeaveRequestForm from './forms/LeaveRequestForm.vue';
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
+import PerformanceForm from './forms/PerformanceForm.vue';
 
 
 export default {
   name: 'dashboard',
 
   components: {
-    LeaveRequestForm
+    LeaveRequestForm,
+    PerformanceForm
   },
 
   data () {
