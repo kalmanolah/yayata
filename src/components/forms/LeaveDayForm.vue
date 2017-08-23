@@ -51,6 +51,7 @@ import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
   name: 'leavedayform',
+  mixins: [ToastMixin],
   components: {},
   data() {
     return {

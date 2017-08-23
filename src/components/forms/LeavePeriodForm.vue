@@ -45,6 +45,7 @@ import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
   name: 'leaveperiodform',
+  mixins: [ToastMixin],
   components: {},
   data() {
     return {
