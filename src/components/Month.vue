@@ -152,6 +152,8 @@ export default {
             this.leaves = response.data.results;
           }, () => {
             this.loading = false;
+        }).catch((error) => {
+          console.log(error)
         });
       }
     },
@@ -534,4 +536,5 @@ export default {
   text-decoration: none;
   cursor: default;
 }
+
 </style>
