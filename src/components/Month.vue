@@ -5,6 +5,8 @@ div(class='calendar')
     .col
     .col-6.justify-content-center.text-center
       .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
+    .col.pull-right
+      Invoice
     .col.align-self-center.text-right
       template(v-if='isAdmin')  
         .btn-group(
@@ -70,10 +72,14 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
+import Invoice from './Invoice.vue';
 
 export default {
   name: 'calendar',
   mixins: [RequiredPerformedDayMixin],
+  components: {
+    Invoice
+  },
   
   watch: {
 
@@ -339,7 +345,7 @@ export default {
     holidays: function() {
       if(store.getters.holidays && this.selectedUser && this.month) {
         return store.getters.holidays.filter((holiday) => {
-          return moment(holiday.date).month() == this.month && holiday.country == this.selectedUser.country;
+          return moment(holiday.date).month() + 1 == this.month && holiday.country == this.selectedUser.userinfo.country;
         });
       }
     },
