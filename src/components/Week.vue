@@ -58,17 +58,18 @@
       .card(v-for='(weekDay, i) in daysOfWeek')
 
         .card-header.bg-info.text-white
-          .row
-            .col
-              .pull-left 
-                h6(class='d-none d-xl-inline') <strong>{{ weekDay | moment('dddd') }}</strong>
-                h5 &nbsp;<strong>{{ weekDay | moment('DD/MM')}}</strong>
+          .row.justify-content-between.text-center
+            h6.col-12.pl-1.pr-1.d-none.d-lg-inline
+              strong {{ weekDay | moment('dddd') }}
 
-            .col
-              //- Standby
-              .pull-right
-                template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
-                  b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
+            h5.col-md-12 
+              strong {{ weekDay | moment('DD/MM')}}
+
+            .col-md-12.pl-1.pr-1
+              .row.justify-content-center
+                //- Standby
+                template.col(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+                  b-popover(triggers='hover' placement='top' class='hidden-md-down')
                     hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
                       .btn.btn-outline-primary.card-header-button
                         i.fa.fa-phone
@@ -79,10 +80,9 @@
                   button.btn.btn-outline-primary.card-header-button.disabled
                     i.fa.fa-phone
 
-              //- Whereabouts
-              .pull-right
-                template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
-                  b-popover.pull-right(triggers='hover' placement='top' class='hidden-md-down')
+                //- Whereabouts
+                template.col( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+                  b-popover(triggers='hover' placement='top' class='hidden-md-down')
                     hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
                       button.btn.btn-outline-primary.card-header-button
                         i.fa.fa-building-o
