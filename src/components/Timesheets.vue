@@ -153,10 +153,10 @@ div.row
               filter_future_timesheets: true
             });
             
-          } else {
-            console.error(res);
-            this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
           }
+        }).catch((error) => {
+          console.error(error);
+          this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
         });
       },
 
