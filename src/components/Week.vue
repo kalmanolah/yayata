@@ -137,18 +137,17 @@
                   :class='[list-group, performance-list]'
                 )
                   .list-group-item-heading
-                    .row 
+                    .row
                       .col {{ leave.leave_type | leaveTypeAsString }} 
-                        b-tooltip.badge.badge-warning(v-if="leave.status=='PENDING'", :content='leave.status')
-                          i.fa.fa-exclamation-triangle
+                        b-tooltip.badge.badge-warning.pull-right(v-if="leave.status=='PENDING'", :content='leave.status')
+                          i.fa.fa-exclamation-triangle.p-1
 
                   .list-group-item-text
                     div {{ leave.description }}
                     hr.smaller-vertical-hr
-                    small.row
-                      .col-auto
-                        i.fa.fa-plane 
-                      .col-auto {{ leave.leaveDuration}} h
+                    small
+                      i.fa.fa-plane.pull-left 
+                      .pull-right {{ leave.leaveDuration}} h
 
               //- Performances
               li.list-group-item.performance-entry(
@@ -162,9 +161,9 @@
                   .list-group-item-text 
                     div {{ perf.description }}
                     hr.smaller-vertical-hr
-                    small.row
-                      .col-auto {{ findPerformanceTypeName(perf.performance_type) }}
-                      .col-auto {{ perf.duration }} h
+                    small
+                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
+                      .pull-right {{ perf.duration }} h
 
           //- If timesheet status is NOT active
           template(v-else)
