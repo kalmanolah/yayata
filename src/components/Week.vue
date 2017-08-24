@@ -129,19 +129,26 @@
                     small
                       i.fa.fa-university.pull-left
                       .pull-right 8 h
+
               //- Leaves
               template(v-if='leaves')
                 li.list-group-item.leave-entry(
                   v-for='leave in getDaysLeaves(weekDay)',
                   :class='[list-group, performance-list]'
                 )
-                  .list-group-item-heading {{ leave.leave_type | leaveTypeAsString }}
+                  .list-group-item-heading
+                    .row 
+                      .col {{ leave.leave_type | leaveTypeAsString }} 
+                        b-tooltip.badge.badge-warning(v-if="leave.status=='PENDING'", :content='leave.status')
+                          i.fa.fa-exclamation-triangle
+
                   .list-group-item-text
                     div {{ leave.description }}
                     hr.smaller-vertical-hr
-                    small
-                      i.fa.fa-plane.pull-left 
-                      .pull-right {{ leave.leaveDuration}} h
+                    small.row
+                      .col-auto
+                        i.fa.fa-plane 
+                      .col-auto {{ leave.leaveDuration}} h
 
               //- Performances
               li.list-group-item.performance-entry(
@@ -155,11 +162,11 @@
                   .list-group-item-text 
                     div {{ perf.description }}
                     hr.smaller-vertical-hr
-                    small
-                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                      .pull-right {{ perf.duration }} h
+                    small.row
+                      .col-auto {{ findPerformanceTypeName(perf.performance_type) }}
+                      .col-auto {{ perf.duration }} h
 
-
+          //- If timesheet status is NOT active
           template(v-else)
             .card-block.performance-list
             li.list-group-item.performance-entry.disabled(
