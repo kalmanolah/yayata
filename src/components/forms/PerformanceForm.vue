@@ -122,11 +122,11 @@ export default {
         if(response.status == 200 || response.status == 204) {
             this.$emit('success', response);
             this.showInfoToast('Performance successfully deleted.');
-          } else {
-            console.log(response);
-            this.showDangerToast('Error deleting performance. Console has more information.');
-          }
-
+        }
+        store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+      }).catch((error) => {
+        console.log(error);
+        this.showDangerToast('Error deleting performance. Console has more information.');
       })
     },
 
@@ -172,8 +172,10 @@ export default {
             console.log( response );
             if(response.status == 201)
               this.submitForm(response.data.id);
-            else
-              this.showDangerToast('Timesheet could not be created for this performance');
+            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+          }).catch((error) => {
+            console.log(error);
+            this.showDangerToast('Timesheet could not be created for this performance');
           });
         }
       }
@@ -216,10 +218,11 @@ export default {
           if(response.status == 200) {
             this.$emit('success', response);
             this.showInfoToast('Performance successfully patched.');
-          } else {
-            console.log(response);
-            this.showDangerToast('Error patching performance. Console has more information.');
+            store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
           }
+        }).catch((error) => {
+          console.log(error);
+          this.showDangerToast('Error patching performance. Console has more information.');
         });
     },
 
@@ -238,10 +241,11 @@ export default {
         if(response.status == 201) {
           this.$emit('success', response);
           this.showSuccessToast('Performance successfully added');
-        } else {
-          console.log(response);
-          this.showDangerToast('Error adding performance. Console has more information.');
+          store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
         }
+      }).catch((error) => {
+        console.log(error);
+        this.showDangerToast('Error adding performance. Console has more information.');
       });
     }
   },
