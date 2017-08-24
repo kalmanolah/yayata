@@ -215,4 +215,8 @@ export default {
 /*a {
   color: #0aa6c9;
 }*/
+.dropdown-menu {
+  max-height: 80vh;
+  overflow: auto;
+}
 </style>
