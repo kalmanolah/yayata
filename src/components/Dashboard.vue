@@ -319,7 +319,9 @@ export default {
     filterBirthdays: function() {
       this.birthdaysSelectedDay = [];
       this.users.forEach((user) => {
-        if(moment(user.birth_date).month() === moment(this.selectedBirthday).month() && moment(user.birth_date).date() === moment(this.selectedBirthday).date()){
+        if(user.userinfo.birth_date 
+        && moment(user.userinfo.birth_date).month() === moment(this.selectedBirthday).month()
+        && moment(user.userinfo.birth_date).date() === moment(this.selectedBirthday).date()){
           this.birthdaysSelectedDay.push(user);
         }
       });

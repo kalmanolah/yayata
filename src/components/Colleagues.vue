@@ -58,11 +58,13 @@ div.row
                         i.fa.fa-envelope
 
                     td
-                      span(v-if='user.birth_date') {{ user.birth_date | moment('DD/MM/YYYY') }}
+                      span(v-if='user.userinfo && user.userinfo.birth_date') {{ user.userinfo.birth_date | moment('DD/MM/YYYY') }}
                       span(v-else) &nbsp;
-                    td {{ user.country }}
+                    td 
+                      span(v-if='user.userinfo && user.userinfo.country') {{ user.userinfo.country }}
+                      span(v-else) &nbsp;
                     td
-                      span(v-if='user.join_date') {{ user.join_date | moment('DD/MM/YYYY') }}
+                      span(v-if='user.userinfo && user.userinfo.join_date') {{ user.userinfo.join_date | moment('DD/MM/YYYY') }}
                       span(v-else) &nbsp;
 
         .row(v-if='users && users.length === 0')
