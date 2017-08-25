@@ -30,6 +30,7 @@ div.row
                 button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
                 .dropdown-menu(aria-labelledby='btnGroupDropContractType')
                   a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
+                Invoice.pull-right.ml-2
 
           .col-lg-4
             .input-group
@@ -108,6 +109,7 @@ import store from '../store';
 import ContractsFilterForm from './forms/ContractsFilterForm.vue';
 import PieChart from './charts/PieChart.js';
 import moment from 'moment';
+import Invoice from './Invoice.vue';
 
 
 export default {
@@ -115,7 +117,8 @@ export default {
 
   components: {
     ContractsFilterForm,
-    PieChart
+    PieChart,
+    Invoice
   },
 
   data () {
@@ -375,7 +378,7 @@ export default {
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       // Get user contracts.
       } else if(value === '/my_contracts/') {
-        var options = { 
+        let options = { 
           path: '/contracts/', 
           params: {
             contractuser__user__id: store.getters.user.id

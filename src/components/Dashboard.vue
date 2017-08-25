@@ -165,6 +165,8 @@ export default {
       this.leaves = response.data.results;
     }, () => {
       this.loading = false;
+    }).catch((error) => {
+      console.log(error);
     });
     if(store.getters.user) {
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
@@ -388,6 +390,8 @@ export default {
           });
           this.filterLeaves();
         });         
+      }).catch((error) => {
+        console.log(error);
       });
     },
   },
