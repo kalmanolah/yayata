@@ -15,7 +15,7 @@ export default {
     getHoursTotal: function(day) {
       if(this.work_schedule) {
         let total = this.work_schedule[day.format('dddd').toLowerCase()];
-        if(this.getDaysHolidays(day.date()).length > 0){
+        if(this.getDaysHolidays(day.date()) && this.getDaysHolidays(day.date()).length > 0){
           let weekday = day.format('dddd').toLowerCase()
           total -= parseInt(this.work_schedule[weekday]);
         }

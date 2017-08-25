@@ -319,7 +319,7 @@ const getters = {
                 });
 
                 // Calculate hours left to fill in
-                let hLeft = total_hours_allocated - c.hours_spent ;
+                let hLeft = total_hours_allocated - c.hours_spent;
                 let hours_left = hLeft >= 0 ? hLeft : 0;
 
                 // Get the contract users
@@ -422,8 +422,15 @@ const getters = {
 
     //Calculated
     open_timesheet_count: state => {
-        if (state.timesheets)
-            return state.timesheets.length;
+        if (state.timesheets) {
+            let open = 0;
+            state.timesheets.forEach((ts) => {
+                if (ts.status == 'ACTIVE') {
+                    open++;
+                }
+            })
+            return open;
+        }
     },
     contract_users_count: state => {
         if (state.contract_users)

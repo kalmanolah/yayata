@@ -52,6 +52,7 @@ div.row
 
   export default {
     name: 'timesheets',
+    mixins: [ToastMixin],
 
     data () {
       return {
@@ -149,14 +150,14 @@ div.row
           if(res.status == 200) {
             this.showInfoToast('Timesheet is now pending, you can\'t modify it anymore.');
 
-            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-              filter_future_timesheets: true
-            });
             
-          } else {
-            console.error(res);
-            this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
           }
+          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+            filter_future_timesheets: true
+          });
+        }).catch((error) => {
+          console.error(error);
+          this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
         });
       },
 
