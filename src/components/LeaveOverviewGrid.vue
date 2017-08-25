@@ -73,7 +73,7 @@ div
             th.overviewgrid.text-center(v-for='d in daysInMonth') {{ d }}
             th.overviewgrid.nextMonth.text-center(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
         tbody
-          tr(v-if='country_users && leaves' v-for='user in country_users')
+          tr(v-if='country_users && acceptedLeaves' v-for='user in country_users')
             td
               .d-none.d-xl-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
@@ -187,9 +187,11 @@ export default {
       }
     },
 
-    leaves: function() {
+    acceptedLeaves: function() {
       if(store.getters.leaves)
-        return store.getters.leaves
+        return store.getters.leaves.filter(lv => {
+          return lv.status === 'APPROVED';
+        });
     },
 
     all_contract_users: function() {
@@ -219,7 +221,7 @@ export default {
     country_users: function() {
       if(this.contract_users && this.country_filter === 'Country'){
         return this.contract_users;
-      } else if(this.contract_users && this.leaves) {
+      } else if(this.contract_users && this.acceptedLeaves) {
         return this.contract_users.filter( (cu) => {
           if(cu.userinfo)
             return cu.userinfo.country === this.country_filter;
@@ -263,7 +265,67 @@ export default {
     determineCellColor: function(user, day) {
       let cellStyle = '';
 
-      // If showNonWorkingDay is ture, look for days without hours in the workschedule
+      if(this.acceptedLeaves) {
+
+        // Check if we need to find our leaveobjects
+        if(this.showLeave || this.showSickness) {
+          let date = moment(this.selectedPeriod).date(day);
+
+          let userLeaves = this.acceptedLeaves.filter(al => al.user === user.id);
+
+          if(this.showLeave && userLeaves) {
+            let leaves = userLeaves.filter(l => l.leave_type !== store.getters.main_leave_types['sick']);
+
+            leaves && leaves.find(al => {
+              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
+              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
+
+              if(date.isBetween(start, end, 'day', []))
+                cellStyle = 'cell-leave';
+            });
+
+            if(cellStyle != '')
+              return cellStyle;
+          }
+
+          if(this.showSickness && userLeaves) {
+            let sickLeaves = userLeaves.filter(l => l.leave_type === store.getters.main_leave_types['sick']);
+
+            sickLeaves && sickLeaves.find(al => {
+              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
+              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
+
+              if(date.isBetween(start, end, 'day', []))
+                cellStyle = 'cell-sickness';
+            });
+
+            if(cellStyle != '')
+              return cellStyle;
+          }
+        }
+      }
+
+      // If showHome is true, find if the user works from home based on his whereabouts
+      if(this.showHome) {
+
+        let timesheet = store.getters.timesheets.find((ts) => {
+          return (ts.month === this.selectedMonth && ts.user === user.id);
+        });
+
+        if(timesheet) {
+          let whereabout = this.whereabouts.find((w) => {
+            return w.day === day && w.timesheet === timesheet.id
+          });
+
+          if(whereabout && whereabout.location === 'Home')
+            cellStyle = 'cell-home';
+        }
+
+        if(cellStyle != '')
+          return cellStyle;
+      }
+
+      // If showNonWorkingDay is true, look for days without hours in the workschedule
       if(this.showNonWorkingDay) {
 
         if(store.getters.employment_contracts && user) {
@@ -286,61 +348,6 @@ export default {
             cellStyle = workSchedule[dow] === '0.00' ? 'cell-nonWorkingDay' : '';
           } else {
             cellStyle = 'cell-nonWorkingDay';
-          }
-        }
-      }
-
-      // If showHome is true, find if the user works from home based on his whereabouts
-      if(this.showHome) {
-
-        let timesheet = store.getters.timesheets.find((ts) => {
-          return (ts.month === this.selectedMonth && ts.user === user.id);
-        });
-
-        if(timesheet) {
-          let whereabout = this.whereabouts.find((w) => {
-            return w.day === day && w.timesheet === timesheet.id
-          });
-
-          if(whereabout && whereabout.location === 'Home')
-            cellStyle = 'cell-home';
-        }
-      }
-
-      if(this.leaves) {
-
-        // Check if we need to find our leaveobjects
-        if(this.showLeave || this.showSickness) {
-          let date = moment(this.selectedPeriod).date(day);
-
-          if(this.showLeave) {
-            let acceptedLeaves = this.leaves.filter(l => {
-              return l.user === user.id 
-                && l.leave_type !== store.getters.main_leave_types['sick'];
-            });
-
-            acceptedLeaves.find(al => {
-              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
-              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
-
-              if(date.isBetween(start, end, 'day', []))
-                cellStyle = 'cell-leave';
-            });
-          }
-
-          if(this.showSickness) {
-            let acceptedSickLeaves = this.leaves.filter(l => {
-              return l.user === user.id 
-                && l.leave_type === store.getters.main_leave_types['sick'];
-            });
-
-            acceptedSickLeaves.find(al => {
-              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
-              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
-
-              if(date.isBetween(start, end, 'day', []))
-                cellStyle = 'cell-sickness';
-            });
           }
         }
       }
