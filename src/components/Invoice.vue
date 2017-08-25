@@ -10,6 +10,24 @@ div#invoice-modal
     form.text-center(@submit.stop.prevent='handleSubmit')
       b-form-select(v-model='date', :options='months', class='mb-3')
       b-form-select(v-if='contracts', v-model='selected', :options='contracts', class='mb-3')
+    .row
+      .col
+        table.table.table-sm
+          tbody
+            tr
+              td
+                strong Consultant: &nbsp;
+                | {{ user.first_name }} {{ user.last_name }}
+              td
+                strong Month: &nbsp;
+                span(v-if='timesheet') {{ timesheet.month | month_filter }}
+            tr  
+              td
+                strong Customer: &nbsp;
+                span(v-if='contract') {{ contract.customerName}}
+              td
+                strong Year: &nbsp;
+                span(v-if='timesheet') {{ timesheet.year }}
     .row(v-if='performances')
       .col
         table.table.table-sm
@@ -89,13 +107,23 @@ export default {
     }
   },
   computed: {
+    user: function() {
+      if(store.getters.user) {
+        return store.getters.user;
+      }
+    },
+
+    contract: function() {
+      if(this.selected && store.getters.filtered_contracts) {
+        return store.getters.filtered_contracts.find((c) => c.id === this.selected);
+      }
+    },
+
     contracts: function() {
       if(store.getters.filtered_contracts) {
-        let options = [];
-        store.getters.filtered_contracts.forEach((contract) => {
-          options.push(contract.display_label);
+        return store.getters.filtered_contracts.map((contract) => {
+          return {'text': contract.display_label, 'value': contract.id};
         });
-        return options;
       }
     },
     timesheet: function() {
@@ -107,11 +135,10 @@ export default {
       }
     },
     performances: function() {
-      if(store.getters.activity_performances && store.getters.filtered_contracts && this.timesheet) {
-        let contract = store.getters.filtered_contracts.find((contract) => contract.display_label === this.selected );
-        if(contract) {
+      if(store.getters.activity_performances && this.timesheet && this.contract) {
+        if(this.contract) {
           return store.getters.activity_performances.filter((perf) => {
-            return perf.contract == contract.id && perf.timesheet == this.timesheet.id;
+            return perf.contract == this.contract.id && perf.timesheet == this.timesheet.id;
           });
         }
       }
@@ -129,6 +156,10 @@ export default {
   },
 
   filters: {
+    month_filter: function(val) {
+      return moment().month(val - 1).format('MMMM')
+    },
+
     day_filter: function (val, timesheet) {
       if(timesheet) {
         return moment().year(timesheet.year).month(timesheet.month - 1).date(val).format('ddd')

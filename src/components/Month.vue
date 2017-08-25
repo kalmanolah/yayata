@@ -6,7 +6,6 @@ div(class='calendar')
     .col-8.justify-content-center.text-center
       .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
     .col.align-self-center.text-right
-      Invoice.pull-right
       template(v-if='isAdmin')  
         .btn-group(
           role='group'
