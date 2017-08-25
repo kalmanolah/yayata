@@ -36,9 +36,11 @@ div(class='calendar')
     )
 
       template
-        router-link(:to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
-                    :event="currentUserSelected ? 'click' : ''"
-                    :class="currentUserSelected ? '' : 'unclickable-days'")
+        router-link(
+          :to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
+          :event="currentUserSelected ? 'click' : ''"
+          :class="currentUserSelected ? '' : 'unclickable-days'"
+        )
           .card.card-block.p-3
             p {{ n }}
 
@@ -83,10 +85,6 @@ export default {
 
     // Watches selected user from parent component.
     selectedUser: function(oldUserid, newUserId) {
-      this.buildPageInfo();
-    },
-
-    selected_month: function(oldUserid, newUserId) {
       this.buildPageInfo();
     },
 

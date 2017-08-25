@@ -21,7 +21,6 @@ const state = {
     filtered_contracts: null,
     filtered_users: null,
     project_estimates: null,
-    grid_date: null,
     leaves: null,
     attachments: null,
     work_schedules: null,
@@ -64,6 +63,9 @@ const state = {
             'start': 1,
             'end': 7
         }
+    },
+    main_leave_types: {
+        'sick': '',
     },
     days: {
         monday: 0,
@@ -165,9 +167,6 @@ const mutations = {
     [types.NINETOFIVER_SET_USER_WORK_SCHEDULE](state, { work_schedule }) {
         state.user_work_schedule = work_schedule;
     },
-    [types.NINETOFIVER_SET_GRID_DATE](state, { grid_date }) {
-        state.grid_date = grid_date;
-    },
     [types.NINETOFIVER_SET_UPCOMING_LEAVES](state, { upcoming_leaves }) {
         state.upcoming_leaves = upcoming_leaves;
     },
@@ -211,7 +210,6 @@ const getters = {
     users: state => state.users,
     leaves: state => state.leaves,
     filtered_users: state => state.filtered_users,
-    grid_date: state => state.grid_date,
     calendar_selected_month: state => state.calendar_selected_month,
     employment_contracts: state => state.employment_contracts,
     activity_performances: state => state.activity_performances,
@@ -403,6 +401,24 @@ const getters = {
     colleagues_filter: state => state.colleagues_filter,
     days: status => state.days,
     working_hours: state => state.working_hours,
+    main_leave_types: state => {
+        if(state.leave_types) {
+
+            // Parse & stringify to copy the object without references
+            let mltypes = JSON.parse(JSON.stringify(state.main_leave_types));
+
+            for(let mlt in state.main_leave_types) {
+                let myRegExp = new RegExp(`(${mlt})`, "ig");
+
+                for(let lt of state.leave_types) {
+                    if(myRegExp.test(lt.name))
+                        mltypes[mlt] = lt.id;
+                }
+            }
+
+            return mltypes;
+        }
+    },
 
     //Calculated
     open_timesheet_count: state => {
@@ -598,7 +614,7 @@ const actions = {
 
                 store.commit(types.NINETOFIVER_SET_LEAVE_TYPES, {
                     leave_types: res.data.results.map(x => {
-                        return { id: x.id, name: x.type, display_label: x.display_label }
+                        return { id: x.id, name: x.label, display_label: x.display_label }
                     })
                 });
                 resolve(res);
@@ -940,16 +956,6 @@ const actions = {
 
         store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
             selected_month: date
-        });
-    },
-
-    [types.NINETOFIVER_RELOAD_GRID_DATE](store, options = {}) {
-        var date = moment()
-        if (options.params) {
-            date = options.params.date;
-        }
-        store.commit(types.NINETOFIVER_SET_GRID_DATE, {
-            grid_date: date
         });
     },
 
