@@ -20,10 +20,11 @@ import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
 import ToastMixin from '../mixins/ToastMixin.vue';
+import RequiredPerformedDayMixin from '../mixins/RequiredPerformedDayMixin.vue';
 var model = { contract: null };
 
 export default {
-  mixins: [ToastMixin],
+  mixins: [ToastMixin, RequiredPerformedDayMixin],
   props: {
 
     properties: {
@@ -39,7 +40,7 @@ export default {
 
   created: function() {
     model.contract = this.defaultContract;
-    model.duration = this.defaultPerformance ? this.defaultDuration : 0;
+    model.duration = this.defaultPerformance ? this.defaultDuration : this.getHours();
     model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
     model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
@@ -103,13 +104,28 @@ export default {
       } else {
         return false;
       };
-   },
+    },
+
+    activityPerformances: function() {
+      if(store.getters.monthly_activity_performances) {
+        return store.getters.monthly_activity_performances; 
+      }
+    },
+
+    workSchedule: function() {
+      if(store.getters.user_work_schedule) {
+        return store.getters.user_work_schedule;
+      }
+    },
 
   },
 
   watch: {},
 
   methods: {
+    getHours: function() {
+      return this.today ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
+    },
     //Deletes performance-entry
     deleteEntry: function() {
       store.dispatch(
@@ -219,6 +235,7 @@ export default {
             this.$emit('success', response);
             this.showInfoToast('Performance successfully patched.');
             store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+            store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
           }
         }).catch((error) => {
           console.log(error);
@@ -242,6 +259,7 @@ export default {
           this.$emit('success', response);
           this.showSuccessToast('Performance successfully added');
           store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+          store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
         }
       }).catch((error) => {
         console.log(error);
