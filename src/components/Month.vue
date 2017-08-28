@@ -170,7 +170,7 @@ export default {
     //Get hours required per day, based on workschedule, holiday & leave
     getRequiredHours: function(day) {
 
-      if(this.work_schedule && this.month && this.year) {
+      if(this.workSchedule && this.month && this.year) {
         let date = moment().year(this.year).month(this.month - 1).date(day);
         return this.getHoursTotal(date);
       }
@@ -178,7 +178,7 @@ export default {
 
     //Get hours performed per day
     getPerformedHours: function(day) {
-      if(this.work_schedule && this.month && this.year) {
+      if(this.workSchedule && this.month && this.year) {
         let date = moment().year(this.year).month(this.month - 1).date(day);
         return this.getDurationTotal(date);
       }
@@ -428,7 +428,7 @@ export default {
         return store.getters.employment_contracts
     },
 
-    work_schedule: function() {
+    workSchedule: function() {
       if(store.getters.user_work_schedule) 
         return store.getters.user_work_schedule;
     },
