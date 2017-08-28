@@ -422,11 +422,17 @@ const getters = {
 
     //Calculated
     open_timesheet_count: state => {
-        if (state.timesheets) {
+        if (state.timesheets && state.month_info) {
+            let REQUIRED_HOURS_FILLED_IN_PERCENTAGE = 75;
             let open = 0;
-            let month = moment().month() + 1;
+            let today = moment();
+            let naughty = false;
+            if (today.date() >= 25) {
+                let hours_filled_in_percentage = parseFloat(state.month_info.hours_performed) / parseFloat(state.month_info.hours_required) * 100;
+                naughty = (hours_filled_in_percentage < REQUIRED_HOURS_FILLED_IN_PERCENTAGE);
+            }
             state.timesheets.forEach((ts) => {
-                if (ts.status == 'ACTIVE' && ts.month !== month) {
+                if (ts.status == 'ACTIVE' && (ts.month === today.month() + 1) && naughty) {
                     open++;
                 }
             })
