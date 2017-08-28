@@ -794,7 +794,8 @@ const actions = {
         options.path = '/users/';
         if (!options.params) {
             options.params = {
-                order_by: 'first_name'
+                order_by: 'first_name',
+                is_active: true
             }
         }
         options.params.is_active = true;
@@ -989,6 +990,11 @@ const actions = {
     [types.NINETOFIVER_RELOAD_CONTRACT_USERS](store, options = {}) {
 
         options.path = '/contract_users/';
+        if (!options.params) {
+            options.params = {
+                is_active: true
+            }
+        }
 
         return new Promise((resolve, reject) => {
             store.dispatch(

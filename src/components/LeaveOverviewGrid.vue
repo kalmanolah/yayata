@@ -73,14 +73,12 @@ div
             th.overviewgrid.text-center(v-for='d in daysInMonth') {{ d }}
             th.overviewgrid.nextMonth.text-center(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
         tbody
-          tr(v-if='country_users && acceptedLeaves' v-for='user in country_users')
+          tr(v-if='acceptedLeaves' v-for='user in country_users')
             td
               .d-none.d-xl-inline
-                router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }}
+                router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }} <small>({{ user.username }})</small>
               .d-xl-none.d-lg-inline
-                b-tooltip(:content='user.display_label') 
-                  span
-                    router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
+                router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
             td.day-cell.pl-2.pr-2(v-for='d in 31' v-bind:class='determineCellColor(user, d)') &nbsp;
 </template>
 <script>
