@@ -68,34 +68,32 @@
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
                 //- Standby
-                template.col(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+                template.col
                   b-popover(triggers='hover' placement='top' class='hidden-md-down')
-                    hovercard(:id='"hc_standby_" + i', :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                    hovercard(
+                      :id='"hc_standby_" + i', 
+                      :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": getTimesheetForDay(weekDay)})', 
+                      @success='onSubmitSuccess'
+                    )
                       .btn.btn-outline-primary.card-header-button
                         i.fa.fa-phone
                     div(slot='content')
-                      template(v-for='standby in getStandbys(weekDay, timesheet)') 
+                      template(v-for='standby in getStandbys(weekDay)') 
                         div {{ standby.contract_label }}
-                template(v-else)
-                  button.btn.btn-outline-primary.card-header-button.disabled
-                    i.fa.fa-phone
 
                 //- Whereabouts
-                template.col( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+                template.col
                   b-popover(triggers='hover' placement='top' class='hidden-md-down')
-                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": timesheet})', @success='onSubmitSuccess')
+                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": getTimesheetForDay(weekDay)})', @success='onSubmitSuccess')
                       button.btn.btn-outline-primary.card-header-button
                         i.fa.fa-building-o
                     div(slot='content')
-                      template(v-for='whereabout in getLocation(weekDay, timesheet)')
+                      template(v-for='whereabout in getLocation(weekDay)')
                         div {{ whereabout }}
-                template(v-else)
-                  .btn.btn-outline-primary.card-header-button.disabled
-                    i.fa.fa-building-o
 
         .card-head-foot.text-center(v-if='weekDay < new Date()')
           //- Check if timesheet status is active
-          template(v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+          template(v-if='getTimesheetStatus(weekDay)')
 
             //- Performance creation is disabled for future activityPerformances
             hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
@@ -104,18 +102,18 @@
               button.btn.btn-success.btn-submit
                 i.fa.fa-plus
 
-          
+          //- CALCULATED FROM WITHIN THE MIXIN
           small.text-muted
             | {{ getDurationTotal(weekDay) }}<strong> / 
             | {{ getHoursTotal(weekDay) }} h</strong>
           .pull-right.quota__icon
-            i.fa(:class='getDailyQuota(weekDay)')
+            i.fa(:class='getDailyQuotaStyling(weekDay)')
 
           hr.smaller-horizontal-hr.smaller-vertical-hr
 
           //- Body of performances
           //- Check if timesheet status is active
-          template( v-if='timesheet && timesheetActive && getTimesheetStatus(weekDay)')
+          template( v-if='getTimesheetStatus(weekDay)')
             .card-block.performance-list
               //- Holidays
               template(v-if='holidays')
@@ -155,7 +153,10 @@
                 :key='perf.id',
                 :class='[list-group, performance-list]'
               )
-                hovercard(:component='getHoverCardComponent("PerformanceForm", weekDay, perf)', @success='onSubmitSuccess')
+                hovercard(
+                :component='getHoverCardComponent("PerformanceForm", weekDay, perf)', 
+                @success='onSubmitSuccess'
+                )
                   //- Visible text
                   .list-group-item-heading {{ findContractName(perf.contract) }}
                   .list-group-item-text 
@@ -196,7 +197,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'week',
-  mixins: [RequiredPerformedDayMixin],
+  mixins: [ RequiredPerformedDayMixin ],
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,
@@ -205,70 +206,63 @@ export default {
   },
 
   watch: {
-    '$route' (to, from) {
+    '$route': function(to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
     },
   },
 
-  computed: {
-    holidays: function() {
-      if(store.getters.holidays && this.selectedYear && this.selectedWeek) {
-        let month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month();
-        return store.getters.holidays.filter((holiday) => {
-          return moment(holiday.date).month() == month && holiday.country == store.getters.user.country;
-        });
-      }
-    },
-
-    leaves: function() {
-      if(store.getters.leaves) {
-        return store.getters.leaves.filter((leave) => {
-          return leave.user === store.getters.user.id
-        });
-      }
-    },
+  created: function() {
+    store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
     
-    timesheetActive: function() {
-      if(this.timesheet)
-        return this.timesheet.status === store.getters.timesheet_statuses[1];
-    },
+    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+      params: { contractuser__user__id: store.getters.user.id }
+    });
 
-    timesheet: function() {
+    if(!store.getters.leaves){
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: { user_id: store.getters.user.id }
+      });
+    }
 
-      if(store.getters.timesheets && this.selectedYear && this.selectedWeek){
-        let month = moment(this.selectedYear).add(this.selectedWeek, 'weeks').month() + 1;
+  },
 
-        return store.getters.timesheets.find((ts) => {
-          return ts.year === this.selectedYear && ts.month === month;
+  computed: {
+
+    // Get the holidays for this period
+    holidays: function() {
+      if(store.getters.holidays && this.periodStartMonth && this.periodEndMonth) {
+
+        return store.getters.holidays.filter((h) => {
+          return (
+            h.country == store.getters.user.country && (
+              moment(h.date).month() == this.periodStartMonth.month() ||
+              moment(h.date).month() == this.periodEndMonth.month() 
+            )
+          );
         });
       }
     },
-    // Gets the locations of this week
-    timesheet_locations: function() {
-      if(this.whereabouts && this.daysOfWeek && store.getters.whereabouts && store.getters.timesheets){
-        var day = this.daysOfWeek[0];
-        var timesheet = store.getters.timesheets.find(x => 
-          x.month == (day.month() + 1)
-          &&
-          x.year == day.year()
-        );
 
-        var timesheet_locations = [];
-        this.daysOfWeek.forEach((day) => {
-          if(timesheet){
-            var wa = this.whereabouts.find(w => w.day == day.format('D') && w.timesheet == timesheet.id)
-            wa = wa ? wa.location : 'Select whereabout';
-          } else {
-            var wa = 'Select whereabout';
-          }
-          timesheet_locations.push(wa);
+    // Get the leaves for the currently authenticated user
+    leaves: function() {
+      if(store.getters.leaves)
+        return store.getters.leaves.filter((leave) => leave.user === store.getters.user.id );
+    },
+
+    // Get the timesheets for this week
+    timesheets: function() {
+      if(store.getters.timesheets && this.periodStartMonth && this.periodEndMonth) {
+        return store.getters.timesheets.filter((ts) => {
+          return (ts.year === this.periodStartMonth.year() && ts.month === this.periodStartMonth.month() + 1) 
+            || (ts.year === this.periodEndMonth.year() && ts.month === this.periodEndMonth.month() + 1);
         });
-        return timesheet_locations
       }
     },
 
-    work_schedule: function() {
+    // Workschedule is necessary for the mixin to work
+    workSchedule: function() {
       if(store.getters.user_work_schedule)
         return store.getters.user_work_schedule;
     },
@@ -289,62 +283,67 @@ export default {
       return moment().isoWeekYear(year).isoWeek(week).endOf('isoWeek');
     },
 
+    // Get the days of week from the currently selected format
     daysOfWeek: function() {
       return this.getDaysOfWeek(this.currentWeekFormat);
     },
 
   },
 
-  created: function() {
-    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-      params: {
-        contractuser__user__id: store.getters.user.id
-      }
-    });
-    if(!store.getters.leaves){
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
-        params: {
-          user_id: store.getters.user.id
-        }
-      });
-    }
-    store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-  },
-
   methods: {
-    getStandbys: function (day, timesheet) {
-      if(timesheet && store.getters.standby_performances && store.getters.contracts){
-        let resp = store.getters.standby_performances.filter(p => {
-          if(p.day == moment(day).date() && p.timesheet == timesheet.id) {
-            p.contract_label = store.getters.contracts.find((c) => c.id == p.contract).display_label
-            return p;
-          } 
-        });
-        return resp.length > 0 ? resp : [{'contract_label': 'Not on standby'}];
+
+    // Gets the timesheet for the day
+    getTimesheetForDay: function(day) {
+      if(this.timesheets) {
+        console.log( this.timesheets );
+        return this.timesheets.find(ts => ts.month == day.month() + 1);
       }
     },
 
-    getLocation: function (day, timesheet) {
-      if(store.getters.whereabouts && timesheet) {
-        let resp = store.getters.whereabouts.find((wa) => {
-          return wa.day == moment(day).date() && wa.timesheet == timesheet.id;
-        });
-        return resp ? {'location': resp.location} : {'location': 'No location'};
+    // Get the standby performances
+    getStandbys: function (day) {
+      if(store.getters.standby_performances && store.getters.contracts) {
+        let ts = this.getTimesheetForDay(day);
+
+        if(ts) {
+          let staPerfs = store.getters.standby_performances.filter(p => {
+            if(p.day == day.date() && p.timesheet == ts.id) {
+              let contr = store.getters.contracts.find(c => c.id === p.contract);
+              p.contract_label = contr ? contr.display_label : 'Not found';
+
+              return p;
+            } 
+          });
+
+          return staPerfs.length > 0 ? staPerfs : [{'contract_label': 'Not on standby'}];
+        }
       }
     },
 
+    // Get the location from the whereabouts linked to the timesheet
+    getLocation: function (day) {
+      if(store.getters.whereabouts) {
+        let ts = this.getTimesheetForDay(day);
+
+        if(ts) {
+          let wAbout = store.getters.whereabouts.find((wa) => {
+            return wa.day == day.date() && wa.timesheet == ts.id;
+          });
+
+          return wAbout ? {'location': wAbout.location} : {'location': 'No location'};
+        }
+      }
+    },
+
+    // Check if the status for the timesheet is active or not
     getTimesheetStatus: function(day) {
-      if(store.getters.timesheets) {
-        let ts = store.getters.timesheets.find(t => {
-          return t.month == day.month() + 1 && t.year == day.year()
-        });
-        
-        if(ts)
-          return ts.status == store.getters.timesheet_statuses[1];
-      }
+      let ts = this.getTimesheetForDay(day);
+      
+      return ts ? ts.status == store.getters.timesheet_statuses[1] : null;
     },
 
-    getDailyQuota: function(day) {
+    // Returns a style based on how much the user has logged / is supposed to log per day
+    getDailyQuotaStyling: function(day) {
       let performed = this.getDurationTotal(day);
       let required = this.getHoursTotal(day);
 
@@ -556,9 +555,6 @@ export default {
       return result.reverse();
     },
 
-
-
-
   },
 
   data () {
@@ -575,7 +571,6 @@ export default {
         checked: 'On call',
         unchecked: 'Off call'
       },
-
     }
 
   },

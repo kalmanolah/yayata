@@ -86,7 +86,7 @@ div.row
         }
       },
 
-    work_schedule: function() {
+    workSchedule: function() {
       if(store.getters.user_work_schedule) {
         return store.getters.user_work_schedule
       }
