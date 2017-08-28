@@ -295,7 +295,6 @@ export default {
     // Gets the timesheet for the day
     getTimesheetForDay: function(day) {
       if(this.timesheets) {
-        console.log( this.timesheets );
         return this.timesheets.find(ts => ts.month == day.month() + 1);
       }
     },
