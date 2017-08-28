@@ -402,16 +402,16 @@ const getters = {
     days: status => state.days,
     working_hours: state => state.working_hours,
     main_leave_types: state => {
-        if(state.leave_types) {
+        if (state.leave_types) {
 
             // Parse & stringify to copy the object without references
             let mltypes = JSON.parse(JSON.stringify(state.main_leave_types));
 
-            for(let mlt in state.main_leave_types) {
+            for (let mlt in state.main_leave_types) {
                 let myRegExp = new RegExp(`(${mlt})`, "ig");
 
-                for(let lt of state.leave_types) {
-                    if(myRegExp.test(lt.name))
+                for (let lt of state.leave_types) {
+                    if (myRegExp.test(lt.name))
                         mltypes[mlt] = lt.id;
                 }
             }
@@ -424,8 +424,9 @@ const getters = {
     open_timesheet_count: state => {
         if (state.timesheets) {
             let open = 0;
+            let month = moment().month() + 1;
             state.timesheets.forEach((ts) => {
-                if (ts.status == 'ACTIVE') {
+                if (ts.status == 'ACTIVE' && ts.month !== month) {
                     open++;
                 }
             })
