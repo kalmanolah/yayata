@@ -71,7 +71,7 @@ export default {
 </script>
 
 <style lang='less'>
-@width: 260px;
+@width: 280px;
 
 .hovercard-enter-active {
   transition: all .3s ease-in-out;
@@ -106,7 +106,7 @@ export default {
   position: absolute;
   min-width: @width;
   z-index: 100;
-  /*left: -1vw;        Figure out a correct value */
+  left: -2em;
 }
 
 .hovercard__close-icon {
