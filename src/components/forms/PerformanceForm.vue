@@ -24,7 +24,7 @@ import RequiredPerformedDayMixin from '../mixins/RequiredPerformedDayMixin.vue';
 var model = { contract: null };
 
 export default {
-  mixins: [ToastMixin, RequiredPerformedDayMixin],
+  mixins: [ ToastMixin, RequiredPerformedDayMixin ],
   props: {
 
     properties: {
@@ -124,7 +124,7 @@ export default {
 
   methods: {
     getHours: function() {
-      return this.today ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
+      return this.today && this.activityPerformances ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
     },
     //Deletes performance-entry
     deleteEntry: function() {
@@ -291,7 +291,7 @@ export default {
               }
             },
 
-            styleClasses: ['compact-field', 'd-inline-flex', 'col-9'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-8'],
           },
           {
             //DURATION
@@ -302,7 +302,7 @@ export default {
             step: 0.5,
             min: 0,
 
-            styleClasses: ['compact-field', 'd-inline-flex', 'col-3'],
+            styleClasses: ['compact-field', 'd-inline-flex', 'col-4'],
           },
           {
             //DESCRIPTION
@@ -374,6 +374,10 @@ export default {
     font-size: 10px;
     margin: -15px 0px 2px 0px;
     padding: 3px;
+  }
+
+  .field-wrap {
+    width: 100%;
   }
 
 </style>
