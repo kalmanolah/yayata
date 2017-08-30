@@ -240,6 +240,9 @@ export default {
     buttonState: function() {
       return (this.fromDateState === "success" && this.descriptionState === "success" && this.leaveTypeState === "success");
     },
+    fromDateFeedback: function() {
+      return moment(this.fromDate, 'DD MMM YYYY').isValid() ? '' : 'Please provide a correct date.'
+    },
     fromDateState: function() {
       return moment(this.fromDate, 'DD MMM YYYY').isValid() ? 'success' : 'warning'
     },

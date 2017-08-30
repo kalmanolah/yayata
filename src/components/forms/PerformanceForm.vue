@@ -31,7 +31,6 @@ export default {
       type: Object,
       default: null,
       validator(value) {
-        console.log( value );
         return (value !== null && value !== undefined && typeof value === 'object')
       }
     }
@@ -201,8 +200,6 @@ export default {
     submitForm: function(timesheetID) {
       var body = {};
 
-      console.log( this.model.contract_role );
-
       body = {
         timesheet: timesheetID,
         day: this.today.date(),
@@ -308,6 +305,7 @@ export default {
             //DESCRIPTION
             type: "textArea",
             model: "description",
+            placeholder: "What did you do today?",
             required: true,
             max: 500,
             rows: 3,
