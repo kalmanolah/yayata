@@ -42,6 +42,7 @@ const state = {
     whereabouts: null,
     employment_contracts: null,
     month_info: null,
+    leave_overview: null,
 
     //Predefined
     timesheet_statuses: ['CLOSED', 'ACTIVE', 'PENDING'],
@@ -190,6 +191,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_MONTH_INFO](state, { month_info }) {
         state.month_info = month_info
+    },
+    [types.NINETOFIVER_SET_LEAVE_OVERVIEW](state, { leave_overview }) {
+        state.leave_overview = leave_overview
     }
 }
 
@@ -216,6 +220,7 @@ const getters = {
     standby_performances: state => state.standby_performances,
     all_monthly_activity_performances: state => state.all_monthly_activity_performances,
     month_info: state => state.month_info,
+    leave_overview: state => state.leave_overview,
     project_estimates: state => {
         if (!state.project_estimates)
             return null;
@@ -745,6 +750,32 @@ const actions = {
 
                 store.commit(types.NINETOFIVER_SET_MONTH_INFO, {
                     month_info: res.data
+                });
+                resolve(res);
+
+            }, (res) => {
+                reject(res);
+            })
+        });
+
+    },
+
+    [types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW](store, options = {}) {
+
+        options.path = '/services/monthly_availability/';
+        if (!options.params)
+            options.params = {}
+
+        options.params['period'] = moment(store.getters.calendar_selected_month).date(1).format('YYYY-MM-DDTHH:mm:ss');
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(
+                types.NINETOFIVER_API_REQUEST,
+                options
+            ).then((res) => {
+
+                store.commit(types.NINETOFIVER_SET_LEAVE_OVERVIEW, {
+                    leave_overview: res.data
                 });
                 resolve(res);
 

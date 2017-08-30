@@ -80,6 +80,29 @@ div
               .d-xl-none.d-lg-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
             td.day-cell.pl-2.pr-2(v-for='d in 31' v-bind:class='determineCellColor(user, d)') &nbsp;
+
+  .row.mb-3
+    .list-group
+      //- Header
+      .list-group-item.d-flex.p-2
+        .d-flex.dinksken
+          .p-2 Name
+        .d-flex.text-center
+          .p-2.ml-1(v-for='d in daysInMonth') {{ d }}
+        .d-flex.text-center
+          .p-2.ml-1.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
+
+      .list-group-item.d-flex.p-2(v-if='acceptedLeaves' v-for='user in country_users')
+        .d-flex.dinksken
+          .p-2
+            .d-none.d-xl-inline
+              router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }} <small>({{ user.username }})</small>
+            .d-xl-none.d-lg-inline
+              router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
+        .d-flex.text-center
+          .p-2.ml-1(v-for='d in daysInMonth', :class="determineCellColorZWEIJAWOHL(user, d)") {{ d }}
+
+
 </template>
 <script>
 import Vue from 'vue';
@@ -129,6 +152,8 @@ export default {
 
  created: function() {
 
+    store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW);
+
     this.buildPageInfo();
 
     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS);
@@ -151,6 +176,10 @@ export default {
 
   computed: {
 
+    leaveOverview: function() {
+      if(store.getters.leave_overview)
+        return store.getters.leave_overview;
+    },
     selectedPeriod: function() {
       if(store.getters.calendar_selected_month)
         return moment(store.getters.calendar_selected_month, "YYYY-MM-DDTHH:mm:ss");
@@ -257,6 +286,35 @@ export default {
     showContractUsers: function(contract) {
       this.cu_filter = contract.id;
       this.cu_label = contract.display_label;
+    },
+
+    //Determines the colour of the cell depending on the type of day and its leave_type
+    determineCellColorZWEIJAWOHL: function(user, day) {
+
+      console.log( this.leaveOverview );
+      console.log( day ); 
+
+      let userSickness = this.leaveOverview['sickness'][user.id];
+      if(this.showSickness && userSickness && userSickness.find(d => d == day))
+        return 'cell-sickness';
+
+      let userLeaves = this.leaveOverview['leave'][user.id];
+      if(this.showLeave && userLeaves && userLeaves.find(d => d == day))
+        return 'cell-leave';
+
+      let userHomeWork = this.leaveOverview['homeWork'][user.id];
+      if(this.showHome && userHomeWork && userHomeWork.find(d => d == day))
+        return 'cell-home';
+      
+      let userHolidays = this.leaveOverview['holiday'][user.id];
+      if(this.showHoliday && userHolidays && userHolidays.find(d => d == day))
+        return 'cell-holiday';
+
+      let userNonWorkingday = this.leaveOverview['nonWorkingday'][user.id];
+      if(this.showNonWorkingDay && userNonWorkingday && userNonWorkingday.find(d => d == day))
+        return 'cell-nonWorkingDay';
+
+      return 'nextMonth';
     },
 
     //Determines the colour of the cell depending on the type of day and its leave_type
@@ -394,6 +452,10 @@ export default {
 @info: #33b5e5;
 @success: #00c851;
 @neutral: #e0e0e0;
+
+.dinksken {
+  min-width: 350px;
+}
 
 th.overviewgrid {
   max-width: 15px;
