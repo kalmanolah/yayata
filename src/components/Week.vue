@@ -197,7 +197,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'week',
-  mixins: [ RequiredPerformedDayMixin ],
+  mixins: [ RequiredPerformedDayMixin, ToastMixin ],
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,

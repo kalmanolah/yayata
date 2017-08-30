@@ -139,8 +139,6 @@ export default {
 
   methods: {
     getHours: function() {
-      console.log(this.getHoursTotal(this.today))
-      console.log(this.getDurationTotal(this.today))
       let hours = this.today ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
       return hours < 0 ? 0 : hours;
     },
