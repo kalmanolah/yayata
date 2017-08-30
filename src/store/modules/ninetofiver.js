@@ -1137,6 +1137,9 @@ const actions = {
     [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE](store, options = {}) {
 
         options.path = '/my_workschedules/';
+        options.params = {
+            current: 'True'
+        }
 
         return new Promise((resolve, reject) => {
             store.dispatch(
