@@ -135,7 +135,7 @@ export default {
 
     pendingLeaves: function() {
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0] && moment().isSameOrBefore(x.leave_end, 'date')){
+        if(x.status === store.getters.leave_statuses[0] ){
           return x;
         }
       });
