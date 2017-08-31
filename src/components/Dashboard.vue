@@ -33,7 +33,7 @@ div
             | {{ today | moment('MMMM YYYY') }}
         table.table
           tbody(v-if='contracts && user')
-            tr(v-for="(c, index) in contracts")              
+            tr(v-for="(c, index) in contracts")
               td {{ c.customerName }}: {{ c.name }}
               td.text-sm-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
             tr(v-if='month_info')
@@ -42,6 +42,8 @@ div
             tr(v-if='month_info')
               td <strong>Open hours</strong>
               td.text-sm-right <strong>{{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter }} hours ({{ (month_info.hours_required - month_info.hours_performed).toFixed(1) | realisticNumberFilter | hoursToDaysFilter }} days)</strong>
+
+      //- PERFORMANCE FORM
       .card.card-top-blue.mb-3.p-3
         h4.card-title-blue.text-center Log performance
         PerformanceForm(v-if='loaded')

@@ -742,6 +742,8 @@ const actions = {
     [types.NINETOFIVER_RELOAD_MONTH_INFO](store, options = {}) {
 
         options.path = '/services/month_info/';
+        if (!options.params)
+            options.params = {}
 
         return new Promise((resolve, reject) => {
             store.dispatch(
@@ -765,8 +767,7 @@ const actions = {
 
         options.path = '/services/monthly_availability/';
         if (!options.params)
-            options.params = {
-            }
+            options.params = {}
 
         options.params['period'] = moment(store.getters.calendar_selected_month).date(1).format('YYYY-MM-DDTHH:mm:ss');
 

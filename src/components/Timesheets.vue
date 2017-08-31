@@ -12,7 +12,7 @@ div.row
         h3.card-header {{ year }}
         
         .card-block.row.no-gutters
-          .col-4(v-for='(sheet, i) in year_group')
+          .col-6(v-for='(sheet, i) in year_group')
 
               .card.m-3
 
@@ -33,13 +33,21 @@ div.row
                     )
 
                 .card-block.p-2
-                  div
-                    strong Open hours:  
-                    .badge.pull-right(:class='getBadgeStyle(sheet)') {{ (sheet.hours_required - sheet.hours_performed).toFixed(1) | negativeToZeroFilter  }}
-                    
-                  div 
-                    span Days with leave:
-                    .pull-right {{ getDaysWithLeave(sheet.id) }}
+                  table.table
+                    tbody
+                      tr
+                        .col                  
+                          strong Open hours:  
+                          .badge.pull-right(:class='getBadgeStyle(sheet)') {{ (sheet.hours_required - sheet.hours_performed).toFixed(1) | negativeToZeroFilter  }}
+                          
+                        .col 
+                          span Days with leave:
+                          .pull-right {{ getDaysWithLeave(sheet.id) }}
+
+                      tr(v-for="(c, index) in contracts")
+                        td {{ c.customerName }}: {{ c.name }}
+                        td.text-sm-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+
 
 </template>
 
@@ -59,10 +67,19 @@ div.row
         today: new Date(),
         performances: {},
         leaves: {},
+        monthInfo: {},
         daysInMonth: {},
         quotas: {},
         loaded: {},
         called: {},
+      }
+    },
+
+    created: function() {
+      if(store.getters.user){
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+          params: { contractuser__user__id: store.getters.user.id }
+        });
       }
     },
 
@@ -84,13 +101,18 @@ div.row
 
           return ts;
         }
+     },
+
+      workSchedule: function() {
+        if(store.getters.user_work_schedule) {
+          return store.getters.user_work_schedule
+        }
       },
 
-    workSchedule: function() {
-      if(store.getters.user_work_schedule) {
-        return store.getters.user_work_schedule
-      }
-    },
+      fullContracts: function() {
+        if(store.getters.full_contracts)
+          return store.getters.full_contracts;
+      },
 
     },
 
@@ -128,6 +150,7 @@ div.row
     },
 
     methods: {
+
       // Set the status of this sheet to PENDING.
       setPending: function(sheet) {
 
@@ -161,6 +184,10 @@ div.row
         });
       },
 
+      // Finds the fullcontract per timesheet
+      getFullContract: function(ts) {
+      },
+
       //Get accepted leaves for timesheet
       getLeavesForTimesheet: function(ts) {
 
@@ -186,6 +213,19 @@ div.row
           this.$set(this.loaded[ts], 'leaves', true );
         }, () => {
           this.loading = false;
+        });
+      },
+
+      //Call monthinfo api view per timesheet
+      getTimesheetInfo: function(ts) {
+        store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: '/services/month_info/',
+          params:{
+            month: ts.month,
+            year: ts.year
+          }
+        }).then(res => {
+          this.$set(this.monthInfo, ts, res.data.results);
         });
       },
 
