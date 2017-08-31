@@ -10,71 +10,13 @@ div#invoice-modal
     form.text-center(@submit.stop.prevent='handleSubmit')
       b-form-select(v-model='date', :options='months', class='mb-3')
       b-form-select(v-if='contracts', v-model='selected', :options='contracts', class='mb-3')
-    .row
-      .col
-        table.table.table-sm
-          tbody
-            tr
-              td
-                strong Consultant: &nbsp;
-                | {{ user.first_name }} {{ user.last_name }}
-              td
-                strong Month: &nbsp;
-                span(v-if='timesheet') {{ timesheet.month | month_filter }}
-            tr  
-              td
-                strong Customer: &nbsp;
-                span(v-if='contract') {{ contract.customerName}}
-              td
-                strong Year: &nbsp;
-                span(v-if='timesheet') {{ timesheet.year }}
-    .row(v-if='performances')
-      .col
-        table.table.table-sm
-          thead#performances-table-head
-            tr
-              th Date
-              th Description
-              th Duration
-              th Performance type
-          tbody
-            tr(v-for='performance in performances')
-              td {{ performance.day | day_filter(timesheet) }} {{ performance.day }}
-              td {{ performance.description }}
-              td {{ performance.duration }}
-              td {{ performance.performance_type | performance_type_filter }}
-            tr
-              td &nbsp;
-              td 
-                strong.pull-right Total:
-              td 
-                strong {{ totalPerformances }}
-            tr
-              td &nbsp;
-              td 
-                strong.pull-right Total in 8 hour days:
-              td 
-                strong {{ totalPerformances | eight_hour_days_filter }}
-    .row
-      .col
-        .signature-box-parent.d-flex.d-flex-row
-          #consultant
-            span.p-2.ml-2 Signature consultant
-            .signature-box
-          #customer
-            span.p-2.ml-2 Signature customer
-            .signature-box
-      .col
-        .signature-box-parent
-          #remarks
-            span.p-2.ml-2 Remarks
-            .signature-box
 </template>
 
 <script>
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment'
+import jspdf from 'jspdf'
 
 export default {
   name: 'invoice',
@@ -104,7 +46,7 @@ export default {
   methods: {
     handleOk(e) {
       e.cancel();
-      this.handleSubmit()
+      this.generatePdf()
     },
     handleSubmit() {
         this.$refs.printModal.hide()
@@ -117,6 +59,65 @@ export default {
         } 
       };
       store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+    },
+
+    generatePdf() {
+      let baseX = 15;
+      let baseY = 25;
+      let month = moment().month(this.date - 1).format('MMMM');
+      let doc = new jspdf({
+        orientation: 'landscape'
+      });
+      if(this.contract) {
+        doc.setFontSize(12)
+        // header
+        doc.text('Consultant: ' + this.user.display_label, 80, 8)
+        doc.text(month + ' ' + moment().year(), 180, 8)
+        doc.text('Project: ' + this.contract.display_label, 180, 13)
+        doc.text('Customer: ' + this.contract.customerName, 80, 13)
+
+        // Table header
+        doc.text('Day', baseX, baseY)
+        doc.text('Description', baseX + 20, baseY)
+        doc.text('hours', baseX + 200, baseY)
+        doc.text('Performance type', baseX + 220, baseY)
+        doc.line(baseX, baseY + 2, baseX + 275, baseY + 2)
+        baseY += 7;
+        // Performances
+        this.performances.forEach((perf) => {
+          // check if baseY is greater than max
+          if(baseY >= 170) {
+            // Create a new page and continue
+            doc.addPage();
+            baseY = 20;
+          }
+          doc.text(moment().month(month).date(perf.day).format('ddd'), baseX, baseY) 
+          doc.text(perf.day.toString(), baseX + 10, baseY)
+          doc.text(perf.description, baseX + 20, baseY)
+          doc.text(perf.duration.toString(), baseX + 200, baseY)
+          doc.text(perf.performance_type_label, baseX + 220, baseY)
+          doc.setDrawColor(224,224,224);
+          doc.line(baseX, baseY + 1, baseX + 275, baseY + 2)
+          baseY += 6;
+        });
+        if(baseY >= 170) {
+            doc.addPage();
+            baseY = 20;
+        }
+        // totals
+        doc.text('Total: ' + this.totalPerformances.toString(), baseX + 188, baseY + 5)
+        doc.text('Total in 8-hour days: ' + parseInt(this.totalPerformances / 8) + 'd ' + (parseFloat(this.totalPerformances) % 8), baseX + 156, baseY + 10)
+        // Signature boxes
+        doc.setFontSize(10)
+        doc.text('Signature Conultant', baseX, baseY + 18)
+        doc.rect(baseX, baseY + 20, 50, 20)
+        doc.text('Signature Customer', baseX + 55, baseY + 18)
+        doc.rect(baseX + 55 , baseY + 20, 50, 20)
+        doc.text('Remarks', baseX + 150, baseY + 18)
+        doc.rect(baseX + 150 , baseY + 20, 60, 20)
+      }
+      doc.autoPrint()
+      this.contract ? doc.save(this.contract.display_label+ '-' + month + '.pdf') : doc.save('invoice-' + month + '.pdf')
     }
   },
   computed: {
@@ -151,7 +152,14 @@ export default {
       if(store.getters.activity_performances && this.timesheet && this.contract) {
         if(this.contract) {
           return store.getters.activity_performances.filter((perf) => {
-            return perf.contract == this.contract.id && perf.timesheet == this.timesheet.id;
+            if(perf.contract == this.contract.id && perf.timesheet == this.timesheet.id) {
+              perf.performance_type_label = store.getters.performance_types.find((pt) => perf.performance_type == pt.id).name
+              return perf;
+            }
+          }).sort((a, b) => {
+            a = a.day;
+            b = b.day;
+            return a > b ? 1 : (a < b ? -1 : 0);
           });
         }
       }
@@ -191,9 +199,6 @@ export default {
 </script>
 
 <style>
-#printModal>.modal-dialog.modal-md {
-  max-width: 100%;
-}  
 
 .signature-box-parent {
   border: 2px solid black;

@@ -197,7 +197,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'week',
-  mixins: [ RequiredPerformedDayMixin ],
+  mixins: [ RequiredPerformedDayMixin, ToastMixin ],
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,
@@ -236,7 +236,7 @@ export default {
 
         return store.getters.holidays.filter((h) => {
           return (
-            h.country == store.getters.user.country && (
+            h.country == store.getters.user.userinfo.country && (
               moment(h.date).month() == this.periodStartMonth.month() ||
               moment(h.date).month() == this.periodEndMonth.month() 
             )

@@ -117,13 +117,29 @@ export default {
       }
     },
 
+    leaves: function() {
+      if(store.getters.leaves && store.getters.user) {
+        return store.getters.leaves.filter( (leave) => {
+          return leave.user == store.getters.user.id
+        })
+      }
+    },
+
+    holidays: function() {
+      if(store.getters.holidays && store.getters.user && this.today) {
+        return store.getters.holidays.filter((holiday) => {
+          return holiday.country == store.getters.user.userinfo.country && moment(holiday.date).isSame(moment(this.today), 'day')
+        })
+      }
+    }
   },
 
   watch: {},
 
   methods: {
     getHours: function() {
-      return this.today && this.activityPerformances ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
+      let hours = this.today ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
+      return hours < 0 ? 0 : hours;
     },
     //Deletes performance-entry
     deleteEntry: function() {

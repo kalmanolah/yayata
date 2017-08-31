@@ -73,7 +73,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'redmine',
-
+  mixins: [ToastMixin],
   data() {
     return {
       selectedContract: {

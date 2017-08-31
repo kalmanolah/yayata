@@ -145,7 +145,7 @@ export default {
   created: function () {
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
       params: {
-        // page_size: 10
+            contractuser__user__id: store.getters.user.id
       }
     });
     if(!store.getters.contract_roles){
@@ -375,7 +375,11 @@ export default {
         this.sortBy = 'all';
         this.customerName = 'Customer';
         this.contractType = 'Contract type';
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+          params: {
+            active: 'true'
+          }
+        });
       // Get user contracts.
       } else if(value === '/my_contracts/') {
         let options = { 
@@ -387,7 +391,7 @@ export default {
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       // Get contracts of company.
       } else {
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS);
         this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
         this.customerName = this.filtered_contracts.find(x => x.customerName == value).customerName;
       }

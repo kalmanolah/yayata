@@ -7,6 +7,7 @@ import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 import VueChartJs from 'vue-chartjs'
+import jspdf from 'jspdf'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
@@ -36,6 +37,7 @@ Vue.use(VueResource)
 Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
 Vue.use(VueChartJs)
+Vue.use(jspdf)
 
 export const cfg_file_path = '/cfg/config.json'
 

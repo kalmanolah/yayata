@@ -14,6 +14,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'locationselect',
+  mixins: [ToastMixin],
   data() {
     return {
       selectedLocation: null

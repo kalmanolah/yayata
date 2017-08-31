@@ -437,6 +437,7 @@ const getters = {
                 naughty = (hours_filled_in_percentage < REQUIRED_HOURS_FILLED_IN_PERCENTAGE);
             }
             state.timesheets.forEach((ts) => {
+                // Check if the timesheet is active and if the timesheet is of this month; check if user has been naughty
                 if (ts.status == 'ACTIVE' && (ts.month === today.month() + 1) && naughty) {
                     open++;
                 }
@@ -1168,6 +1169,9 @@ const actions = {
     [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE](store, options = {}) {
 
         options.path = '/my_workschedules/';
+        options.params = {
+            current: 'True'
+        }
 
         return new Promise((resolve, reject) => {
             store.dispatch(
