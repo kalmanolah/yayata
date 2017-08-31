@@ -86,7 +86,7 @@ export default {
         // Performances
         this.performances.forEach((perf) => {
           // check if baseY is greater than max
-          if(baseY >= 180) {
+          if(baseY >= 170) {
             // Create a new page and continue
             doc.addPage();
             baseY = 20;
@@ -100,7 +100,7 @@ export default {
           doc.line(baseX, baseY + 1, baseX + 275, baseY + 2)
           baseY += 6;
         });
-        if(baseY >= 180) {
+        if(baseY >= 170) {
             doc.addPage();
             baseY = 20;
         }
