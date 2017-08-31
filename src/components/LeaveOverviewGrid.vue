@@ -3,8 +3,8 @@ div
   .row.mb-3
     .col.mt-2
       toggle-button.m-1(
-                @change='toggleSwitch("home")', 
-                :value='showHome', 
+                @change='toggleSwitch("showHome")', 
+                :value='showFilters["showHome"]', 
                 color='#ffbb33', 
                 :sync='true', 
                 :labels={
@@ -14,8 +14,8 @@ div
                 :width='65'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("sickness")', 
-                :value='showSickness', 
+                @change='toggleSwitch("showSickness")', 
+                :value='showFilters["showSickness"]', 
                 color='#ff4444', 
                 :sync='true', 
                 :labels={
@@ -25,8 +25,8 @@ div
                 :width='75'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("leave")', 
-                :value='showLeave', 
+                @change='toggleSwitch("showLeave")', 
+                :value='showFilters["showLeave"]', 
                 color='#00c851', 
                 :sync='true', 
                 :labels={
@@ -36,13 +36,24 @@ div
                 :width='65'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("nonWorkingDay")', 
-                :value='showNonWorkingDay', 
+                @change='toggleSwitch("showHoliday")', 
+                :value='showFilters["showHoliday"]', 
+                color='#59b8e6', 
+                :sync='true', 
+                :labels={
+                  checked: 'Holiday',
+                  unchecked: 'Holiday'
+                }, 
+                :width='70'
+              )
+      toggle-button.m-1(
+                @change='toggleSwitch("showNonWorkingDay")', 
+                :value='showFilters["showNonWorkingDay"]', 
                 color='#37474f', 
                 :sync='true', 
                 :labels={
-                  checked: 'nonWorkingDay',
-                  unchecked: 'nonWorkingDay'
+                  checked: 'Nonworking day',
+                  unchecked: 'Nonworking day'
                 }, 
                 :width='110'
               )
@@ -69,38 +80,17 @@ div
       table.table.table-bordered.table-sm.table-responsive
         thead
           tr.text-center
-            th.overviewgrid Name
+            th.overviewgrid.p-2 Name
             th.overviewgrid.text-center(v-for='d in daysInMonth') {{ d }}
-            th.overviewgrid.nextMonth.text-center(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
+            th.overviewgrid.next-month.text-center(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
         tbody
-          tr(v-if='acceptedLeaves' v-for='user in country_users')
-            td
+          tr(v-for='user in country_users')
+            td.p-2
               .d-none.d-xl-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }} <small>({{ user.username }})</small>
               .d-xl-none.d-lg-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
             td.day-cell.pl-2.pr-2(v-for='d in 31' v-bind:class='determineCellColor(user, d)') &nbsp;
-
-  .row.mb-3
-    .list-group
-      //- Header
-      .list-group-item.d-flex.p-2
-        .d-flex.dinksken
-          .p-2 Name
-        .d-flex.text-center
-          .p-2.ml-1(v-for='d in daysInMonth') {{ d }}
-        .d-flex.text-center
-          .p-2.ml-1.nextMonth(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
-
-      .list-group-item.d-flex.p-2(v-if='acceptedLeaves' v-for='user in country_users')
-        .d-flex.dinksken
-          .p-2
-            .d-none.d-xl-inline
-              router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }} <small>({{ user.username }})</small>
-            .d-xl-none.d-lg-inline
-              router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
-        .d-flex.text-center
-          .p-2.ml-1(v-for='d in daysInMonth', :class="determineCellColorZWEIJAWOHL(user, d)") {{ d }}
 
 
 </template>
@@ -143,17 +133,17 @@ export default {
       countries: [],
       loading: true,
 
-      showHome: true,
-      showSickness: true,
-      showLeave: true,
-      showNonWorkingDay: true 
+      showFilters: {
+        showHoliday: true,
+        showHome: true,
+        showSickness: true,
+        showLeave: true,
+        showNonWorkingDay: true 
+      }
     }
   },
 
  created: function() {
-
-    store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW);
-
     this.buildPageInfo();
 
     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS);
@@ -180,22 +170,10 @@ export default {
       if(store.getters.leave_overview)
         return store.getters.leave_overview;
     },
+
     selectedPeriod: function() {
       if(store.getters.calendar_selected_month)
         return moment(store.getters.calendar_selected_month, "YYYY-MM-DDTHH:mm:ss");
-    },
-
-    selectedYear: function() {
-      return this.selectedPeriod.year();
-    },
-
-    selectedMonth: function() {
-      return this.selectedPeriod.month() + 1;
-    },
-
-    whereabouts: function() {
-      if(store.getters.whereabouts)
-        return store.getters.whereabouts
     },
 
     contracts: function() {
@@ -214,13 +192,6 @@ export default {
       }
     },
 
-    acceptedLeaves: function() {
-      if(store.getters.leaves)
-        return store.getters.leaves.filter(lv => {
-          return lv.status === 'APPROVED';
-        });
-    },
-
     all_contract_users: function() {
       if(store.getters.contract_users)
         return store.getters.contract_users
@@ -233,7 +204,7 @@ export default {
         if(this.cu_filter === 'Contract')
           return this.users;
 
-        else if (this.users && this.all_contract_users) {
+        else if (this.all_contract_users) {
 
           let contract_users = store.getters.contract_users.filter((cu) => cu.contract === this.cu_filter);
           return this.users.filter( user => {
@@ -246,14 +217,18 @@ export default {
 
     // Returns the users of a specific country if specified.
     country_users: function() {
-      if(this.contract_users && this.country_filter === 'Country'){
-        return this.contract_users;
-      } else if(this.contract_users && this.acceptedLeaves) {
-        return this.contract_users.filter( (cu) => {
-          if(cu.userinfo)
-            return cu.userinfo.country === this.country_filter;
-        });
-      } 
+      if(this.contract_users) {
+
+        if(this.country_filter === 'Country')
+          return this.contract_users;
+        else {
+          return this.contract_users.filter( (cu) => {
+            if(cu.userinfo)
+              return cu.userinfo.country === this.country_filter;
+          });
+        }
+
+      }
     }
   },
 
@@ -261,19 +236,12 @@ export default {
 
     // Requests all data
     buildPageInfo: function() {
-      this.reloadLeaves();
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW);
     },
 
     // Toggles the visibility of cells
     toggleSwitch: function(switchToggle) {
-      if(switchToggle === "home")
-        this.showHome = !this.showHome;
-      else if(switchToggle === "sickness")
-        this.showSickness = !this.showSickness;
-      else if(switchToggle === "leave")
-        this.showLeave = !this.showLeave;
-      else if(switchToggle === "nonWorkingDay")
-        this.showNonWorkingDay = !this.showNonWorkingDay;
+      this.showFilters[switchToggle] = !this.showFilters[switchToggle];
     },
 
     // Changes the country filter and dropdown label to the selected value.
@@ -289,159 +257,43 @@ export default {
     },
 
     //Determines the colour of the cell depending on the type of day and its leave_type
-    determineCellColorZWEIJAWOHL: function(user, day) {
-
-      console.log( this.leaveOverview );
-      console.log( day ); 
-
-      let userSickness = this.leaveOverview['sickness'][user.id];
-      if(this.showSickness && userSickness && userSickness.find(d => d == day))
-        return 'cell-sickness';
-
-      let userLeaves = this.leaveOverview['leave'][user.id];
-      if(this.showLeave && userLeaves && userLeaves.find(d => d == day))
-        return 'cell-leave';
-
-      let userHomeWork = this.leaveOverview['homeWork'][user.id];
-      if(this.showHome && userHomeWork && userHomeWork.find(d => d == day))
-        return 'cell-home';
-      
-      let userHolidays = this.leaveOverview['holiday'][user.id];
-      if(this.showHoliday && userHolidays && userHolidays.find(d => d == day))
-        return 'cell-holiday';
-
-      let userNonWorkingday = this.leaveOverview['nonWorkingday'][user.id];
-      if(this.showNonWorkingDay && userNonWorkingday && userNonWorkingday.find(d => d == day))
-        return 'cell-nonWorkingDay';
-
-      return 'nextMonth';
-    },
-
-    //Determines the colour of the cell depending on the type of day and its leave_type
     determineCellColor: function(user, day) {
-      let cellStyle = '';
+      if(this.leaveOverview) {
 
-      if(this.acceptedLeaves) {
-
-        // Check if we need to find our leaveobjects
-        if(this.showLeave || this.showSickness) {
-          let date = moment(this.selectedPeriod).date(day);
-
-          let userLeaves = this.acceptedLeaves.filter(al => al.user === user.id);
-
-          if(this.showLeave && userLeaves) {
-            let leaves = userLeaves.filter(l => l.leave_type !== store.getters.main_leave_types['sick']);
-
-            leaves && leaves.find(al => {
-              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
-              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
-
-              if(date.isBetween(start, end, 'day', []))
-                cellStyle = 'cell-leave';
-            });
-
-            if(cellStyle != '')
-              return cellStyle;
-          }
-
-          if(this.showSickness && userLeaves) {
-            let sickLeaves = userLeaves.filter(l => l.leave_type === store.getters.main_leave_types['sick']);
-
-            sickLeaves && sickLeaves.find(al => {
-              let start = moment(al.leavedate_set[0].starts_at, 'YYYY-MM-DD').startOf('day');
-              let end = moment(al.leavedate_set[al.leavedate_set.length - 1].ends_at, 'YYYY-MM-DD').endOf('day');
-
-              if(date.isBetween(start, end, 'day', []))
-                cellStyle = 'cell-sickness';
-            });
-
-            if(cellStyle != '')
-              return cellStyle;
-          }
-        }
-      }
-
-      // If showHome is true, find if the user works from home based on his whereabouts
-      if(this.showHome) {
-
-        let timesheet = store.getters.timesheets.find((ts) => {
-          return (ts.month === this.selectedMonth && ts.user === user.id);
-        });
-
-        if(timesheet) {
-          let whereabout = this.whereabouts.find((w) => {
-            return w.day === day && w.timesheet === timesheet.id
-          });
-
-          if(whereabout && whereabout.location === 'Home')
-            cellStyle = 'cell-home';
+        if(this.showFilters['showSickness']) {
+          let userSickness = this.leaveOverview['sickness'][user.id];
+          if(userSickness && userSickness.find(d => d == day))
+            return 'cell-sickness';
         }
 
-        if(cellStyle != '')
-          return cellStyle;
-      }
-
-      // If showNonWorkingDay is true, look for days without hours in the workschedule
-      if(this.showNonWorkingDay) {
-
-        if(store.getters.employment_contracts && user) {
-          let date = moment(this.selectedPeriod).date(day);
-
-          // Check if the user has an employment contract this month
-          let emplContr = store.getters.employment_contracts.find((ec) => {
-            let start = moment(ec.started_at);
-            let end = moment(ec.ended_at);
-
-            return ec.user === user.id && date.isBetween(start, end, 'day', []);
-          });
-
-          let workSchedule = emplContr ? store.getters.work_schedules.find((ws) => ws.id === emplContr.work_schedule) : null;
-
-          // If day has 0 hours to perform on WS or there is no workschedule (~ emplcontract)
-          if(workSchedule) {
-            let dow = moment(this.selectedPeriod).date(day).format('dddd').toLowerCase();
-
-            cellStyle = workSchedule[dow] === '0.00' ? 'cell-nonWorkingDay' : '';
-          } else {
-            cellStyle = 'cell-nonWorkingDay';
-          }
+        if(this.showFilters['showLeave']) {
+          let userLeaves = this.leaveOverview['leave'][user.id];
+          if(userLeaves && userLeaves.find(d => d == day))
+            return 'cell-leave';
         }
-      }
 
-      return cellStyle;
+        if(this.showFilters['showHome']) {
+          let userHomeWork = this.leaveOverview['homeWork'][user.id];
+          if(userHomeWork && userHomeWork.find(d => d == day))
+            return 'cell-home';
+        }
+
+        if(this.showFilters['showHoliday']) {
+          let userHolidays = this.leaveOverview['holiday'][user.id];
+          if(userHolidays && userHolidays.find(d => d == day))
+            return 'cell-holiday';
+        }
+
+        if(this.showFilters['showNonWorkingDay']) {          
+          let userNonWorkingday = this.leaveOverview['nonWorkingday'][user.id];
+          if(userNonWorkingday && userNonWorkingday.find(d => d == day))
+            return 'cell-nonWorkingDay';
+        }
+
+        return 'next-month';
+      }
     },
 
-    reloadLeaves: function() {
-      this.loading = true;
-
-      // Take griddate add and subtract 1 month, reload filtered leaves
-      let lowerBoundary = moment(this.selectedPeriod).subtract(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-      let upperBoundary = moment(this.selectedPeriod).add(1, 'months').format('YYYY-MM-DDTHH:mm:ss');
-
-      let range = lowerBoundary + ',' + upperBoundary;
-      let options = {
-        params: {
-          leavedate__range: range,
-          status: 'APPROVED'
-        }
-      };
-
-      this.reloadWhereabouts(lowerBoundary, upperBoundary);
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, options).then( () => this.loading = false);
-    },
-
-    reloadWhereabouts: function(lowerBoundary, upperBoundary) {
-      let lowerMonth = moment(lowerBoundary).format('MM');
-      let upperMonth = moment(upperBoundary).format('MM');
-
-      store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS, {
-        params: {
-          timesheet__month__gte: lowerMonth,
-          timesheet__month__lte: upperMonth,
-          timesheet__year: this.selectedYear
-        }
-      });     
-    }
   },
 
 }
@@ -452,8 +304,9 @@ export default {
 @info: #33b5e5;
 @success: #00c851;
 @neutral: #e0e0e0;
+@party: #59b8e6;
 
-.dinksken {
+.cell-name {
   min-width: 350px;
 }
 
@@ -463,35 +316,23 @@ th.overviewgrid {
 .cell-home {
   background-color: @warning;
 }
-
+.cell-holiday {
+  background-color: @party;
+}
 .cell-sickness{
   background-color: @danger;
 }
-
 .cell-leave{
   background-color: @success;
-}
-
-.cell-paid-leave {
-  background-color: @success;
-}
-
-.cell-klein-verlet {
-  background-color: @success;
-}
-
-.cell-sick-leave {
-  background-color: @warning;
 }
 .cell-nonWorkingDay{
   background-color: @neutral;
 }
-
 .vue-js-switch {
   margin-left: 3px;
 }
 
-.nextMonth {
+.next-month {
   color: #ededed;
 }
 </style>

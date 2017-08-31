@@ -764,7 +764,8 @@ const actions = {
 
         options.path = '/services/monthly_availability/';
         if (!options.params)
-            options.params = {}
+            options.params = {
+            }
 
         options.params['period'] = moment(store.getters.calendar_selected_month).date(1).format('YYYY-MM-DDTHH:mm:ss');
 
