@@ -8,7 +8,7 @@ export default {
           id: 'performance-toast',
           horizontalPosition: 'right',
           verticalPosition: 'top',
-          duration: 1000,
+          duration: 2500,
           transition: 'slide-down',
           mode: 'override'
         });
@@ -22,7 +22,7 @@ export default {
           horizontalPosition: 'right',
           verticalPosition: 'top',
           className: 'et-warn',
-          duration: 1000,
+          duration: 2500,
           transition: 'slide-down',
           mode: 'override'
         });
@@ -36,7 +36,7 @@ export default {
           horizontalPosition: 'right',
           verticalPosition: 'top',
           className: 'et-danger',
-          duration: 1000,
+          duration: 2500,
           transition: 'slide-down',
           mode: 'override'
         });
