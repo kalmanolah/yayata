@@ -39,6 +39,8 @@ Vue.use(VueFormGenerator)
 Vue.use(VueChartJs)
 Vue.use(jspdf)
 
+require('file-loader?name=/css/bootstrap-vue.css!../node_modules/bootstrap-vue/dist/bootstrap-vue.css');
+
 export const cfg_file_path = '/cfg/config.json'
 
 export const router = new VueRouter({
