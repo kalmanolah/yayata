@@ -47,15 +47,18 @@ div(class='calendar')
               //- Popover showing leaves
               b-popover.float-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='d-none d-lg-inline')
                 i.fa.fa-university(v-if='isHoliday(n)')
-                i.fa.fa-plane(v-else-if='getLeaveForDay(n)')
+                i.fa.fa-plane(v-else)
                 div.p-2(slot='content')
 
                   template(v-if='isHoliday(n)')
-                    .text-center <strong>Holiday </strong>
+                    .text-center.alert-primary <strong>Holiday</strong>
                     .text-center {{ isHoliday(n).name }}
                   
                   template(v-for='leave in getLeaveForDay(n)')
-                    div.text-center <strong> {{ leave.leave_type }} </strong>
+                    .text-center
+                      .alert-success(v-if='leave.status == "APPROVED"') <strong> {{ leave.leave_type }} </strong>
+                      .alert-warning(v-else)  <strong> {{ leave.leave_type }} </strong>
+
                     div <strong>From: </strong> {{ leave.leave_start | moment('DD MMMM  HH:mm') }}
                     div <strong>Until: </strong> {{ leave.leave_end | moment('DD MMMM  HH:mm') }}
 
@@ -127,7 +130,6 @@ export default {
             path: '/leaves/',
             params: {
               user_id: this.selectedUser.id,
-              status: store.getters.leave_statuses[2],
               leavedate__range: range,
             }
           }).then((response) => {
@@ -217,10 +219,10 @@ export default {
 
     //Check whether user is on a requested leave on that particular day
     getLeaveForDay: function(day) {
-      if(this.year && this.month){
+      if(this.year && this.month && this.leaves) {
         let today = moment().year(this.year).month(this.month - 1).date(day);
   
-        return this.leaves.filter(x => {
+        return this.filteredLeaves.filter(x => {
           return today.isBetween(x.leave_start, x.leave_end, 'date', '[]');
         });
       }
@@ -290,6 +292,11 @@ export default {
   },
 
   computed: {
+
+    filteredLeaves: function() {
+      return this.leaves.filter(lv => lv.status === store.getters.leave_statuses[0] || lv.status === store.getters.leave_statuses[2]);
+    },
+
     // Returns whether the currently authenticated user is selected.
     currentUserSelected: function() {
       if(this.user && this.selectedUser)
