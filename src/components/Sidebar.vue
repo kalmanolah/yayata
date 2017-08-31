@@ -1,6 +1,6 @@
 <template lang="pug">
 .sidebar.col-md-auto
-  .dink.col-auto.pr-5.pt-4.pl-0
+  .side-container.col-auto.pr-5.pt-4.pl-0
     //- LOGO
     .row.pl-4
       .col
@@ -81,7 +81,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.dink {
+.side-container {
   height: 100%;
   position: fixed;
 }
