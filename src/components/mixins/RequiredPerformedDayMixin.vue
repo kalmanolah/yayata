@@ -5,8 +5,10 @@ export default {
     getDurationTotal: function(day) {
       let total = 0;
 
-      for(let val of this.activityPerformances.filter(x => x.day == day.format('D')))
-        total += parseFloat(val.duration);
+      if(this.activityPerformances) {
+        for(let val of this.activityPerformances.filter(x => x.day == day.format('D')))
+          total += parseFloat(val.duration);        
+      }
       
       return total;
     },
