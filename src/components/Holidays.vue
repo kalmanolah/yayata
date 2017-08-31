@@ -2,7 +2,7 @@
 div
   h3.text-md-center Upcoming holidays on {{ today | moment('DD MMMM YYYY') }}
   p.text-md-center.subtitle This is a list of all upcoming holidays in the next few months.
-  ul.list-group(v-if='holidays.length > 0')
+  ul.list-group(v-if='holidays && holidays.length > 0')
     li.list-group-item(v-for='holiday in holidays')
       .row
         .col-auto.align-self-center
@@ -31,12 +31,10 @@ export default {
   computed: {
     holidays: function() {
       if(store.getters.holidays) {
-        let dink = store.getters.holidays.filter( holiday => {
+        return store.getters.holidays.filter( holiday => {
           if(moment(holiday.date, 'YYYY-MM-DD').isSameOrAfter(moment()))
             return holiday;
         });
-        console.log( dink );
-        return dink
       }
     }
   },
