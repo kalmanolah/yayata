@@ -173,6 +173,7 @@ export default {
 
 .filter-scrollable {
   max-height: 70vh;
+  overflow-x: hidden;
 }
 
 .fixed {
@@ -222,7 +223,7 @@ a:hover {
   
 }
 .dropdown-menu {
-  max-height: 80vh;
+  max-height: 70vh;
   overflow: auto;
 }
 </style>
