@@ -80,12 +80,12 @@ div
       table.table.table-bordered.table-sm.table-responsive
         thead
           tr.text-center
-            th.overviewgrid.p-2 Name
+            th.overviewgrid.p-2.name-cell Name
             th.overviewgrid.text-center(v-for='d in daysInMonth') {{ d }}
             th.overviewgrid.next-month.text-center(v-if='(daysInMonth < 31)' v-for='d in (31 - daysInMonth)') {{ d }}
         tbody
           tr(v-for='user in country_users')
-            td.p-2
+            td.p-2.name-cell
               .d-none.d-xl-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.display_label }} <small>({{ user.username }})</small>
               .d-xl-none.d-lg-inline
@@ -298,13 +298,29 @@ export default {
 
 }
 </script>
-<style lang='less'>
+<style lang='less' scoped>
 @danger: #ff4444;
 @warning: #ffbb33;
 @info: #33b5e5;
 @success: #00c851;
 @neutral: #e0e0e0;
 @party: #59b8e6;
+
+tr {
+width: 100%;
+display: inline-table;
+table-layout: fixed;
+}
+
+table{
+  height: 75vh; 
+  display: -moz-groupbox;    // Firefox Bad Effect
+}
+tbody{
+  overflow-y: scroll;      
+  height: 73vh; 
+  position: absolute;
+}
 
 .cell-name {
   min-width: 350px;
@@ -334,5 +350,8 @@ th.overviewgrid {
 
 .next-month {
   color: #ededed;
+}
+.name-cell {
+  width: 18%;
 }
 </style>
