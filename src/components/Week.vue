@@ -91,11 +91,11 @@
                       template(v-for='whereabout in getLocation(weekDay)')
                         div {{ whereabout }}
 
-        .card-head-foot.text-center(v-if='weekDay < new Date()')
+        //- Performance creation is disabled for future activityPerformances
+        .card-head-foot.text-center(v-if='weekDay.month() < new Date().getMonth() + 1')
           //- Check if timesheet status is active
           template(v-if='getTimesheetStatus(weekDay)')
 
-            //- Performance creation is disabled for future activityPerformances
             hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
 
               //- Visible text
