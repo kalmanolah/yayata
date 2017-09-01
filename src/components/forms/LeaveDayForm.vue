@@ -78,7 +78,7 @@ export default {
       field: this.$refs.fromDatePicker,
       firstDay: 1,
       defaultDate: this.format,
-      minDate: moment().toDate(),
+      minDate: moment().subtract(1, 'month').toDate(),
       formatStrict: true,
       showWeekNumber: true,
       showDaysInNextAndPreviousMonths: true,

@@ -72,7 +72,7 @@ export default {
       field: this.$refs.fromDatePicker,
       firstDay: 1,
       defaultDate: this.format,
-      minDate: moment().toDate(),
+      minDate: moment().subtract(1, 'month').toDate(),
       formatStrict: true,
       showWeekNumber: true,
       showDaysInNextAndPreviousMonths: true,
@@ -93,7 +93,7 @@ export default {
     this.toDatePicker = new Pikaday({
       field: this.$refs.toDatePicker,
       firstDay: 1,
-      minDate: moment().toDate(),
+      minDate: moment().subtract(1, 'month').toDate(),
       format: 'DD MMM YYYY',
       formatStrict: true,
       showWeekNumber: true,
