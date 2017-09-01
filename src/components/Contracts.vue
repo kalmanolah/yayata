@@ -18,18 +18,18 @@ div.row
         .row
           .col-8
             .btn-group(role='group' aria-label='Button group with nested dropdown')
-              button.btn.btn-outline-dark(type='button' @click='setSortByCustomerName("/my_contracts/")' v-if='show_extra_info') My contracts
-              button.btn.btn-outline-dark(type='button' @click='setSortByCustomerName("all")') All
+              button.btn.btn-outline-dark(type='button' @click='reloadContractsUser()' v-bind:class='userContracts ? "highlight" : ""') My contracts
+              button.btn.btn-outline-dark(type='button' @click='reloadContractsAll()' v-bind:class='userContracts ? "" : "highlight"') All
 
               .btn-group(role='group')
                 button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropCustomer(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ customerName }}
                 .dropdown-menu(aria-labelledby='btnGroupDropCustomer')
-                  a.dropdown-item(v-for='name in customers' @click='setSortByCustomerName(name)') {{ name }}
+                  a.dropdown-item(v-for='name in customerNames' @click='setCustomerName(name)') {{ name }}
 
               .btn-group(role='group')
                 button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
                 .dropdown-menu(aria-labelledby='btnGroupDropContractType')
-                  a.dropdown-item(v-for='type in contractTypes' @click='setSortByType(type)') {{ type }}
+                  a.dropdown-item(v-for='type in contractTypes' @click='setContractType(type)') {{ type }}
                 Invoice.pull-right.ml-2
 
           .col-lg-4
@@ -110,10 +110,11 @@ import ContractsFilterForm from './forms/ContractsFilterForm.vue';
 import PieChart from './charts/PieChart.js';
 import moment from 'moment';
 import Invoice from './Invoice.vue';
-
+import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'contracts',
+  mixins: [ToastMixin],
 
   components: {
     ContractsFilterForm,
@@ -123,13 +124,10 @@ export default {
 
   data () {
     return {
-      sortBy: 'all',
       customerName: 'Customer',
       contractType: 'Contract type',
       query: '',
-      // Stores the unique custoner names
-      customers: [],
-      contractTypes: [],
+      userContracts: true,
       generate: false,
       showFilter: false,
       chartOptions: {
@@ -192,26 +190,57 @@ export default {
   },
 
   computed: {
-
-    //Gets the full contracts containing attachtments, contractusers, hours estimated and allocated. 
-    fullContracts: function() {
-      if(store.getters.full_contracts && store.getters.filtered_contracts && this.customers && this.contractTypes) {
-
-        // Get each unique customerName
-        store.getters.filtered_contracts.forEach((contract) => {
-          if(this.customers.indexOf(contract.customerName) === -1){
-            this.customers.push(contract.customerName);
-          }
-        });
-
-        // Get each unique contractType
-        store.getters.filtered_contracts.forEach((contract) => {
-          if(this.contractTypes.indexOf(contract.type) === -1){
-            this.contractTypes.push(contract.type);
-          }
-        });
-
+    // On load: get contracts of current user.
+    // On all button click: load all contracts.
+    // On customer name select: display contacts with customer name, using all or personal contracts
+    // On contract type select: same as above.
+    contracts: function() {
+      if(store.getters.full_contracts) {
         return store.getters.full_contracts;
+      }
+    },
+
+    customerNames: function() {
+      if(this.contracts) {
+        let names = [];
+        this.contracts.forEach((contract) => {
+          if(names.indexOf(contract.customerName) === -1) {
+            names.push(contract.customerName);
+          }
+        });
+        return names;
+      }
+    },
+
+    contractTypes: function() {
+      if(this.contracts) {
+        let types = [];
+        this.contracts.forEach((contract) => {
+          if(types.indexOf(contract.type) === -1) {
+            types.push(contract.type);
+          }
+        });
+        return types;
+      }
+    },
+
+    filteredContracts: function() {
+      if(this.contracts && this.customerName && this.contractType) {
+        let fContracts = this.contracts;
+        // if the user has selected a customer from the dropdown
+        if(this.customerName !== 'Customer') {
+          fContracts = fContracts.filter((contract) => {
+            return contract.customerName === this.customerName;
+          });
+        }
+
+        // if the user has selected a type from teh dropdown
+        if(this.contractType != 'Contract type') {
+          fContracts = fContracts.filter((contract) => {
+            return contract.type === this.contractType;
+          });
+        }
+        return fContracts;
       }
     },
 
@@ -234,17 +263,10 @@ export default {
       }
     },
 
-   //Gets the contracts from the store
-    filtered_contracts: function() {
-      if(store.getters.filtered_contracts) {
-        return store.getters.filtered_contracts;
-      }
-    },
-
     // Filter by user input
     queryContracts: function() {
-       if(this.sortedContracts) {
-        return this.sortedContracts.filter( contract => {
+       if(this.filteredContracts) {
+        return this.filteredContracts.filter( contract => {
           // Fields to filter on
           if(contract.name) {
             return contract.name.toLowerCase().indexOf(this.query.toLowerCase()) !== -1;
@@ -254,36 +276,39 @@ export default {
         });
       }
     },
-
-    // Sort by customerName
-    sortedContracts: function() {
-      if(this.sortBy !== 'all' && this.fullContracts && store.getters.activity_performances){
-        let contracts = [];
-
-        this.fullContracts.forEach(contract => {
-          if(contract.customerName === this.sortBy || contract.type === this.sortBy)
-            contracts.push(contract)
-        });
-
-        return this.activeSort(contracts);
-      } else {
-        if(this.fullContracts && store.getters.activity_performances)
-          return this.activeSort(this.fullContracts);
-      }
-    },
-
-
-    //Gets the contracts currently unactive
-    inactiveContracts: function() {
-      if(this.filtered_contracts && this.contract_detail)
-        return this.filtered_contracts.filter(x => x.active === false).map(c => {
-            return Object.assign(c, this.contract_detail.find(cd => cd.id === c.id ));
-          });
-    },
-
   },
 
   methods: {
+    reloadContractsUser: function() {
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+        params: {
+          contractuser__user__id: store.getters.user.id,
+          active: 'true'
+        }
+      }).then(() => {
+        this.userContracts = true;
+      }).catch((error) => {
+        this.showDangerToast('Something went wrong while reloading user contracts. Check the console for more info.')
+        console.error(error);
+      });
+    },
+
+    reloadContractsAll: function() {
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+        params: {
+          active: 'true'
+        }
+      }).then(() => {
+        this.userContracts = false;
+      }).catch((error) => {
+        this.showDangerToast('Something went wrong while reloading all contracts. Check the console for more info.')
+        console.error(error);
+      });
+    },
+
+    getMyContractsButtonStyle: function() {
+      return this.sortBy === '/my_contracts/' ? 'highlight' : '';
+    },
     // Generates a chart based on a project contract
     generateProjectChart: function(contract) {
       if(this.project_estimates && store.getters.contract_roles && store.getters.activity_performances) {
@@ -369,49 +394,12 @@ export default {
       return data ? data.datasets[0].data.length >= 2 : null;
     },
 
-    setSortByCustomerName: function(value) {
-      // Get all contracts.
-      if(value === 'all') {
-        this.sortBy = 'all';
-        this.customerName = 'Customer';
-        this.contractType = 'Contract type';
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-          params: {
-            active: 'true'
-          }
-        });
-      // Get user contracts.
-      } else if(value === '/my_contracts/') {
-        let options = { 
-          path: '/contracts/', 
-          params: {
-            contractuser__user__id: store.getters.user.id
-          } 
-        };
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
-      // Get contracts of company.
-      } else {
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS);
-        this.sortBy = this.filtered_contracts.find(x => x.customerName == value).customerName;
-        this.customerName = this.filtered_contracts.find(x => x.customerName == value).customerName;
-      }
+    setCustomerName: function(value) {
+      this.customerName = value;
     },
 
-    setSortByType: function(type) {
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS);
-        this.sortBy = this.filtered_contracts.find(x => x.type == type).type;
-        this.contractType = this.filtered_contracts.find(x => x.type == type).type;      
-    },
-
-    activeSort: function(contracts) {
-      if(contracts){
-        return contracts.sort(function(a, b) {
-          a = a.active;
-          b = b.active;
-
-          return a > b ? -1 : (a < b ? 1 : 0);
-        });
-      }
+    setContractType: function(type) {
+        this.contractType = this.contracts.find(x => x.type == type).type;      
     },
 
     getRibbonStyleClass: function(contract) {
@@ -442,6 +430,10 @@ export default {
 </script>
 
 <style>
+.highlight {
+  border: 1px solid #0aa6c9;
+}
+
 #contracts {
   order: 1;
 }
