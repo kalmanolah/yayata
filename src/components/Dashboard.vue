@@ -403,7 +403,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang='less'>
 .chevron-l {
   margin-right: 4rem;
 }
@@ -412,7 +412,7 @@ export default {
   margin-left: 4rem;
 }
 .chevron {
-  color: #0275d8;
+  color: #0aa6c9;
 }
 
 .chevron:hover {

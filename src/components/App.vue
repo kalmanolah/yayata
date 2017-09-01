@@ -122,6 +122,7 @@ export default {
 @datepickerHeight: 228px;
 @sidebar-width: 250px;
 @background-color: #FFF;
+@primary-color: #0aa6c9;
 .container-fluid{
   background: @background-color;
 }
@@ -134,6 +135,7 @@ export default {
   padding-left: 1rem;
   padding-left: 0;
   // width: 100vw
+  overflow-x: hidden;
 }
 
 .logo{
@@ -145,7 +147,7 @@ export default {
 }
 
 .card-top-blue{
-  border-top: solid 3px #398bcc;
+  border-top: solid 3px @primary-color;
 }
 
 .card-top-red{
@@ -212,9 +214,13 @@ export default {
     overflow-y: auto;
     overflow-x: hidden;
 }
-/*a {
-  color: #0aa6c9;
-}*/
+a {
+  color: @primary-color;
+}
+a:hover {
+  color: @primary-color;
+  
+}
 .dropdown-menu {
   max-height: 80vh;
   overflow: auto;
