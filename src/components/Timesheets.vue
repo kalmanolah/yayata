@@ -12,7 +12,7 @@ div.row
         h3.card-header {{ year }}
         
         .card-block.row.no-gutters
-          .col-4(v-for='(sheet, i) in year_group')
+          .col-6(v-for='(sheet, i) in year_group')
 
               .card.m-3
 
@@ -39,20 +39,24 @@ div.row
                         td                  
                           strong Open hours:
                         td
+                        td
                           .badge.pull-right(:class='getBadgeStyle(sheet)') {{ (sheet.hours_required - sheet.hours_performed).toFixed(1) | negativeToZeroFilter  }}
                       tr
                         td 
                           span Days with leave:
                         td
+                        td
                           .pull-right {{ getDaysWithLeave(sheet.id) }}
 
-                      template(v-for="(umt, index) in userMonthTotals")
+                      template(v-for="(umt, index)  in userMonthTotals")
                         template(v-if='sheet.id == index')
                           tr(v-for='(month_total, contract) in umt')
                             td {{ contract | getContractNameFilter }}
                             td
                               .pull-right {{ month_total | roundHoursFilter }} hours ({{ month_total | hoursToDaysFilter }} days)
-
+                            td 
+                              b-btn.btn-outline-dark.pull-right(@click='generatePdf(sheet, contract)')
+                                i.fa.fa-print
 
 </template>
 
@@ -61,11 +65,13 @@ div.row
   import store from '../store';
   import * as types from '../store/mutation-types';
   import ToastMixin from './mixins/ToastMixin.vue';
+  import jspdf from 'jspdf'
 
 
   export default {
     name: 'timesheets',
     mixins: [ToastMixin],
+
 
     data () {
       return {
@@ -158,7 +164,75 @@ div.row
     },
 
     methods: {
+      generatePdf: function(sheet, contractId) {
+        let contract = store.getters.filtered_contracts.find((c) => c.id == contractId);
+        let performances = store.getters.activity_performances.filter((p) => p.contract == contractId && p.timesheet == sheet.id);
+        let totalPerformances = 0;
+        let baseX = 15;
+        let baseY = 28;
+        // let month = moment().month(this.date - 1).format('MMMM');
+        let doc = new jspdf({
+          orientation: 'portrait'
+        });
+        if(contract) {
+          doc.setFontSize(12)
+          // header
+          doc.text('Consultant: ' + store.getters.user.display_label, 60, 8)
+          doc.text(moment().month(sheet.month - 1).format('MMM') + ' ' + sheet.year.toString(), 140, 8)
+          // doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
+          doc.text('Project: ' + contract.display_label, 140, 13)
+          doc.text('Customer: ' + contract.customerName, 60, 13)
 
+          doc.setFontSize(10)
+          // Table header
+          doc.text('Day', baseX, baseY)
+          doc.text('Description', baseX + 20, baseY)
+          doc.text('hours', baseX + 130, baseY)
+          doc.text('Performance type', baseX + 150, baseY)
+          doc.line(baseX, baseY + 2, baseX + 190, baseY + 2)
+          baseY += 7;
+          // Performances
+          performances.forEach((perf) => {
+            totalPerformances += parseFloat(perf.duration);
+            let performance_type_label = store.getters.performance_types.find((pType) => pType.id == perf.performance_type).name | 'ERROR';
+            // check if baseY is greater than max
+            if(baseY >= 250) {
+              // Create a new page and continue
+              doc.addPage();
+              baseY = 20;
+            }
+            doc.text(moment().year(sheet.year).month(sheet.month).date(perf.day).format('ddd'), baseX, baseY) 
+            doc.text(perf.day.toString(), baseX + 10, baseY)
+            if(perf.description.length > 70) {
+              doc.text(perf.description.slice(1, 70) + '...', baseX + 20, baseY)
+            } else {
+              doc.text(perf.description, baseX + 20, baseY)
+            }
+            doc.text(perf.duration.toString(), baseX + 130, baseY)
+            doc.text(performance_type_label.toString(), baseX + 150, baseY)
+            doc.setDrawColor(224,224,224);
+            doc.line(baseX, baseY + 1, baseX + 190, baseY + 2)
+            baseY += 6;
+          });
+          if(baseY >= 250) {
+              doc.addPage();
+              baseY = 20;
+          }
+          // totals
+          doc.text('Total: ' + totalPerformances.toString(), baseX + 120, baseY + 3)
+          doc.text('Total in 8-hour days: ' + parseInt(totalPerformances / 8) + 'd ' + (parseFloat(totalPerformances) % 8), baseX + 88, baseY + 10)
+          // Signature boxes
+          doc.setFontSize(10)
+          doc.text('Signature Conultant', baseX, baseY + 18)
+          doc.rect(baseX, baseY + 20, 50, 20)
+          doc.text('Signature Customer', baseX + 55, baseY + 18)
+          doc.rect(baseX + 55 , baseY + 20, 50, 20)
+          doc.text('Remarks', baseX + 125, baseY + 18)
+          doc.rect(baseX + 125 , baseY + 20, 60, 20)
+        }
+        // doc.autoPrint()
+        contract ? doc.save(contract.display_label+ '-' + sheet.month + '.pdf') : doc.save('invoice-' + sheet.month + '.pdf')
+      },
       // Set the status of this sheet to PENDING.
       setPending: function(sheet) {
 
