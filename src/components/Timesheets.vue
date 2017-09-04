@@ -12,7 +12,7 @@ div.row
         h3.card-header {{ year }}
         
         .card-block.row.no-gutters
-          .col-6(v-for='(sheet, i) in year_group')
+          .col-4(v-for='(sheet, i) in year_group')
 
               .card.m-3
 
@@ -36,17 +36,22 @@ div.row
                   table.table
                     tbody
                       tr
-                        .col                  
-                          strong Open hours:  
+                        td                  
+                          strong Open hours:
+                        td
                           .badge.pull-right(:class='getBadgeStyle(sheet)') {{ (sheet.hours_required - sheet.hours_performed).toFixed(1) | negativeToZeroFilter  }}
-                          
-                        .col 
+                      tr
+                        td 
                           span Days with leave:
+                        td
                           .pull-right {{ getDaysWithLeave(sheet.id) }}
 
-                      tr(v-for="(c, index) in contracts")
-                        td {{ c.customerName }}: {{ c.name }}
-                        td.text-sm-right {{ c.monthly_duration }} hours ({{c.monthly_duration | hoursToDaysFilter }} days)
+                      template(v-for="(umt, index) in userMonthTotals")
+                        template(v-if='sheet.id == index')
+                          tr(v-for='(month_total, contract) in umt')
+                            td {{ contract | getContractNameFilter }}
+                            td
+                              .pull-right {{ month_total | roundHoursFilter }} hours ({{ month_total | hoursToDaysFilter }} days)
 
 
 </template>
@@ -67,6 +72,7 @@ div.row
         today: new Date(),
         performances: {},
         leaves: {},
+        userMonthTotals: {},
         monthInfo: {},
         daysInMonth: {},
         quotas: {},
@@ -97,6 +103,7 @@ div.row
 
             ts[x.year][x.month] = x;
             this.$set(this.loaded, x.id, {performances: false, leaves: false})
+            this.getContractTimesheetPerformances(x); 
           });
 
           return ts;
@@ -110,8 +117,9 @@ div.row
       },
 
       fullContracts: function() {
-        if(store.getters.full_contracts)
+        if(store.getters.full_contracts && this.timesheets) {
           return store.getters.full_contracts;
+        }
       },
 
     },
@@ -135,9 +143,9 @@ div.row
 
           for(let l in newLoaded) {
             if(!this.called[l])
-              this.called[l] = { performances: false, leaves: false };
+              this.called[l] = { performances: false, leaves: false, userMonthTotals: false };
 
-           if(!newLoaded[l].leaves && !this.leaves[l] && !this.called[l].leaves) {
+            if(!newLoaded[l].leaves && !this.leaves[l] && !this.called[l].leaves) {
               this.getLeavesForTimesheet(l);
               this.called[l].leaves = true;
             }
@@ -184,11 +192,32 @@ div.row
         });
       },
 
-      // Finds the fullcontract per timesheet
-      getFullContract: function(ts) {
+      getContractTimesheetPerformances: function(ts) {
+        store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: '/my_performances/activity/',
+          params: {
+            timesheet: ts.id
+          }
+        })
+        .then((response) => {
+          let totals = {};
+
+          response.data.results.forEach((perf) => {
+            if(totals[perf.contract]){
+              totals[perf.contract] += parseFloat(perf.duration)
+            } else {
+              totals[perf.contract] = parseFloat(perf.duration)
+            }
+          });
+          this.$set(this.userMonthTotals, ts.id, totals)
+        })
+        .catch((error) => {
+          this.showDangerToast('Something went wrong while getting performances. Check the console for more info');
+          console.error(error);
+        });
       },
 
-      //Get accepted leaves for timesheet
+      // get leaves for timesheet
       getLeavesForTimesheet: function(ts) {
 
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
@@ -262,6 +291,18 @@ div.row
 
       negativeToZeroFilter (val) {
         return val > 0 ? val : 0;
+      },
+      hoursToDaysFilter: function(val) {
+        return Math.round(val / 8 * 2) / 2;
+      },
+
+      roundHoursFilter: function(val) {
+        return Math.round(val * 2) / 2;
+      },
+
+      getContractNameFilter(val) {
+        let contract = store.getters.contracts.find((c) => c.id == val);
+        return contract.customerName + ' : ' + contract.name;
       }
     }
 
