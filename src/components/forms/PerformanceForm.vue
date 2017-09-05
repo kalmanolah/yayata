@@ -347,8 +347,14 @@ export default {
               if(store.getters.filtered_contracts) {
               var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
 
-              return activeContracts.map(x => {
-                return { id: x.id, name: x.name +  ' → ' + x.customerName }
+              return activeContracts
+                .map(x => {
+                  return { id: x.id, name: x.customerName +  ' → ' + x.name }
+                })
+                .sort((a, b) =>{
+                  let aName = a.name.toLowerCase();
+                  let bName = b.name.toLowerCase();
+                  return aName > bName ? 1 : (aName < bName ? -1 : 0)
                 });                
             }
           },
