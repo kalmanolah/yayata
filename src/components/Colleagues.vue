@@ -242,7 +242,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #colleagues {
   order: 1;
 }
@@ -256,10 +256,6 @@ export default {
 
 .user-fullname {
   font-weight: bold;
-}
-
-.card-columns {
-  margin-top: 1rem;
 }
 
 .toggle-info {
@@ -286,5 +282,21 @@ export default {
 #user-table-head>tr>th:hover {
   background-color: #d2d2d2;
   border-bottom: 2px solid #d2d2d2;
+}
+
+tr {
+width: 100%;
+display: inline-table;
+table-layout: fixed;
+}
+
+table{
+  height: 75vh; 
+  display: -moz-groupbox;
+}
+tbody{
+  overflow-y: scroll;      
+  height: 73vh; 
+  position: absolute;
 }
 </style>
