@@ -16,6 +16,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'standbycontractselect',
+  mixins: [ToastMixin],
   data() {
     return {
       selectedContracts: [],
@@ -75,7 +76,7 @@ export default {
           if(delRes.status == 204) {
             let index = this.standbyPerformances.findIndex(x => x.id == standby.id);
             this.standbyPerformances.splice(index, 1);
-            this.showInfoToast('User no longer on standby');
+            this.showInfoToast('No longer on standby');
             store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
           }
         }).catch((error) => {
@@ -103,7 +104,7 @@ export default {
           if(response.status == 201) {
             this.standbyPerformances.push(response.data)
             store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-            this.showSuccessToast('User on standby');
+            this.showSuccessToast('On standby');
           } 
         }).catch((error) => {
           console.log(error);
@@ -131,7 +132,6 @@ export default {
               method: 'POST',
               body: {
                 timesheet: tsRes.data.id,
-                // TODO: implement contract
                 contract: contractId,
                 day: this.day 
               },
@@ -140,7 +140,7 @@ export default {
           ).then((spRes) => {
             if(spRes.status == 201) {
               store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-              this.showSuccessToast('User on standby');
+              this.showSuccessToast('On standby');
             }
           }).catch((error) => {
             console.log(error);

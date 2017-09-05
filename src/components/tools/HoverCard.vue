@@ -16,12 +16,12 @@ import PerformanceForm from '../forms/PerformanceForm.vue';
 import StandbyContractSelect from '../StandbyContractSelect.vue';
 import LocationSelect from '../LocationSelect.vue';
 import { mixin as clickaway } from 'vue-clickaway';
-
+import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
   name: 'hovercard',
 
-  mixins: [ clickaway ],
+  mixins: [ clickaway, ToastMixin],
   components: {
     /* UPDATE FOR MORE COMPONENT FORMS */
     PerformanceForm: PerformanceForm,
