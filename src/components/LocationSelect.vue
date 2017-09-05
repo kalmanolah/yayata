@@ -115,9 +115,7 @@ export default {
   },
   watch: {
     selectedLocation: function (newSelectedLocation, oldSelectedLocation) {
-      if(oldSelectedLocation){
-        this.setWhereabout();
-      }
+      this.setWhereabout();
     }
   }
 }
