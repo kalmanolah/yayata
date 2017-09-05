@@ -24,30 +24,33 @@ div(class='calendar')
         h3.text-center All Leaves
         p.text-center An overview of all your leaves.
 
-        #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
-          .card.card-top-blue.mb-3
-            .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
-              h4.card-title.text-md-center <strong>{{ year }}</strong>
+        template(v-if='processedLeaves')
+          #allLeavesAccordion(v-for='(yg, year) in processedLeaves' role='tablist', aria-multiselectable='true')
+            .card.card-top-blue.mb-3
+              .card-header(role='tab', :id='"leavesHeading-" + year', data-toggle='collapse', data-parent='#allLeavesAccordion', aria-expanded='false', :aria-controls='"allLeavesCollapse-" + year', :href='"#allLeavesCollapse-" + year')
+                h4.card-title.text-md-center <strong>{{ year }}</strong>
 
-            .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
-              .card-block.pl-2.pr-2
-                table.table
-                  tbody(v-for='(leaves, month) in yg')
-                    tr
-                      td(colspan='2').text-center
-                        h5 <strong>{{ month | fullMonthString }}</strong>
-
-                    template(v-for='leave in leaves')
+              .collapse(role='tabpanel', :id='"allLeavesCollapse-" + year', :aria-labelledby='"leavesHeading-" + year')
+                .card-block.pl-2.pr-2
+                  table.table
+                    tbody(v-for='(leaves, month) in yg')
                       tr
-                        td <strong>{{ leave.leave_type }}</strong> 
-                          .badge.float-md-left.p-1.mr-4(v-bind:class='getBadgeStyleClass(leave)') 
-                            //- .d-none.d-xl-block {{ leave.status }}
-                            .fa(:class='getStatusStyleClass(leave)')
-                        td.text-right.row.justify-content-center.pr-0.mr-2
-                          .col-auto.col-md-auto {{ leave.leave_start | moment('DD MMM - HH:mm') }}
-                          .col-auto.d-xl-inline.d-none →
-                          .col-auto.col-md-auto {{ leave.leave_end | moment('DD MMM - HH:mm') }}
-        hr.d-lg-inline.pb-4
+                        td(colspan='2').text-center
+                          h5 <strong>{{ month | fullMonthString }}</strong>
+
+                      template(v-for='leave in leaves')
+                        tr
+                          td <strong>{{ leave.leave_type }}</strong> 
+                            .badge.float-md-left.p-1.mr-4(v-bind:class='getBadgeStyleClass(leave)') 
+                              //- .d-none.d-xl-block {{ leave.status }}
+                              .fa(:class='getStatusStyleClass(leave)')
+                          td.text-right.row.justify-content-center.pr-0.mr-2
+                            .col-auto.col-md-auto {{ leave.leave_start | moment('DD MMM - HH:mm') }}
+                            .col-auto.d-xl-inline.d-none →
+                            .col-auto.col-md-auto {{ leave.leave_end | moment('DD MMM - HH:mm') }}
+          hr.d-lg-inline.pb-4
+        template(v-else)
+          p.alert.alert-info You have requested zero leaves as of today. Only robots never have to take a break!
 
     .col-lg-6.p-0.pt-2
 
