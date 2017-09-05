@@ -68,7 +68,7 @@
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
                 //- Standby
-                template.col
+                template.col(v-if='userHasSupportContracts')
                   b-popover(triggers='hover' placement='top' class='hidden-md-down')
                     hovercard(
                       :id='"hc_standby_" + i', 
@@ -288,6 +288,11 @@ export default {
       return this.getDaysOfWeek(this.currentWeekFormat);
     },
 
+    userHasSupportContracts: function() {
+      if(store.getters.filtered_contracts) {
+        return store.getters.filtered_contracts.filter((c) => c.contract_type == 'SupportContract').length > 0;
+      }
+    }
   },
 
   methods: {
