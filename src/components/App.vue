@@ -123,6 +123,11 @@ export default {
 @sidebar-width: 250px;
 @background-color: #FFF;
 @primary-color: #0aa6c9;
+
+#app {
+  overflow: hidden;
+}
+
 .container-fluid{
   background: @background-color;
 }
@@ -157,6 +162,9 @@ export default {
   border-top: solid 3px #60C200;
 }
 
+.card-columns {
+  margin-top: 1rem;
+}
 .navbar-yayata{
   border-radius: 0;
   background: #f3f0f0;
