@@ -219,8 +219,8 @@ div.row
               baseY = 20;
           }
           // totals
-          doc.text('Total: ' + totalPerformances.toString(), baseX + 120, baseY + 3)
-          doc.text('Total in 8-hour days: ' + parseInt(totalPerformances / 8) + 'd ' + (parseFloat(totalPerformances) % 8), baseX + 88, baseY + 10)
+          doc.text('Total: ' + totalPerformances.toString() + 'h', baseX + 120, baseY + 3)
+          doc.text('Total in 8-hour days: ' + parseInt(totalPerformances / 8) + 'd ' + (parseFloat(totalPerformances) % 8), baseX + 96, baseY + 10)
           // Signature boxes
           doc.setFontSize(10)
           doc.text('Signature Conultant', baseX, baseY + 18)
@@ -375,8 +375,10 @@ div.row
       },
 
       getContractNameFilter(val) {
-        let contract = store.getters.contracts.find((c) => c.id == val);
-        return contract.customerName + ' : ' + contract.name;
+        if(store.getters.contracts) {
+          let contract = store.getters.contracts.find((c) => c.id == val);
+          return contract.customerName + ' : ' + contract.name;
+        }
       }
     }
 
