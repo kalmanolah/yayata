@@ -40,6 +40,8 @@ div.row
                   tr
                     th(@click='setTableSort("first_name")') Name
                       .pull-right.fa.fa-sort(aria-hidden='true')
+                    th(@click='setTableSort("username")') Username
+                      .pull-right.fa.fa-sort(aria-hidden='true')
                     th(@click='setTableSort("email")') Email
                       .pull-right.fa.fa-sort(aria-hidden='true')
                     th(@click='setTableSort("userinfo__birth_date")') Birthdate
@@ -52,6 +54,8 @@ div.row
                   tr(v-for='(user, index) in requestedUsers')
                     td {{ user.first_name }} {{ user.last_name }} 
                       span.ml-1.badge.pull-right(v-for='group in user.groups' v-bind:class='determineBadgeColor(group)') {{ group | getGroupAsString }}
+                    td 
+                      span {{ user.username }}
                     td
                       span {{ user.email }}
                       a.pull-right(:href="`mailto:${user.email}`")
@@ -100,13 +104,12 @@ export default {
   },
 
   created: () => {
-    if(!store.getters.filtered_users) {
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
-        params: {
-          is_active: true
-        }
-      });
-    }
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
+      params: {
+        is_active: true,
+        order_by: 'first_name'
+      }
+    });
   },
 
   computed: {
