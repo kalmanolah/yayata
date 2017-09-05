@@ -2,10 +2,11 @@
 div.contract-select
   .text-md-center 
     strong Select contract
-  div.custom-controls-stacked(v-for='(contract, index) in supportContracts') 
-    label.custom-control.custom-label
-      input(:id='"contract_" + index', :value='contract.id', type='checkbox', v-model='selectedContracts', @click='toggleStandby(contract.id)')
-      span.custom-control-description {{ contract.display_label }}
+  template(v-if='loaded')
+    div.custom-controls-stacked(v-for='(contract, index) in supportContracts') 
+      label.custom-control.custom-label
+        input(:id='"contract_" + index', :value='contract.id', type='checkbox', v-model='selectedContracts', @click='toggleStandby(contract.id)')
+        span.custom-control-description {{ contract.display_label }}
 </template>
 <script>
 import Vue from 'vue';
@@ -20,7 +21,8 @@ export default {
   data() {
     return {
       selectedContracts: [],
-      standbyPerformances: []
+      standbyPerformances: [],
+      loaded: false
      }
   },
   created () {
@@ -29,7 +31,12 @@ export default {
       params: {
         contractuser__user__id: store.getters.user.id
       }
-    });
+    }).then(() => this.loaded = true)
+      .catch((error) => {
+        this.showDangerToast('Something went wrong while loading contracts. Check the console for more info.');
+        console.error(error);
+      });
+
     store.dispatch(types.NINETOFIVER_API_REQUEST, {
       path: '/my_performances/standby/',
       params: {
@@ -45,6 +52,7 @@ export default {
         }
       });
     }).catch((error) => {
+      this.showDangerToast('Something went wrong while creating the standby performance. Check the console for more info.');
       console.log(error);
     });
   },
