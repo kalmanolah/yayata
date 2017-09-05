@@ -131,10 +131,59 @@ export default {
           return holiday.country == store.getters.user.userinfo.country && moment(holiday.date).isSame(moment(this.today), 'day')
         })
       }
+    },
+
+    contracts: function() {
+      if(store.getters.filtered_contracts) {
+      var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
+
+      return activeContracts.map(x => {
+        return { id: x.id, name: x.name +  ' → ' + x.customerName }
+        });                
+      }
+    },
+
+    performance_types: function() {
+      if(store.getters.performance_types && store.getters.contracts && model.contract) {
+        var cont = store.getters.contracts.find(c => {
+          return c.id === model.contract;
+        });
+
+        return store.getters.performance_types.filter(pt => {
+          return cont.performance_types.includes(pt.id);
+        });
+      }
+    },
+
+    contract_roles: function() {
+      if(store.getters.contract_users && store.getters.user && model.contract){
+        var contract_users = store.getters.contract_users.filter( cu => {
+          return (cu.user === store.getters.user.id && cu.contract === model.contract)
+        })
+        var contract_roles = [];
+        contract_users.forEach( cu => {
+          contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
+        });
+        
+        return contract_roles;
+      } 
     }
   },
 
-  watch: {},
+  watch: {
+    model: {
+      handler: function(newModel, oldModel) {
+        // On selecting a contract; select the first performance type and contract role
+        if(this.performance_types) {
+          this.model['performance_type'] = this.performance_types[0].id;
+        }
+        if(this.contract_roles) {
+          this.model['contract_role'] = this.contract_roles[0].id;
+        }
+      },
+      deep: true
+    }
+  },
 
   methods: {
     getHours: function() {
@@ -296,13 +345,13 @@ export default {
 
             values: function() {
               if(store.getters.filtered_contracts) {
-                var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
+              var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
 
-                return activeContracts.map(x => {
-                  return { id: x.id, name: x.name +  ' → ' + x.customerName }
+              return activeContracts.map(x => {
+                return { id: x.id, name: x.name +  ' → ' + x.customerName }
                 });                
-              }
-            },
+            }
+          },
 
             styleClasses: ['compact-field', 'd-inline-flex', 'col-8'],
           },
@@ -349,7 +398,7 @@ export default {
             //CONTRACT_ROLE
             type: "select",
             model: "contract_role",
-            required: false,
+            required: true,
             values: () => {
               if(store.getters.contract_users && store.getters.user && model.contract){
                 var contract_users = store.getters.contract_users.filter( cu => {
