@@ -372,7 +372,7 @@ export default {
       var data = [];
       var daysLeft = moment().diff(moment(contract.end_date), 'days');
       daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
-      var daysSinceStart = moment(contract.start_date).diff(moment(), 'days');
+      var daysSinceStart = moment().diff(moment(contract.start_date), 'days');
       daysSinceStart = daysSinceStart < 0 ? 0 :daysSinceStart;
       
       var datacollection = {
@@ -390,7 +390,7 @@ export default {
 
     //Checks to see if there is some actual data for the chart to be rendered
     validChartData: function(contract) {
-      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : contract.ends_at ? this.generateTimeLeftChart(contract) : null;
+      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : contract.end_date ? this.generateTimeLeftChart(contract) : null;
       return data ? data.datasets[0].data.length >= 2 : null;
     },
 
