@@ -390,7 +390,7 @@ export default {
 
     //Checks to see if there is some actual data for the chart to be rendered
     validChartData: function(contract) {
-      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : this.generateTimeLeftChart(contract);
+      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : contract.ends_at ? this.generateTimeLeftChart(contract) : null;
       return data ? data.datasets[0].data.length >= 2 : null;
     },
 
