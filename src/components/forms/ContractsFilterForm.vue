@@ -94,10 +94,23 @@ export default {
                     validator: VueFormGenerator.validators.string
                   },
                   {
+                    // contractuser__user__username__icontainsany__internal
+                    type: "input",
+                    inputType: "text",
+                    // label: "Contractuser username internal",
+                    model: "contractuser__user__username__icontains",
+                    readonly: false,
+                    required: false,
+                    disabled: false,
+                    placeholder: "Username",
+                    styleClasses: 'no-label-field',                      
+                    validator: VueFormGenerator.validators.string
+                  },
+                  {
                     // contractuser__user__groups__icontains
                     type: "checklist",
-                    label: "Active days",
-                    model: "active_days",
+                    label: "Contractuser groups",
+                    model: "contractuser__user__groups",
                     listBox: true,
                     values: function() {
                       if(store.getters.user_groups)
@@ -117,19 +130,6 @@ export default {
                     disabled: false,
                     placeholder: "Usergroup",
                     styleClasses: 'no-label-field',                                            
-                    validator: VueFormGenerator.validators.string
-                  },
-                  {
-                    // contractuser__user__username__icontainsany__internal
-                    type: "input",
-                    inputType: "text",
-                    // label: "Contractuser username internal",
-                    model: "contractuser__user__username__icontains",
-                    readonly: false,
-                    required: false,
-                    disabled: false,
-                    placeholder: "Username",
-                    styleClasses: 'no-label-field',                      
                     validator: VueFormGenerator.validators.string
                   },
                   // CUSTOMER
@@ -280,7 +280,10 @@ export default {
         this.model.company__vat_identification_number = '',
         this.model.contract_groups__label__icontains = ''
         var options = {
-          path: '/contracts/'
+          path: '/contracts/',
+          params: {
+            active: true
+          }
         }
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
       },
