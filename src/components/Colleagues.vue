@@ -153,7 +153,8 @@ export default {
           user.fullname = user.first_name + ' ' + user.last_name;
           // Fields to filter on
           return user.email.toLowerCase().indexOf(query.toLowerCase()) !== -1
-                || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+                || user.fullname.toLowerCase().indexOf(query.toLowerCase()) !== -1
+                || user.username.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
       } else {
          return this.sortedUsers.filter( user => {
