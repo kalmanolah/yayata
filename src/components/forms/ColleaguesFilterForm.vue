@@ -34,9 +34,11 @@
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
     name: 'ColleaguesFilterForm',
+    mixins: [ToastMixin],
     data () {
         return {
           toggleButtonLabels: {
@@ -373,7 +375,11 @@ export default {
             path: '/users/',
             params: this.model
           }                        
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options)
+          .catch((error) => {
+            this.showDangerToast('Something went wrong while getting the results. Check the console for more info.')
+            console.error(error)
+          });
       },
 
       resetForm: function() {
@@ -385,8 +391,8 @@ export default {
         this.model.groups__icontains= '',
         this.model.label__icontains= '',
         this.model.userinfo__gender__iexact= null,
-        this.model.userinfo__birth_date__year__gte= '',
-        this.model.userinfo__birth_date__year__lte= '',
+        this.model.userinfo__birth_date__year__gte= null,
+        this.model.userinfo__birth_date__year__lte= null,
         this.model.userrelative__name__icontains= '',
         this.model.employmentcontract_type= null,
         this.model.employmentcontract__company__name__icontains= '',
@@ -396,7 +402,7 @@ export default {
         this.model.employmentcontract__ended_at__year__lte= '',
         this.model.leave__leavedate__starts_at__lte= null,
         this.model.leave__leavedate__ends_at__gte= null,
-        this.model.workschedule_label__icontains= '',
+        this.model.workschedule_label__icontains= null,
         this.model.active_monday= '',
         this.model.active_tuesday= '',
         this.model.active_wednesday= '',

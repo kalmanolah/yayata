@@ -34,10 +34,11 @@
 import VueFormGenerator from 'vue-form-generator';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
     name: 'ContractsFilterForm',
-
+    mixins: [ToastMixin],
     data () {
         return {
           toggleButtonLabels: {
@@ -253,7 +254,11 @@ export default {
             path: '/contracts/',
             params: this.model
           }                        
-        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options);
+        store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options)
+          .catch((error) => {
+            this.showDangerToast('Something went wrong while getting the results. Check the console for more info.')
+            console.error(error);
+          });
       },
 
       resetForm: function() {
