@@ -29,7 +29,8 @@ export default {
         if(this.leaves) {
           let leaves = this.getDaysLeaves(day);
           leaves.forEach((leave) => {
-            total -= parseFloat(leave.leaveDuration)
+            if(leave.status == 'APPROVED')
+              total -= parseFloat(leave.leaveDuration)
           });
         }
 
