@@ -188,7 +188,11 @@ export default {
   methods: {
     getHours: function() {
       let hours = this.today ? (parseFloat(this.getHoursTotal(this.today)) - parseFloat(this.getDurationTotal(this.today))) : 8;
-      return hours < 0 ? 0 : hours;
+      if(hours) {
+        return hours < 0 ? 0 : hours;
+      } else {
+        return 8;
+      }
     },
     //Deletes performance-entry
     deleteEntry: function() {
