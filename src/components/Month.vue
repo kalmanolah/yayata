@@ -47,7 +47,8 @@ div(class='calendar')
               //- Popover showing leaves
               b-popover.float-right(v-if='isExcusedFromWork(n)' triggers='hover' placement='top' class='d-none d-lg-inline')
                 i.fa.fa-university(v-if='isHoliday(n)')
-                i.fa.fa-plane(v-else)
+                template(v-else)
+                  i.fa.fa-plane(v-bind:class='getLeavesStatus(n)')
                 div.p-2(slot='content')
 
                   template(v-if='isHoliday(n)')
@@ -98,7 +99,16 @@ export default {
   },
 
   methods: {
-
+    getLeavesStatus: function(day) {
+      let leaves = this.getLeaveForDay(day);
+      let result = ''
+      leaves.forEach((l) => {
+        if(l.status == 'PENDING') {
+          result = 'pending';
+        }
+      });
+      return result;
+    },
     //Requests all data
     buildPageInfo: function() {
       this.reloadEmploymentContracts();
@@ -541,4 +551,7 @@ export default {
   cursor: default;
 }
 
+.pending {
+  color: #ffc107;
+}
 </style>
