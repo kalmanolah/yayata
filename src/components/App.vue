@@ -125,7 +125,7 @@ export default {
 @primary-color: #0aa6c9;
 
 #app {
-  // overflow: hidden;
+  overflow-x: hidden;
 }
 
 .container-fluid{
