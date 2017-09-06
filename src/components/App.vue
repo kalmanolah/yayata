@@ -125,7 +125,7 @@ export default {
 @primary-color: #0aa6c9;
 
 #app {
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 .container-fluid{
@@ -140,7 +140,6 @@ export default {
   padding-left: 1rem;
   padding-left: 0;
   // width: 100vw
-  // overflow-x: hidden;
 }
 
 .logo{
