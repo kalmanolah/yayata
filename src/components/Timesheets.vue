@@ -80,7 +80,7 @@ div.row
   import * as types from '../store/mutation-types';
   import ToastMixin from './mixins/ToastMixin.vue';
   import jspdf from 'jspdf'
-
+  import * as inuitsLogoURI from '../assets/InuitsLogo.js';
 
   export default {
     name: 'timesheets',
@@ -184,7 +184,7 @@ div.row
         let totalPerformances = 0;
         let baseX = 15;
         let baseY = 28;
-        // let month = moment().month(this.date - 1).format('MMMM');
+        let inuitsLogo = inuitsLogoURI.inuitsLogo;
         let doc = new jspdf({
           orientation: 'portrait'
         });
@@ -193,7 +193,7 @@ div.row
           // header
           doc.text('Consultant: ' + store.getters.user.display_label, 60, 8)
           doc.text(moment().month(sheet.month - 1).format('MMM') + ' ' + sheet.year.toString(), 140, 8)
-          // doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
+          doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
           doc.text('Project: ' + contract.display_label, 140, 13)
           doc.text('Customer: ' + contract.customerName, 60, 13)
 
