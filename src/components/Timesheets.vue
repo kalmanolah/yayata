@@ -14,13 +14,26 @@ div.row
         .card-block.row.no-gutters
           .col-6(v-for='(sheet, i) in year_group')
 
+              b-modal#confirmModal(
+                :ref="'confirmModal' + i",
+                hide-footer=true,
+                title='Careful!'
+              )
+                p You still have 
+                  strong {{ sheet.hours_required - sheet.hours_performed }} 
+                  | open hours.
+                p Are you sure you want to close this timesheet?
+                .row
+                  .col
+                    button.btn.btn-danger.mr-2(@click='closeModal(i)') Cancel
+                    button.btn.btn-success(@click='modalOk(sheet, i)') Close timesheet
               .card.m-3
 
                 .card-header
                   h5.text-xs-center 
                     router-link.month-link(:to='{ name: "calendar_month", params: { year: sheet.year, month: sheet.month } }') {{ sheet | outputCorrectMonth }}
                     toggle-button.pull-right(
-                      @change='setPending(sheet)',
+                      @change='checkOpenHours(sheet, i)',
                       :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
                       :value='sheet.status === "PENDING"',
                       :sync='true',
@@ -29,7 +42,8 @@ div.row
                         unchecked: 'Active'
                       },
                       :width='70',
-                      :disabled='sheet.status === "PENDING"'
+                      :disabled='sheet.status === "PENDING"',
+                      :ref='"toggle-" + i'
                     )
 
                 .card-block.p-2
@@ -233,37 +247,57 @@ div.row
         // doc.autoPrint()
         contract ? doc.save(contract.display_label+ '-' + sheet.month + '.pdf') : doc.save('invoice-' + sheet.month + '.pdf')
       },
+
+      closeModal: function(index) {
+        let modalRef = 'confirmModal' + index;
+        this.$refs[modalRef][0].hide();
+      },
+      
+      modalOk: function(sheet, index) {
+        this.setPending(sheet);
+        this.closeModal(index)
+      },
+
+      checkOpenHours: function(sheet, index) {
+        if(sheet.hours_required - sheet.hours_performed <= 0) {
+            this.setPending(sheet)
+          } else {
+            let confirmRef = 'confirmModal' + index
+            this.$refs[confirmRef][0].show();
+            let ref = 'toggle-' + index
+            this.$refs[ref][0].toggled = false;
+          }
+      },
       // Set the status of this sheet to PENDING.
       setPending: function(sheet) {
-
-        var body = {
-          month: sheet.month,
-          year: sheet.year,
-          status: 'PENDING'
-        };
-
-        store.dispatch(
-          types.NINETOFIVER_API_REQUEST, 
-          {
-            path: '/my_timesheets/' + sheet.id + '/',
-            method: 'PATCH',
-            body: body,
-            emulateJSON: true,
-          }
-        ).then((res) => {
-
-          if(res.status == 200) {
-            this.showInfoToast('Timesheet is now pending, you can\'t modify it anymore.');
-
-            
-          }
-          store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-            filter_future_timesheets: true
+          var body = {
+            month: sheet.month,
+            year: sheet.year,
+            status: 'PENDING'
+          };
+  
+          store.dispatch(
+            types.NINETOFIVER_API_REQUEST, 
+            {
+              path: '/my_timesheets/' + sheet.id + '/',
+              method: 'PATCH',
+              body: body,
+              emulateJSON: true,
+            }
+          ).then((res) => {
+  
+            if(res.status == 200) {
+              this.showInfoToast('Timesheet is now pending, you can\'t modify it anymore.');
+  
+              
+            }
+            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+              filter_future_timesheets: true
+            });
+          }).catch((error) => {
+            console.error(error);
+            this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
           });
-        }).catch((error) => {
-          console.error(error);
-          this.showDangerToast('Something went wrong while setting timesheet to pending. Check the console for more information');
-        });
       },
 
       getContractTimesheetPerformances: function(ts) {
