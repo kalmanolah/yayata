@@ -360,7 +360,9 @@ export default {
     holidays: function() {
       if(store.getters.holidays && this.selectedUser && this.month) {
         return store.getters.holidays.filter((holiday) => {
-          return moment(holiday.date).month() + 1 == this.month && holiday.country == this.selectedUser.userinfo.country;
+          return moment(holiday.date).month() + 1 == this.month
+              && moment(holiday.date).year() == this.year
+              && holiday.country == this.selectedUser.userinfo.country;
         });
       }
     },
