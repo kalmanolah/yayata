@@ -287,7 +287,7 @@ export default {
 
     reloadPerformances: function(month) {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/performances/activity',
+        path: '/performances/activity/',
         params: {
           timesheet__user_id: this.selectedUser.id,
           timesheet__month: month,
