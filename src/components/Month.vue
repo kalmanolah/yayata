@@ -78,7 +78,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 import Invoice from './Invoice.vue';
 
 export default {
-  name: 'calendar',
+  name: 'month',
   mixins: [RequiredPerformedDayMixin, ToastMixin],
   components: {
     Invoice
