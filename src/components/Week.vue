@@ -39,6 +39,12 @@
           router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
             h2 {{ periodEndMonth | moment('MMMM')}}
         .col
+          template(v-if='isAdmin && user')
+            .btn-group.text-right.pr-3
+              button.btn.btn-outline-dark.dropdown-toggle#btnUserDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-if='selectedUser') {{ selectedUser.display_label }}
+              .dropdown-menu(aria-labelledby='btnUserDrop')
+                a.dropdown-item(v-for='u in users' @click='selectUser(u)') {{ u.display_label }}
+            
 
       hr
   
@@ -209,10 +215,42 @@ export default {
     '$route': function(to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
+      this.selectUser(to.params.user);
     },
+    
+    selectedUser: function(newSelectedUser) {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        params: {
+          user: this.selectedUser.id
+        }
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES, {
+        params: {
+          timesheet__user_id: this.selectedUser.id
+        }
+      });
+     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+       params: {
+         contractuser__user__id: this.selectedUser.id
+       }
+     }); 
+     store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: {
+          user_id: this.selectedUser.id
+        }
+     });
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+          contractuser__user__id: this.selectedUser.id
+        }
+    })
+    }
   },
 
   created: function() {
+    if(this.$route.params){
+      this.selectUser(this.$route.params.user);
+    }
     store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
     store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
     
@@ -229,7 +267,37 @@ export default {
   },
 
   computed: {
+    user: function() {
+      if(store.getters.user) {
+        if(!this.$route.params.user){
+          this.selectUser(store.getters.user);
+        }
+        return store.getters.user;
+      }
+    },   
+    // User dropdown options
+    options: function() {
+      if(store.getters.users) {
+        return store.getters.users.map(user => {
+          return { text: user.display_label, value: user.id }
+        });
+      }
+    },
 
+    users: function() {
+      if(store.getters.users) {
+        return store.getters.users;
+      }
+    },
+
+    currentUserSelected: function() {
+      if(this.user && this.selectedUser)
+        return this.user.id == this.selectedUser.id;
+    },
+
+    isAdmin: function() {
+      return store.getters.user.groups.find(g => g.name == 'admin');
+    },
     // Get the holidays for this period
     holidays: function() {
       if(store.getters.holidays && this.periodStartMonth && this.periodEndMonth) {
@@ -296,6 +364,9 @@ export default {
   },
 
   methods: {
+    selectUser: function(user) {
+      this.selectedUser = user;
+    },
 
     // Gets the timesheet for the day
     getTimesheetForDay: function(day) {
@@ -429,6 +500,7 @@ export default {
         params: {
           year: year,
           week: week,
+          user: this.selectedUser,
         },
       })
     },
@@ -523,10 +595,11 @@ export default {
 
     //Make the my_performances call & push into arr
     callPerformance: function(month, start, end) {
-
+      let user = this.selectedUser ? this.selectedUser : this.user;
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/',
+        path: '/performances/',
         params: {
+          timesheet__user_id: user.id,
           timesheet__year: this.selectedYear,
           timesheet__month: month,
           day__gte: start,
@@ -571,11 +644,9 @@ export default {
       standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
-      toggleButtonLabels: {
-        checked: 'On call',
-        unchecked: 'Off call'
-      },
-    }
+      selectedUser: null,
+
+      }
 
   },
 

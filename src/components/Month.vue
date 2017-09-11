@@ -37,9 +37,7 @@ div(class='calendar')
 
       template
         router-link(
-          :to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n) } }'
-          :event="currentUserSelected ? 'click' : ''"
-          :class="currentUserSelected ? '' : 'unclickable-days'"
+          :to='{name: "calendar_week", params: { year: getISOYear(n), week: getWeekNumber(n), user: selectedUser } }'
         )
           .card.card-block.p-3
             p {{ n }}
@@ -76,11 +74,12 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
+import ToastMixin from './mixins/ToastMixin.vue';
 import Invoice from './Invoice.vue';
 
 export default {
   name: 'calendar',
-  mixins: [RequiredPerformedDayMixin],
+  mixins: [RequiredPerformedDayMixin, ToastMixin],
   components: {
     Invoice
   },
@@ -124,6 +123,8 @@ export default {
             user: ec_user,
             ended_at__isnull: 'True'
           }
+        }).catch((error) => {
+          this.showDangerToast('Something went wrong while reloading employment contracts: ' + error.data)
         });        
       }
     },
@@ -162,6 +163,7 @@ export default {
           }, () => {
             this.loading = false;
         }).catch((error) => {
+          this.showDangerToast('Something went wrong while reloading leaves: ' + error.data)
           console.log(error)
         });
       }
@@ -313,11 +315,24 @@ export default {
         return this.user.id == this.selectedUser.id;
     },
 
+    user: function() {
+      if(store.getters.user) {
+        this.selectUser(store.getters.user);
+        return store.getters.user;
+      }
+    },
+
     // Builds an array for the dropdown
     options: function() {
       return this.users.map(u => {
         return { text: u.display_label, value: u.id }
       });
+    },
+
+      
+    users: function() {
+      if(store.getters.users)
+        return store.getters.users;
     },
 
     // Returns true if the currently authenticated user belongs to the admin-group
@@ -342,18 +357,6 @@ export default {
     month_info: function() {
       if(store.getters.month_info && this.month){
         return store.getters.month_info;
-      }
-    },
-
-    users: function() {
-      if(store.getters.users)
-        return store.getters.users;
-    },
-
-    user: function() {
-      if(store.getters.user) {
-        this.selectUser(store.getters.user);
-        return store.getters.user;
       }
     },
 
