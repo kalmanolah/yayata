@@ -33,10 +33,10 @@
       .row.justify-content-center
         .col
         .col-auto.text-center
-          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
+          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1, user: selectedUser } }')
             h2 {{ periodStartMonth | moment('MMMM')}}
         .col-auto.text-center
-          router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
+          router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1, user: selectedUser } }')
             h2 {{ periodEndMonth | moment('MMMM')}}
         .col
           template(v-if='isAdmin && user')
