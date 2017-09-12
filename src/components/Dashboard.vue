@@ -46,7 +46,7 @@ div
       //- PERFORMANCE FORM
       .card.card-top-blue.mb-3.p-3
         h4.card-title-blue.text-center Log performance
-        PerformanceForm(v-if='loaded')
+        PerformanceForm(v-if='loaded', :properties='{user: user}')
 
     .col-xl-6
       .row
