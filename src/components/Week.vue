@@ -54,16 +54,17 @@
   .calendar-header
 
     //- Header
-    .card-group
+    .card-group.card-group--week-performance
       .card(v-for='(weekDay, i) in daysOfWeek')
 
         .card-header.bg-info.text-white
           .row.justify-content-between.text-center
-            h6.col-12.pl-1.pr-1.d-none.d-lg-inline
+
+            h6.col-12.pl-1.pr-1
               strong {{ weekDay | moment('dddd') }}
 
             h5.col-md-12 
-              strong {{ weekDay | moment('DD/MM')}}
+              strong {{ weekDay | moment('DD/MM') }}
 
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
@@ -124,9 +125,9 @@
                   .list-group-item-heading {{ holiday.name }}
                   .list-group-item-text
                     hr.smaller-vertical-hr
-                    small
-                      i.fa.fa-university.pull-left
-                      .pull-right 8 h
+                    small.row.justify-content-between.align-items-center
+                      i.fa.fa-university.col
+                      .col.ml-auto 8 h
 
               //- Leaves
               template(v-if='leaves')
@@ -143,9 +144,9 @@
                   .list-group-item-text
                     div {{ leave.description }}
                     hr.smaller-vertical-hr
-                    small
-                      i.fa.fa-plane.pull-left 
-                      .pull-right {{ leave.leaveDuration}} h
+                    small.row.justify-content-between.align-items-center
+                      i.fa.fa-plane.col
+                      .col.ml-auto {{ leave.leaveDuration}} h
 
               //- Performances
               li.list-group-item.performance-entry(
@@ -688,4 +689,22 @@ div.btn-group {
   background: #fff;
 }
 
+.card-group {
+  &--week-performance {
+
+    @media (min-width: 992px) {
+      display: -ms-flexbox;
+      display: flex;
+    }
+
+    @media (max-width: 992px) {
+      display: inline;
+    }
+  }
+  .card {
+    @media (max-width: 992px) {
+      margin-bottom: 20px;
+    }
+  }
+}
 </style>
