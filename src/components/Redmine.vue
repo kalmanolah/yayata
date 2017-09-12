@@ -33,8 +33,9 @@ div.row
                 td {{ timeEntry.activity.name }}
                 td {{ timeEntry.spent_on }}
                 td {{ timeEntry.hours }}
-                td 
+                td(v-if='timeEntry.issue') 
                   a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
+                td(v-else) N.A.
                 td {{ timeEntry.comments }}
                 td
                   b-form-checkbox(v-model='timeEntry.checked') &nbsp;
