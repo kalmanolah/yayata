@@ -317,7 +317,11 @@ export default {
 
     user: function() {
       if(store.getters.user) {
-        this.selectUser(this.$route.params.user);
+        if(this.$route.params.user){
+          this.selectUser(this.$route.params.user);
+        } else {
+          this.selectUser(store.getters.user)
+        }
         return store.getters.user;
       }
     },
