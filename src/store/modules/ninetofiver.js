@@ -758,7 +758,9 @@ const actions = {
 
             }, (res) => {
                 reject(res);
-            })
+            }).catch((error) => {
+                console.log('Error!')
+            });
         });
 
     },
@@ -938,7 +940,7 @@ const actions = {
             };
         }
 
-        if (!options.params.user__id) {
+        if (options.params && !options.params.user__id) {
             options.params.user__id = 1
         }
 

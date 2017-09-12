@@ -248,17 +248,14 @@ export default {
   },
 
   created: function() {
-    if(this.$route.params){
+    if(this.$route.params.user){
       this.selectUser(this.$route.params.user);
       store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
         params: { contractuser__user__id: this.$route.params.user.id }
       });
-
-      if(!store.getters.leaves){
-        store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
-          params: { user_id: this.$route.params.user.id }
-        });
-      }
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: { user_id: this.$route.params.user.id }
+      });
     } else {
       store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
         params: { contractuser__user__id: store.getters.user.id }
