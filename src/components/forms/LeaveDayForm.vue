@@ -238,25 +238,31 @@ export default {
 
     // BEGIN OF VALIDATION
     buttonState: function() {
-      return (this.fromDateState === "success" && this.descriptionState === "success" && this.leaveTypeState === "success");
+      return (this.fromDateState === "valid" && this.descriptionState === "valid" && this.leaveTypeState === "valid");
     },
     fromDateFeedback: function() {
       return moment(this.fromDate, 'DD MMM YYYY').isValid() ? '' : 'Please provide a correct date.'
     },
     fromDateState: function() {
-      return moment(this.fromDate, 'DD MMM YYYY').isValid() ? 'success' : 'warning'
+      return moment(this.fromDate, 'DD MMM YYYY').isValid() ? 'valid' : 'invalid'
     },
     descriptionFeedback: function() {
-      return this.description.length ? '' : 'Please provide a description';
+      if(moment(this.fromDate).isBefore(moment().add(7, 'days')) && this.description.length == 0) {
+        return "You're pretty late with this leave request. Please prodive a description"; 
+      }
     },
     descriptionState: function() {
-      return this.description.length ? 'success' : 'warning';
+      if(moment(this.fromDate).isBefore(moment().add(7, 'days')) && this.description.length == 0) {
+        return 'invalid';
+      } else {
+        return 'valid';
+      }
     },
     leaveTypeFeedback: function() {
       return this.leaveType ? '' : 'Please provide a leave type';
     },
     leaveTypeState: function() {
-      return this.leaveType ? 'success' : 'warning';
+      return this.leaveType ? 'valid' : 'invalid';
     },
     // END OF VALIDATION
     
