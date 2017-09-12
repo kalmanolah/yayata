@@ -33,12 +33,18 @@
       .row.justify-content-center
         .col
         .col-auto.text-center
-          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-            h2 {{ periodStartMonth | moment('MMMM') }}
+          router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1, user: selectedUser } }')
+            h2 {{ periodStartMonth | moment('MMMM')}}
         .col-auto.text-center
-          router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-            h2 {{ periodEndMonth | moment('MMMM') }}
+          router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1, user: selectedUser } }')
+            h2 {{ periodEndMonth | moment('MMMM')}}
         .col
+          template(v-if='isAdmin && user')
+            .btn-group.text-right.pr-3
+              button.btn.btn-outline-dark.dropdown-toggle#btnUserDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-if='selectedUser') {{ selectedUser.display_label }}
+              .dropdown-menu(aria-labelledby='btnUserDrop')
+                a.dropdown-item(v-for='u in users' @click='selectUser(u)') {{ u.display_label }}
+            
 
       hr
   
@@ -85,7 +91,7 @@
                 //- Whereabouts
                 template.col
                   b-popover(triggers='hover' placement='top' class='hidden-md-down')
-                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": getTimesheetForDay(weekDay)})', @success='onSubmitSuccess')
+                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", {"date": weekDay, "timesheet": getTimesheetForDay(weekDay)})', @success='onSubmitSuccess')
                       button.btn.btn-outline-primary.card-header-button
                         i.fa.fa-building-o
                     div(slot='content')
@@ -97,7 +103,7 @@
           //- Check if timesheet status is active
           template(v-if='getTimesheetStatus(weekDay)')
 
-            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
+            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "user": selectedUser})', @success='onSubmitSuccess')
 
               //- Visible text
               button.btn.btn-success.btn-submit
@@ -155,7 +161,7 @@
                 :class='[list-group, performance-list]'
               )
                 hovercard(
-                :component='getHoverCardComponent("PerformanceForm", weekDay, perf)', 
+                :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})', 
                 @success='onSubmitSuccess'
                 )
                   //- Visible text
@@ -210,27 +216,94 @@ export default {
     '$route': function(to, from) {
       this.selectedWeek = to.params.week;
       this.selectedYear = to.params.year;
+      this.selectUser(to.params.user);
     },
+    
+    selectedUser: function(newSelectedUser) {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        params: {
+          user: this.selectedUser.id
+        }
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES, {
+        params: {
+          timesheet__user_id: this.selectedUser.id
+        }
+      });
+     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+       params: {
+         contractuser__user__id: this.selectedUser.id
+       }
+     }); 
+     store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: {
+          user_id: this.selectedUser.id
+        }
+     });
+    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+      params: {
+          contractuser__user__id: this.selectedUser.id
+        }
+    })
+    }
   },
 
   created: function() {
+    if(this.$route.params.user){
+      this.selectUser(this.$route.params.user);
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+        params: { contractuser__user__id: this.$route.params.user.id }
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+        params: { user_id: this.$route.params.user.id }
+      });
+    } else {
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
+        params: { contractuser__user__id: store.getters.user.id }
+      });
+  
+      if(!store.getters.leaves){
+        store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+          params: { user_id: store.getters.user.id }
+        });
+      }
+    }
     store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
     store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
-    
-    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-      params: { contractuser__user__id: store.getters.user.id }
-    });
-
-    if(!store.getters.leaves){
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
-        params: { user_id: store.getters.user.id }
-      });
-    }
-
   },
 
   computed: {
+    user: function() {
+      if(store.getters.user) {
+        if(!this.$route.params.user){
+          this.selectUser(store.getters.user);
+        }
+        return store.getters.user;
+      }
+    },   
+    // User dropdown options
+    options: function() {
+      if(store.getters.users) {
+        return store.getters.users.map(user => {
+          return { text: user.display_label, value: user.id }
+        });
+      }
+    },
 
+    users: function() {
+      if(store.getters.users) {
+        return store.getters.users;
+      }
+    },
+
+    currentUserSelected: function() {
+      if(this.user && this.selectedUser)
+        return this.user.id == this.selectedUser.id;
+    },
+
+    isAdmin: function() {
+      return store.getters.user.groups.find(g => g.name == 'admin');
+    },
     // Get the holidays for this period
     holidays: function() {
       if(store.getters.holidays && this.periodStartMonth && this.periodEndMonth) {
@@ -248,8 +321,8 @@ export default {
 
     // Get the leaves for the currently authenticated user
     leaves: function() {
-      if(store.getters.leaves)
-        return store.getters.leaves.filter((leave) => leave.user === store.getters.user.id );
+      if(store.getters.leaves && this.selectedUser.id)
+        return store.getters.leaves.filter((leave) => leave.user === this.selectedUser.id );
     },
 
     // Get the timesheets for this week
@@ -297,6 +370,9 @@ export default {
   },
 
   methods: {
+    selectUser: function(user) {
+      this.selectedUser = user;
+    },
 
     // Gets the timesheet for the day
     getTimesheetForDay: function(day) {
@@ -358,13 +434,10 @@ export default {
     },
 
     //Returns correct component for the hovercard
-    getHoverCardComponent: function(name, date, data) {
+    getHoverCardComponent: function(name, data) {
       return {
         name: name,
-        properties: {
-          data: data,
-          date: date
-        }
+        properties: data
       };
     },
 
@@ -430,6 +503,7 @@ export default {
         params: {
           year: year,
           week: week,
+          user: this.selectedUser,
         },
       })
     },
@@ -524,10 +598,11 @@ export default {
 
     //Make the my_performances call & push into arr
     callPerformance: function(month, start, end) {
-
+      let user = this.selectedUser ? this.selectedUser : this.user;
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/',
+        path: '/performances/',
         params: {
+          timesheet__user_id: user.id,
           timesheet__year: this.selectedYear,
           timesheet__month: month,
           day__gte: start,
@@ -572,11 +647,9 @@ export default {
       standbyPerformances: [],
       currentWeekFormat: store.getters.week_formatting["workweek"],
 
-      toggleButtonLabels: {
-        checked: 'On call',
-        unchecked: 'Off call'
-      },
-    }
+      selectedUser: null,
+
+      }
 
   },
 

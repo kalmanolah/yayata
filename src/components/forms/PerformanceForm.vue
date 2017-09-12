@@ -47,9 +47,14 @@ export default {
     // Reload filtered contracts so that the user only sees contracts he's working on.
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
       params: {
-        contractuser__user__id: store.getters.user.id
+        contractuser__user__id: this.defaultUser.id
       }
     });
+    store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+      params: {
+        user__id: this.defaultUser.id
+      }
+    })
   },
 
   computed: {
@@ -68,6 +73,11 @@ export default {
     defaultPerformance: function() {
       if(this.defaultProperties)
         return Object.keys(this.defaultProperties).length > 0 ? this.defaultProperties.data : null;
+    },
+
+    defaultUser: function() {
+      if(this.defaultProperties)
+        return Object.keys(this.defaultProperties).length > 0 ? this.defaultProperties.user : store.getters.user;
     },
 
     defaultContract: function() {
@@ -118,17 +128,17 @@ export default {
     },
 
     leaves: function() {
-      if(store.getters.leaves && store.getters.user) {
+      if(store.getters.leaves && this.defaultUser) {
         return store.getters.leaves.filter( (leave) => {
-          return leave.user == store.getters.user.id
+          return leave.user == this.defaultUser.id
         })
       }
     },
 
     holidays: function() {
-      if(store.getters.holidays && store.getters.user && this.today) {
+      if(store.getters.holidays && this.defaultUser && this.today) {
         return store.getters.holidays.filter((holiday) => {
-          return holiday.country == store.getters.user.userinfo.country && moment(holiday.date).isSame(moment(this.today), 'day')
+          return holiday.country == this.defaultUser.userinfo.country && moment(holiday.date).isSame(moment(this.today), 'day')
         })
       }
     },
@@ -156,11 +166,11 @@ export default {
     },
 
     contract_roles: function() {
-      if(store.getters.contract_users && store.getters.user && model.contract){
-        var contract_users = store.getters.contract_users.filter( cu => {
-          return (cu.user === store.getters.user.id && cu.contract === model.contract)
+      if(store.getters.contract_users && this.defaultUser && model.contract){
+        let contract_users = store.getters.contract_users.filter( cu => {
+          return (cu.user === this.defaultUser.id && cu.contract === model.contract)
         })
-        var contract_roles = [];
+        let contract_roles = [];
         contract_users.forEach( cu => {
           contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
         });
@@ -199,7 +209,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
         {
-          path: '/my_performances/activity/' + this.defaultPerformance['id'] + '/',
+          path: '/performances/activity/' + this.defaultPerformance['id'] + '/',
           method: 'DELETE'
         }
       ).then((response) => {
@@ -207,7 +217,11 @@ export default {
             this.$emit('success', response);
             this.showInfoToast('Performance successfully deleted.');
         }
-        store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+        store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES, {
+          params:{
+            timesheet__user_id: this.defaultUser.id
+          }
+        });
       }).catch((error) => {
         console.log(error);
         this.showDangerToast('Error deleting performance. Console has more information.');
@@ -244,9 +258,10 @@ export default {
           store.dispatch(
             types.NINETOFIVER_API_REQUEST,
             {
-              path: '/my_timesheets/',
+              path: '/timesheets/',
               method: 'POST',
               body: {
+                user: this.defaultUser.id,
                 year: this.today.year(),
                 month: this.today.month() + 1
               },
@@ -256,7 +271,11 @@ export default {
             console.log( response );
             if(response.status == 201)
               this.submitForm(response.data.id);
-            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+              params: {
+                user: this.defaultUser.id
+              }
+            });
           }).catch((error) => {
             console.log(error);
             this.showDangerToast('Timesheet could not be created for this performance');
@@ -290,7 +309,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
         {
-          path: '/my_performances/activity/' + id + '/',
+          path: '/performances/activity/' + id + '/',
           method: 'PATCH',
           body: body,
           emulateJSON: true,
@@ -300,7 +319,11 @@ export default {
           if(response.status == 200) {
             this.$emit('success', response);
             this.showInfoToast('Performance successfully patched.');
-            store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+            store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES, {
+              params: {
+                timesheet__user_id: this.defaultUser.id
+              }
+            });
             store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
           }
         }).catch((error) => {
@@ -314,7 +337,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
         {
-          path: '/my_performances/activity/',
+          path: '/performances/activity/',
           method: 'POST',
           body: body,
           emulateJSON: true,
@@ -324,7 +347,11 @@ export default {
         if(response.status == 201) {
           this.$emit('success', response);
           this.showSuccessToast('Performance successfully added');
-          store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+          store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES, {
+            params: {
+              timesheet__user_id: this.defaultUser.id
+            }
+          });
           store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
         }
       }).catch((error) => {
@@ -410,9 +437,9 @@ export default {
             model: "contract_role",
             required: true,
             values: () => {
-              if(store.getters.contract_users && store.getters.user && model.contract){
+              if(store.getters.contract_users && this.defaultUser && model.contract){
                 var contract_users = store.getters.contract_users.filter( cu => {
-                  return (cu.user === store.getters.user.id && cu.contract === model.contract)
+                  return (cu.user === this.defaultUser.id && cu.contract === model.contract)
                 })
                 var contract_roles = [];
                 contract_users.forEach( cu => {

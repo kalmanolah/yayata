@@ -44,11 +44,11 @@ div.row
                       .pull-right.fa.fa-sort(aria-hidden='true')
                     th(@click='setTableSort("email")') Email
                       .pull-right.fa.fa-sort(aria-hidden='true')
-                    th(@click='setTableSort("userinfo__birth_date")') Birthdate
+                    th(@click='setTableSort("birth_date")') Birthdate
                       .pull-right.fa.fa-sort(aria-hidden='true')
-                    th(@click='setTableSort("userinfo__country")') Country
+                    th(@click='setTableSort("country")') Country
                       .pull-right.fa.fa-sort(aria-hidden='true')
-                    th(@click='setTableSort("userinfo__join_date")') Joindate
+                    th(@click='setTableSort("join_date")') Joindate
                       .pull-right.fa.fa-sort(aria-hidden='true')
                 tbody
                   tr(v-for='(user, index) in requestedUsers')
@@ -87,10 +87,12 @@ import ColleaguesFilterForm from './forms/ColleaguesFilterForm.vue';
 
 var data = {
   sortBy: 'all',
+  sortValue: 'first_name',
   tableSort: '',
   groupLabel: 'group',
   query: '',
-  showFilter: false
+  showFilter: false,
+  sortDesc: false,
 }
 
 export default {
@@ -139,8 +141,9 @@ export default {
 
     //Shows selected user by default or all as a fallback
     requestedUsers: function() {
-      if(store.getters.users) {
-        return this.userId == 'all' ? this.queryUsers : [store.getters.users.find(u => u.id == this.userId)];
+      if(store.getters.users && this.sortValue) {
+        let users = this.userId == 'all' ? this.queryUsers : [store.getters.users.find(u => u.id == this.userId)];
+        return this.sortUsers(users);
       }
     },
 
@@ -169,8 +172,6 @@ export default {
       if(this.filtered_users && this.sortBy !== store.getters.colleagues_filter){
         let users = [];
 
-        console.log( this.sortBy );
-
         this.filtered_users.forEach(user => {
           user.groups.forEach( group => {
               if(group.id === this.sortBy)
@@ -188,16 +189,20 @@ export default {
 
     // Sorts the table
     setTableSort: function(value) {
-      this.tableSort = (this.tableSort === value) ? '-' + value : value;
+      this.sortValue == value ? this.sortDesc = !this.sortDesc : '';
+      this.sortValue = value;
+    },
 
-      var options = {
-        path: '/users/',
-        params: {
-          order_by: this.tableSort,
-          is_active: true
+    sortUsers: function(users) {
+      return users.sort((a, b) => {
+        let valA = a[this.sortValue] ? a[this.sortValue].toLowerCase() : a['userinfo'] ? a['userinfo'][this.sortValue] : '';
+        let valB = b[this.sortValue] ? b[this.sortValue].toLowerCase() : b['userinfo'] ? b['userinfo'][this.sortValue] : '';
+        if(this.sortDesc) {
+          return valA > valB ? -1 : valA < valB ? 1 : 0;
+        } else {
+          return valA > valB ? 1 : valA < valB ? -1 : 0;
         }
-      }
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options);
+      });
     },
 
     // Sets the group to sort by
