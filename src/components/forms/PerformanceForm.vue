@@ -167,10 +167,10 @@ export default {
 
     contract_roles: function() {
       if(store.getters.contract_users && this.defaultUser && model.contract){
-        var contract_users = store.getters.contract_users.filter( cu => {
+        let contract_users = store.getters.contract_users.filter( cu => {
           return (cu.user === this.defaultUser.id && cu.contract === model.contract)
         })
-        var contract_roles = [];
+        let contract_roles = [];
         contract_users.forEach( cu => {
           contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
         });
