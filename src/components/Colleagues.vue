@@ -213,16 +213,21 @@ export default {
 
     // Determines the group badge color
     determineBadgeColor: function(grp) {
-      var group = store.getters.user_groups.find(g => grp.id === g.id);
-      var groupName = group ? group.name : 'UNDEFINED';
-      var tempObj = {
-        [store.getters.group_names[3]]: 'badge-primary',
-        [store.getters.group_names[2]]: 'badge-danger',        
-        [store.getters.group_names[1]]: 'badge-info',
-        [store.getters.group_names[0]]: 'badge-success',
-      }
+      if(store.getters.user_groups) {
+        let group = store.getters.user_groups.find(g => grp.id === g.id);
+        let groupName = group ? group.name : 'UNDEFINED';
 
-      return tempObj[groupName] || 'badge-primary';   
+        let tempObj = {
+          [store.getters.group_names[3]]: 'badge-primary',
+          [store.getters.group_names[2]]: 'badge-danger',
+          [store.getters.group_names[1]]: 'badge-info',
+          [store.getters.group_names[0]]: 'badge-success',
+        }
+
+        return tempObj[groupName] || 'badge-primary';
+      }
+      
+      return 'badge-primary';
     },
 
     reloadPage: function() {

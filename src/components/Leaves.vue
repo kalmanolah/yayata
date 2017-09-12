@@ -41,7 +41,7 @@ div(class='calendar')
                       template(v-for='leave in leaves')
                         tr
                           td <strong>{{ leave.leave_type }}</strong> 
-                            .badge.float-md-left.p-1.mr-4(v-bind:class='getBadgeStyleClass(leave)') 
+                            .badge.float-left.p-1.mr-3(v-bind:class='getBadgeStyleClass(leave)') 
                               //- .d-none.d-xl-block {{ leave.status }}
                               .fa(:class='getStatusStyleClass(leave)')
                           td.text-right.row.justify-content-center.pr-0.mr-2
@@ -83,8 +83,12 @@ div(class='calendar')
               .collapse.p-2(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
                 .card-block.row.p-2
                   .col
-                    | <strong>From:</strong> {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
-                    | <strong>To:</strong> {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
+                    .row
+                      strong.col From:
+                      .col-auto.float-right {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
+                    .row
+                      strong.col To: 
+                      .col-auto.float-right {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
                   .col-3
                     button.btn.btn-danger(@click='cancelPendingLeave(leave)')
                       i.fa.fa-ban.text-center

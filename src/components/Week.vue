@@ -34,10 +34,10 @@
         .col
         .col-auto.text-center
           router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1 } }')
-            h2 {{ periodStartMonth | moment('MMMM')}}
+            h2 {{ periodStartMonth | moment('MMMM') }}
         .col-auto.text-center
           router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1 } }')
-            h2 {{ periodEndMonth | moment('MMMM')}}
+            h2 {{ periodEndMonth | moment('MMMM') }}
         .col
 
       hr
@@ -162,9 +162,9 @@
                   .list-group-item-text 
                     div {{ perf.description }}
                     hr.smaller-vertical-hr
-                    small
-                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                      .pull-right {{ perf.duration }} h
+                    small.row.justify-content-between.align-items-center
+                      .col {{ findPerformanceTypeName(perf.performance_type) }}
+                      .col.ml-auto {{ perf.duration }} h
 
           //- If timesheet status is NOT active
           template(v-else)
@@ -175,12 +175,12 @@
               :class='[list-group, performance-list]'
             )
               .list-group-item-heading {{ findContractName(perf.contract) }}
-                .list-group-item-text 
-                  div {{ perf.description }}
-                  hr.smaller-vertical-hr
-                  small
-                    .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                    .pull-right {{ perf.duration }} h
+              .list-group-item-text 
+                div {{ perf.description }}
+                hr.smaller-vertical-hr
+                small.row.justify-content-between.align-items-center
+                  .col {{ findPerformanceTypeName(perf.performance_type) }}
+                  .col.ml-auto {{ perf.duration }} h
 
 </template>
 
