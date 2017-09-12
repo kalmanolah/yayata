@@ -90,7 +90,7 @@
                 //- Whereabouts
                 template.col
                   b-popover(triggers='hover' placement='top' class='hidden-md-down')
-                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", weekDay, data={"timesheet": getTimesheetForDay(weekDay)})', @success='onSubmitSuccess')
+                    hovercard(:id='"hc_whereabout_" + i', :component='getHoverCardComponent("LocationSelect", {"date": weekDay, "timesheet": getTimesheetForDay(weekDay)})', @success='onSubmitSuccess')
                       button.btn.btn-outline-primary.card-header-button
                         i.fa.fa-building-o
                     div(slot='content')
@@ -102,7 +102,7 @@
           //- Check if timesheet status is active
           template(v-if='getTimesheetStatus(weekDay)')
 
-            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", weekDay)', @success='onSubmitSuccess')
+            hovercard(:id='"hc_submit_" + i', :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "user": selectedUser})', @success='onSubmitSuccess')
 
               //- Visible text
               button.btn.btn-success.btn-submit
@@ -160,7 +160,7 @@
                 :class='[list-group, performance-list]'
               )
                 hovercard(
-                :component='getHoverCardComponent("PerformanceForm", weekDay, perf)', 
+                :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})', 
                 @success='onSubmitSuccess'
                 )
                   //- Visible text
@@ -323,8 +323,8 @@ export default {
 
     // Get the leaves for the currently authenticated user
     leaves: function() {
-      if(store.getters.leaves)
-        return store.getters.leaves.filter((leave) => leave.user === store.getters.user.id );
+      if(store.getters.leaves && this.selectedUser.id)
+        return store.getters.leaves.filter((leave) => leave.user === this.selectedUser.id );
     },
 
     // Get the timesheets for this week
@@ -436,13 +436,10 @@ export default {
     },
 
     //Returns correct component for the hovercard
-    getHoverCardComponent: function(name, date, data) {
+    getHoverCardComponent: function(name, data) {
       return {
         name: name,
-        properties: {
-          data: data,
-          date: date
-        }
+        properties: data
       };
     },
 
