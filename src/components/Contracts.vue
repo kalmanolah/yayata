@@ -75,13 +75,14 @@ div.row
                               .row
                                 .col-md-5 <strong>Total hours spent:</strong>
                                 .col-md-7.text-md-right {{ contract.total_hours_spent }} hours
-                            hr
-                            .row(v-if='contract.type === "ProjectContract"')
-                              .col-md-4 <strong>Project estimates:</strong>
-                              .col-md-8.text-md-right 
-                                .row(v-for='estimate in contract.project_estimate') 
-                                  .col-8.estimate {{ estimate[1] | getRoleAsString }}: 
-                                  .col.estimate {{ estimate[0] }} h
+                            div(v-if='contract.type === "ProjectContract"')
+                              hr
+                              .row
+                                .col-md-4 <strong>Project estimates:</strong>
+                                .col-md-8.text-md-right 
+                                  .row(v-for='estimate in contract.project_estimate') 
+                                    .col-8.estimate {{ estimate[1] | getRoleAsString }}: 
+                                    .col.estimate {{ estimate[0] }} h
                             hr(v-if='contract.type === "ProjectContract"')
                             .row(v-if='contract.type === "ProjectContract"')
                               .col-md-4 <strong>Hours to fill in:</strong>

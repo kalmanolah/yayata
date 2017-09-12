@@ -168,9 +168,9 @@
                   .list-group-item-text 
                     div {{ perf.description }}
                     hr.smaller-vertical-hr
-                    small
-                      .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                      .pull-right {{ perf.duration }} h
+                    small.row.justify-content-between.align-items-center
+                      .col {{ findPerformanceTypeName(perf.performance_type) }}
+                      .col.ml-auto {{ perf.duration }} h
 
           //- If timesheet status is NOT active
           template(v-else)
@@ -181,12 +181,12 @@
               :class='[list-group, performance-list]'
             )
               .list-group-item-heading {{ findContractName(perf.contract) }}
-                .list-group-item-text 
-                  div {{ perf.description }}
-                  hr.smaller-vertical-hr
-                  small
-                    .pull-left {{ findPerformanceTypeName(perf.performance_type) }}
-                    .pull-right {{ perf.duration }} h
+              .list-group-item-text 
+                div {{ perf.description }}
+                hr.smaller-vertical-hr
+                small.row.justify-content-between.align-items-center
+                  .col {{ findPerformanceTypeName(perf.performance_type) }}
+                  .col.ml-auto {{ perf.duration }} h
 
 </template>
 
