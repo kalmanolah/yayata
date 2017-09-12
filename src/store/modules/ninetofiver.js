@@ -929,13 +929,17 @@ const actions = {
 
     [types.NINETOFIVER_RELOAD_TIMESHEETS](store, options = {}) {
 
-        options.path = '/my_timesheets/';
+        options.path = '/timesheets/';
 
         if (options.filter_future_timesheets) {
             options.params = {
                 year__lte: moment().year(),
                 month__lte: moment().month() + 1
             };
+        }
+
+        if (!options.params.user__id) {
+            options.params.user__id = 1
         }
 
         return new Promise((resolve, reject) => {
