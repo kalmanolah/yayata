@@ -23,7 +23,7 @@ export default {
   created () {
     store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS).then( () => {
       if(store.getters.whereabouts) {
-        let wb = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.data.timesheet.id);
+        let wb = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.timesheet.id);
         if(wb) {
           this.selectedLocation = wb.location;
         }
@@ -54,7 +54,7 @@ export default {
         body: {
           location: this.selectedLocation,
           day: moment(this.properties.date).date(),
-          timesheet: this.properties.data.timesheet.id
+          timesheet: this.properties.timesheet.id
         },
         emulateJSON: true
       }).then( () => {
@@ -73,7 +73,7 @@ export default {
         body: {
           location: this.selectedLocation,
           day: moment(this.properties.date).date(),
-          timesheet: this.properties.data.timesheet.id
+          timesheet: this.properties.timesheet.id
         },
         emulateJSON: true
       }).then((res) => {
@@ -90,7 +90,7 @@ export default {
     // Create new whereabout
     setWhereabout: function() {
       store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS).then( () => {
-        let whereabout = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.data.timesheet.id)
+        let whereabout = store.getters.whereabouts.find(w => w.day == moment(this.properties.date).format('D') && w.timesheet === this.properties.timesheet.id)
         // Whereabout already exists
         if(whereabout){
           this.patchWhereabout(whereabout.id);
