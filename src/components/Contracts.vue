@@ -153,7 +153,10 @@ export default {
     if(!store.getters.attachments){
       store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
     }
-
+    if(!store.getters.all_monthly_activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
+    if(!store.getters.project_estimates)
+      store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
   },
 
   filters: {

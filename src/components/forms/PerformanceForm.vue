@@ -43,18 +43,6 @@ export default {
     model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
     model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
-
-    // Reload filtered contracts so that the user only sees contracts he's working on.
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-      params: {
-        contractuser__user__id: this.defaultUser.id
-      }
-    });
-    store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-      params: {
-        user__id: this.defaultUser.id
-      }
-    })
   },
 
   computed: {

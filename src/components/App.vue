@@ -57,31 +57,18 @@ export default {
           });
         if (!store.getters.contracts)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
-        if (!store.getters.filtered_contracts){
-          store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-            params: {
-              contractuser__user__id: store.getters.user.id
-            }
-          });
-        }
         if(!store.getters.contract_roles)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
         if(!store.getters.contract_users)
           store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
         if(!store.getters.monthly_activity_performances)
           store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
-        if(!store.getters.all_monthly_activity_performances)
-          store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
         if(!store.getters.user_work_schedule)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
         if(!store.getters.work_schedules)
           store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULES);
         if(!store.getters.upcoming_leaves)
           store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
-        if(!store.getters.project_estimates)
-          store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
-        if(!store.getters.users)
-          store.dispatch(types.NINETOFIVER_RELOAD_USERS);
         if(!store.getters.user_groups)
           store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
         if(!store.getters.attachments)
