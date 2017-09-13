@@ -24,7 +24,6 @@ const state = {
     leaves: null,
     attachments: null,
     work_schedules: null,
-    calendar_selected_month: null,
     activity_performances: null,
     all_monthly_activity_performances: null,
 
@@ -177,9 +176,6 @@ const mutations = {
     [types.NINETOFIVER_SET_EMPLOYMENT_CONTRACTS](state, { employment_contracts }) {
         state.employment_contracts = employment_contracts
     },
-    [types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH](state, { selected_month }) {
-        state.calendar_selected_month = selected_month
-    },
     [types.NINETOFIVER_SET_STANDBY_PERFORMANCES](state, { standby_performances }) {
         state.standby_performances = standby_performances
     },
@@ -214,7 +210,6 @@ const getters = {
     users: state => state.users,
     leaves: state => state.leaves,
     filtered_users: state => state.filtered_users,
-    calendar_selected_month: state => state.calendar_selected_month,
     employment_contracts: state => state.employment_contracts,
     activity_performances: state => state.activity_performances,
     standby_performances: state => state.standby_performances,
@@ -766,12 +761,16 @@ const actions = {
     },
 
     [types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW](store, options = {}) {
+        let date = moment();
 
+        if (options.date) {
+            date = options.date;
+        }
         options.path = '/services/monthly_availability/';
         if (!options.params)
             options.params = {}
 
-        options.params['period'] = moment(store.getters.calendar_selected_month).date(1).format('YYYY-MM-DDTHH:mm:ss');
+        options.params['period'] = moment(date).date(1).format('YYYY-MM-DDTHH:mm:ss');
 
         return new Promise((resolve, reject) => {
             store.dispatch(
@@ -996,16 +995,6 @@ const actions = {
             }, (res) => {
                 reject(res);
             })
-        });
-    },
-
-
-    [types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH](store, options = {}) {
-        let days = moment().date();
-        let date = options.params ? options.params.date : moment().subtract(days - 1, 'days');
-
-        store.commit(types.NINETOFIVER_SET_CALENDAR_SELECTED_MONTH, {
-            selected_month: date
         });
     },
 
