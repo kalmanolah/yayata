@@ -197,8 +197,8 @@ div.row
           doc.text('Consultant: ' + store.getters.user.display_label, 60, 8)
           doc.text(moment().month(sheet.month - 1).format('MMM') + ' ' + sheet.year.toString(), 140, 8)
           doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
-          doc.text('Project: ' + contract.display_label, 140, 13)
           doc.text('Customer: ' + contract.customerName, 60, 13)
+          doc.text('Project: ' + contract.display_label, 60, 18)
 
           doc.setFontSize(10)
           // Table header
