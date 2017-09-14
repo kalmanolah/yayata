@@ -43,7 +43,8 @@ div.row
               div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
                 .card(v-bind:class='getRibbonStyleClass(contract)')
                   .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
-                    div.contract-name {{ contract.name }} - {{ contract.end_date}}
+                    div.contract-name {{ contract.name }}
+                      span(v-if='contract.end_date') &nbsp;- {{ contract.end_date}}
                       span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                       span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClassContractType(contract)') {{ contract.type }}
                     small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
