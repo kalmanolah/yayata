@@ -102,6 +102,9 @@ div.row
     },
 
     created: function() {
+      if(!store.getters.contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS); 
+      }
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
           params: { contractuser__user__id: store.getters.user.id }
@@ -116,6 +119,9 @@ div.row
           ended_at__gte: moment().format('YYYY-MM-DD')
         }
       });
+      if(!store.getters.activity_performances) {
+        store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+      }
     },
 
     computed: {

@@ -251,6 +251,21 @@ export default {
       this.selectUser(user);
     }
     store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
+    if(!store.getters.whereabouts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
+    }
+    if(!store.getters.users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+    }
+    if(!store.getters.user_work_schedule) {
+      store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
+    }
+    if(!store.getters.holidays) {
+      store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+    }
+    if(!store.getters.contracts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    }
   },
 
   computed: {

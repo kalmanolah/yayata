@@ -94,7 +94,10 @@ export default {
       params: {
         contractuser__user__id: store.getters.user.id
       }
-    })  
+    });
+    if(!store.getters.activity_performances) {
+      store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+    } 
   },
 
   computed: {

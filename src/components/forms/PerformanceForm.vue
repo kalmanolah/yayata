@@ -43,6 +43,15 @@ export default {
     model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
     model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
+    if(!store.getters.contract_users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+    }
+    if(!store.getters.monthly_activity_performances) {
+      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+    }
+    if(!store.getters.contracts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    }
   },
 
   computed: {

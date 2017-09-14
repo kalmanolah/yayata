@@ -142,6 +142,9 @@ export default {
   },
 
   created: function () {
+    if(!store.getters.contracts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    }
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
       params: {
             contractuser__user__id: store.getters.user.id
@@ -150,13 +153,18 @@ export default {
     if(!store.getters.contract_roles){
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES)
     }
+    if(!store.getters.contract_users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+    }
     if(!store.getters.attachments){
       store.dispatch(types.NINETOFIVER_RELOAD_ATTACHMENTS)
     }
-    if(!store.getters.all_monthly_activity_performances)
-      store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
+    if(!store.getters.activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
     if(!store.getters.project_estimates)
       store.dispatch(types.NINETOFIVER_RELOAD_PROJECT_ESTIMATES);
+    if(!store.getters.all_activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_ALL_MONTHLY_ACTIVITY_PERFORMANCES);
   },
 
   filters: {

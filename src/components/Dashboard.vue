@@ -175,6 +175,8 @@ export default {
       store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
     if (!store.getters.holidays) 
       store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+    if(!store.getters.monthly_activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
   },
 
   computed: {

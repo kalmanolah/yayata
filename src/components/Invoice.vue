@@ -44,6 +44,9 @@ export default {
   },
   created () {
     this.reloadContracts();
+    if(!store.getters.activity_performances) {
+      store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+    }
   },
   methods: {
     handleOk(e) {
