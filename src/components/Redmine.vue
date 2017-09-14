@@ -60,7 +60,9 @@ div.row
                   td {{ timeEntry.spent_on }}
                   td(:class='checkDiffHours(timeEntry)') {{ timeEntry.hours }}
                   td(:class='checkDiff(timeEntry)') 
-                    a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id", target='_blank') {{ timeEntry.issue.id }}
+                    template(v-if='timeEntry.issue')
+                      a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id", target='_blank') {{ timeEntry.issue.id }}
+                    span(v-else) N.A.
                   td(:class='checkDiffComments(timeEntry)') {{ timeEntry.comments }}
                   td(:class='checkDiff(timeEntry)')
                     b-form-checkbox(v-model='timeEntry.checked') &nbsp;
@@ -88,6 +90,10 @@ export default {
   },
 
   created: function() {
+    if(!store.getters.timesheets) {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    }
+
     this.reload_time_entries();
     // Reload filtered contracts for this user
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
@@ -97,13 +103,33 @@ export default {
     });
     if(!store.getters.activity_performances) {
       store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
-    } 
+    }
+    if(!store.getters.contract_roles) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
+    }
+    if(!store.getters.contract_users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+    }
   },
 
   computed: {
     contracts: function() {
       if(store.getters.filtered_contracts) {
         return store.getters.filtered_contracts;
+      }
+    },
+
+    contractRoles: function() {
+      if(store.getters.contract_roles && store.getters.contract_users && this.selectedContract) {
+        let contract_users = store.getters.contract_users.filter((cu) => {
+          return (cu.user === store.getters.user.id && cu.contract === this.selectedContract.value)
+        })
+        let contract_roles = [];
+        contract_users.forEach( cu => {
+          contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
+        });
+        
+        return contract_roles;
       }
     },
 
@@ -256,7 +282,7 @@ export default {
               description: te.comments,
               performance_type: 1,
               contract: contract_id,
-              contract_role: 2,
+              contract_role: this.contractRoles[0].id,
               redmine_id: te.id
             }
             // Create new performance
