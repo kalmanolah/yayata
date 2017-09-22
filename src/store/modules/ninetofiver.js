@@ -164,8 +164,8 @@ const mutations = {
     [types.NINETOFIVER_SET_WORK_SCHEDULES](state, { work_schedules }) {
         state.work_schedules = work_schedules;
     },
-    [types.NINETOFIVER_SET_USER_WORK_SCHEDULE](state, { work_schedule }) {
-        state.user_work_schedule = work_schedule;
+    [types.NINETOFIVER_SET_USER_WORK_SCHEDULE](state, { user_work_schedule }) {
+        state.user_work_schedule = user_work_schedule;
     },
     [types.NINETOFIVER_SET_UPCOMING_LEAVES](state, { upcoming_leaves }) {
         state.upcoming_leaves = upcoming_leaves;
@@ -582,7 +582,10 @@ const actions = {
             ).then((res) => {
                 store.commit(types.NINETOFIVER_SET_USER, {
                     user: res.data
-                })
+                });
+                store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE,{
+                    user: res.data.id
+                });
                 resolve(res)
             }, (res) => {
                 reject(res)
@@ -1166,26 +1169,38 @@ const actions = {
     },
     [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE](store, options = {}) {
 
-        options.path = '/my_workschedules/';
-        options.params = {
-            current: 'True'
-        }
+            options.path = '/employment_contracts/';
+            options.params = {
+                user: options.user,
+                is_active: 'True'
+            }
 
-        return new Promise((resolve, reject) => {
-            store.dispatch(
-                types.NINETOFIVER_API_REQUEST,
-                options
-            ).then((res) => {
+            return new Promise((resolve, reject) => {
+                store.dispatch(
+                    types.NINETOFIVER_API_REQUEST,
+                    options
+                ).then((response) => {
 
-                store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
-                    work_schedule: res.data.results[0]
+                    store.dispatch(
+                        types.NINETOFIVER_API_REQUEST,
+                        {
+                            path: '/work_schedules/' + response.data.results[0].work_schedule + '/'
+                        }
+                    ).then(res => {
+                        
+                        store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
+                            user_work_schedule: res.data
+                        });
+
+                        resolve(res);
+                    }, res => {
+                        reject(res);
+                    });
+
+                }, (response) => {
+                    reject(response);
                 });
-                resolve(res);
-
-            }, (res) => {
-                reject(res);
             });
-        });
     },
 
     [types.NINETOFIVER_RELOAD_WHEREABOUTS](store, options = {}) {

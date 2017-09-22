@@ -171,8 +171,6 @@ export default {
       console.log(error);
     });
 
-    if(!store.getters.user_work_schedule)
-      store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
     if (!store.getters.holidays) 
       store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
     if(!store.getters.monthly_activity_performances)

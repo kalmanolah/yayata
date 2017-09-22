@@ -112,9 +112,6 @@ export default {
     buildPageInfo: function() {
       this.reloadEmploymentContracts();
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
-      if(!store.getters.user_work_schedule) {
-        store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
-      }
       if(!store.getters.holidays) {
         store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
       }
