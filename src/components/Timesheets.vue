@@ -188,6 +188,7 @@ div.row
         let baseX = 15;
         let baseY = 28;
         let inuitsLogo = inuitsLogoURI.inuitsLogo;
+        const maxDescL = 70;
         let doc = new jspdf({
           orientation: 'portrait'
         });
@@ -204,7 +205,7 @@ div.row
           // Table header
           doc.text('Day', baseX, baseY)
           doc.text('Description', baseX + 20, baseY)
-          doc.text('hours', baseX + 130, baseY)
+          doc.text('Hours', baseX + 130, baseY)
           doc.text('Performance type', baseX + 150, baseY)
           doc.line(baseX, baseY + 2, baseX + 190, baseY + 2)
           baseY += 7;
@@ -223,8 +224,14 @@ div.row
             }
             doc.text(moment().year(sheet.year).month(sheet.month - 1).date(perf.day).format('ddd'), baseX, baseY) 
             doc.text(perf.day.toString(), baseX + 10, baseY)
-            if(perf.description.length > 70) {
-              doc.text(perf.description.slice(1, 70) + '...', baseX + 20, baseY)
+            if(perf.description.length > maxDescL) {
+              let start = 0;
+              for(let i = 1; i <= Math.ceil(perf.description.length / maxDescL); i++) {
+                doc.text(perf.description.slice(start, (i * maxDescL)), baseX + 20, baseY)
+                baseY += 6;
+                start = (i * maxDescL);
+              }
+              baseY -= 6;
             } else {
               doc.text(perf.description, baseX + 20, baseY)
             }

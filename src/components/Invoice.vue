@@ -71,6 +71,7 @@ export default {
       let baseY = 28;
       let month = moment().month(this.date - 1).format('MMMM');
       let inuitsLogo = inuitsLogoURL.inuitsLogo;
+      const maxDescL = 70;
       let doc = new jspdf({
         orientation: 'portrait'
       });
@@ -101,8 +102,14 @@ export default {
           }
           doc.text(moment().month(month).date(perf.day).format('ddd'), baseX, baseY) 
           doc.text(perf.day.toString(), baseX + 10, baseY)
-          if(perf.description.length > 70) {
-            doc.text(perf.description.slice(1, 70) + '...', baseX + 20, baseY)
+          if(perf.description.length > maxDescL) {
+            let start = 0;
+            for(let i = 1; i <= Math.ceil(perf.description.length / maxDescL); i++) {
+              doc.text(perf.description.slice(start, (i * maxDescL)), baseX + 20, baseY)
+              baseY += 6;
+              start = (i * maxDescL);
+            }
+            baseY -= 6;
           } else {
             doc.text(perf.description, baseX + 20, baseY)
           }
