@@ -44,6 +44,9 @@ export default {
   },
   created () {
     this.reloadContracts();
+    if(!store.getters.activity_performances) {
+      store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
+    }
   },
   methods: {
     handleOk(e) {
@@ -77,8 +80,8 @@ export default {
         doc.text('Consultant: ' + this.user.display_label, 60, 8)
         doc.text(month + ' ' + moment().year(), 140, 8)
         doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
-        doc.text('Project: ' + this.contract.display_label, 140, 13)
         doc.text('Customer: ' + this.contract.customerName, 60, 13)
+        doc.text('Project: ' + this.contract.display_label, 60, 18)
 
         doc.setFontSize(10)
         // Table header

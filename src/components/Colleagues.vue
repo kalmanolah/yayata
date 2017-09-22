@@ -106,6 +106,9 @@ export default {
   },
 
   created: () => {
+    if(!store.getters.users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+    }
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, {
       params: {
         is_active: true,

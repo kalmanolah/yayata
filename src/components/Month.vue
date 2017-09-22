@@ -111,6 +111,16 @@ export default {
     //Requests all data
     buildPageInfo: function() {
       this.reloadEmploymentContracts();
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+      if(!store.getters.user_work_schedule) {
+        store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
+      }
+      if(!store.getters.holidays) {
+        store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+      }
+      if(!store.getters.users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+      }
     },
 
     //Reload the user's employment contracts
@@ -347,13 +357,6 @@ export default {
     params: function() {
       if(this.$route.params.year) {
         let date = moment({ year: this.$route.params.year, month: this.$route.params.month - 1 }).startOf('month');
-
-        store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, {
-          params: {
-            date: date.format('YYYY-MM-DDThh:mm:ss')
-          }
-        });
-
         return this.$route.params;
       }
     },
@@ -422,25 +425,6 @@ export default {
         }
 
         return daysInWeek;
-      }
-    },
-
-    contracts: function() {
-      if(store.getters.contracts && this.activtyPerformances) {
-        let contrs = store.getters.contracts;
-        //Calculate total perf duration for each entry
-        contrs.forEach(c => {
-          let total = 0;
-
-          this.activityPerformances.forEach(p => {
-            if(p.contract === c.id)
-              total += parseFloat(p.duration);
-          });
-
-          c.monthly_duration = total;
-        });
-
-        return contrs;
       }
     },
 

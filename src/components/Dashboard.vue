@@ -46,7 +46,7 @@ div
       //- PERFORMANCE FORM
       .card.card-top-blue.mb-3.p-3
         h4.card-title-blue.text-center Log performance
-        PerformanceForm(v-if='loaded')
+        PerformanceForm(v-if='loaded', :properties='{user: user}')
 
     .col-xl-6
       .row
@@ -170,13 +170,13 @@ export default {
     }).catch((error) => {
       console.log(error);
     });
-    if(store.getters.user) {
-      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-        params: {
-          contractuser__user__id: store.getters.user.id
-        }
-      });
-    }
+
+    if(!store.getters.user_work_schedule)
+      store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
+    if (!store.getters.holidays) 
+      store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+    if(!store.getters.monthly_activity_performances)
+      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
   },
 
   computed: {
@@ -211,7 +211,6 @@ export default {
 
     holidays: function() {
       if(store.getters.holidays)
-        // return store.getters.holidays.filter(holiday => moment(holiday.date).format('MM-DD') === moment(this.selectedDay).format('MM-DD'));
         return store.getters.holidays
     },
 

@@ -102,10 +102,25 @@ div.row
     },
 
     created: function() {
+      if(!store.getters.contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS); 
+      }
       if(store.getters.user){
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
           params: { contractuser__user__id: store.getters.user.id }
         });
+      }
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        filter_future_timesheets: true
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS,  {
+        params: {
+          user: store.getters.user.id,
+          ended_at__gte: moment().format('YYYY-MM-DD')
+        }
+      });
+      if(!store.getters.activity_performances) {
+        store.dispatch(types.NINETOFIVER_RELOAD_ACTIVITY_PERFORMANCES);
       }
     },
 
@@ -142,18 +157,6 @@ div.row
         }
       },
 
-    },
-
-    created: () => { 
-      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-        filter_future_timesheets: true
-      });
-      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS,  {
-        params: {
-          user: store.getters.user.id,
-          ended_at__gte: moment().format('YYYY-MM-DD')
-        }
-      });
     },
 
     watch: {
@@ -194,8 +197,8 @@ div.row
           doc.text('Consultant: ' + store.getters.user.display_label, 60, 8)
           doc.text(moment().month(sheet.month - 1).format('MMM') + ' ' + sheet.year.toString(), 140, 8)
           doc.addImage(inuitsLogo, 'JPEG', 20, 5, 30, 10)
-          doc.text('Project: ' + contract.display_label, 140, 13)
           doc.text('Customer: ' + contract.customerName, 60, 13)
+          doc.text('Project: ' + contract.display_label, 60, 18)
 
           doc.setFontSize(10)
           // Table header

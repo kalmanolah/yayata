@@ -219,57 +219,53 @@ export default {
       this.selectUser(to.params.user);
     },
     
-    selectedUser: function(newSelectedUser) {
-      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-        params: {
-          user: this.selectedUser.id
-        }
-      });
+    selectedUser: function(newSelectedUser, oldSelectedUser) {
+      this.reloadTimesheets(this.selectedUser);
       store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES, {
         params: {
           timesheet__user_id: this.selectedUser.id
         }
       });
-     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-       params: {
-         contractuser__user__id: this.selectedUser.id
-       }
-     }); 
-     store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
         params: {
-          user_id: this.selectedUser.id
-        }
-     });
-    store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
-      params: {
           contractuser__user__id: this.selectedUser.id
         }
-    })
+      }); 
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
+          params: {
+            user_id: this.selectedUser.id
+          }
+      });
+      store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
+        params: {
+            contractuser__user__id: this.selectedUser.id
+          }
+      })
     }
   },
 
   created: function() {
+    let user = store.getters.user;
     if(this.$route.params.user){
-      this.selectUser(this.$route.params.user);
-      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-        params: { contractuser__user__id: this.$route.params.user.id }
-      });
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
-        params: { user_id: this.$route.params.user.id }
-      });
-    } else {
-      store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS, {
-        params: { contractuser__user__id: store.getters.user.id }
-      });
-  
-      if(!store.getters.leaves){
-        store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
-          params: { user_id: store.getters.user.id }
-        });
-      }
+      user = this.$route.params.user;
+      this.selectUser(user);
     }
-    store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
     store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES);
+    if(!store.getters.whereabouts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_WHEREABOUTS);
+    }
+    if(!store.getters.users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_USERS);
+    }
+    if(!store.getters.user_work_schedule) {
+      store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE);
+    }
+    if(!store.getters.holidays) {
+      store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
+    }
+    if(!store.getters.contracts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    }
   },
 
   computed: {
@@ -370,6 +366,19 @@ export default {
   },
 
   methods: {
+    reloadTimesheets: function(user) {
+      let lowMonth = moment(this.periodStartMonth).month();
+      let highMonth = moment(this.periodEndMonth).month();
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
+        params: {
+          user__id: user.id,
+          year: this.$route.params.year,
+          month__lte: lowMonth,
+          month__gte: highMonth
+        }
+      });
+    },
+
     selectUser: function(user) {
       this.selectedUser = user;
     },

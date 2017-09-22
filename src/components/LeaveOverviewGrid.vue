@@ -77,7 +77,7 @@ div
 
   .row.mb-3
     .col
-      table.table.table-bordered.table-sm.table-responsive
+      table.table.table-bordered.table-sm.table-responsive(v-if='daysInMonth')
         thead
           tr.text-center
             th.overviewgrid.p-2.name-cell Name
@@ -106,19 +106,8 @@ export default {
   watch: {
 
     '$route': function(to, from) {
-
-      let date = moment({
-        year: this.$route.params.year, 
-        month: this.$route.params.month - 1 
-      }).startOf('month');
-
-      store.dispatch(types.NINETOFIVER_RELOAD_CALENDAR_SELECTED_MONTH, {
-        params: {
-          date: date.format('YYYY-MM-DDThh:mm:ss')
-        }
-      });
-
       this.buildPageInfo();
+      this.setDate();      
     },
 
 
@@ -132,7 +121,7 @@ export default {
       country_filter: 'Country',
       countries: [],
       loading: true,
-
+      date: null,
       showFilters: {
         showHoliday: true,
         showHome: true,
@@ -145,7 +134,7 @@ export default {
 
  created: function() {
     this.buildPageInfo();
-
+    this.setDate();
     store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS);
 
     store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => {
@@ -171,19 +160,14 @@ export default {
         return store.getters.leave_overview;
     },
 
-    selectedPeriod: function() {
-      if(store.getters.calendar_selected_month)
-        return moment(store.getters.calendar_selected_month, "YYYY-MM-DDTHH:mm:ss");
-    },
-
     contracts: function() {
       if(store.getters.contracts)
         return store.getters.contracts
     },
 
     daysInMonth: function() {
-      if(this.selectedPeriod)
-        return parseInt(moment(this.selectedPeriod).endOf('month').format('DD'));
+      if(this.date)
+        return parseInt(moment(this.date).endOf('month').format('DD'));
     },
 
     users: function() {
@@ -233,10 +217,17 @@ export default {
   },
 
   methods: {
-
+    setDate: function() {
+      this.date = moment({
+        year: this.$route.params.year, 
+        month: this.$route.params.month - 1 
+      }).startOf('month');
+    },
     // Requests all data
     buildPageInfo: function() {
-      store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW);
+      store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW, {
+        date: this.date
+      });
     },
 
     // Toggles the visibility of cells

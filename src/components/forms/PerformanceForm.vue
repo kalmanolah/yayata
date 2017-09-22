@@ -43,6 +43,7 @@ export default {
     model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
     model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
+<<<<<<< HEAD
 
     // Reload filtered contracts so that the user only sees contracts he's working on.
     store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, {
@@ -50,6 +51,17 @@ export default {
         contractuser__user__id: this.defaultUser.id
       }
     });
+=======
+    if(!store.getters.contract_users) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
+    }
+    if(!store.getters.monthly_activity_performances) {
+      store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
+    }
+    if(!store.getters.contracts) {
+      store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
+    }
+>>>>>>> 1b26c0cf171586607839fbec354a6e2c13a12875
   },
 
   computed: {
@@ -432,15 +444,20 @@ export default {
             model: "contract_role",
             required: true,
             values: () => {
-              if(store.getters.contract_users && this.defaultUser && model.contract){
-                var contract_users = store.getters.contract_users.filter( cu => {
-                  return (cu.user === this.defaultUser.id && cu.contract === model.contract)
+              if(store.getters.user.groups.find((g) => g.name == 'admin') && model.contract) {
+                return store.getters.contract_roles;
+              } else if (store.getters.contract_users && store.getters.user && model.contract){
+                let contract_users = store.getters.contract_users.filter( cu => {
+                  return (cu.user === store.getters.user.id && cu.contract === model.contract)
                 })
-                var contract_roles = [];
+                let contract_roles = [];
                 contract_users.forEach( cu => {
                   contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
                 });
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1b26c0cf171586607839fbec354a6e2c13a12875
                 return contract_roles;
               }
             },

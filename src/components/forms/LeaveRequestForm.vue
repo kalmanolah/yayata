@@ -28,6 +28,8 @@ div
 <script>
 import LeavePeriodForm from './LeavePeriodForm.vue';
 import LeaveDayForm from './LeaveDayForm.vue';
+import store from '../../store';
+import * as types from '../../store/mutation-types';
 
 export default {
   name: 'leaverequestform',
@@ -40,6 +42,11 @@ export default {
         // Full day
         singleDay: false,
       }
+  },
+
+  created () {
+    if(!store.getters.upcoming_leaves)
+      store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
   },
 
   methods: {
