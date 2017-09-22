@@ -262,6 +262,7 @@ const getters = {
                     project_estimate: x.hours_estimated,
                     start_date: x.starts_at,
                     end_date: x.ends_at,
+                    external_only: x.external_only,
                     attachments: x.attachments,
                     customerName: state.companies.find(com => com.id == x.customer).name,
                     companyName: state.companies.find(com => com.id == x.company).name,
@@ -292,6 +293,7 @@ const getters = {
                     end_date: x.ends_at,
                     project_estimate: x.hours_estimated,
                     redmine_id: x.redmine_id || null,
+                    external_only: x.external_only,
                     attachments: x.attachments,
                     customerName: state.companies.find(com => com.id == x.customer).name,
                     companyName: state.companies.find(com => com.id == x.company).name,
@@ -362,6 +364,7 @@ const getters = {
                     start_date: c.starts_at,
                     end_date: c.ends_at,
                     project_estimate: c.hours_estimated,
+                    external_only: c.external_only,
                     customerName: state.companies.find(com => com.id == c.customer).name,
                     companyName: state.companies.find(com => com.id == c.company).name,
                     // CALCULATED:
@@ -596,7 +599,7 @@ const actions = {
                 store.commit(types.NINETOFIVER_SET_USER, {
                     user: res.data
                 });
-                store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE,{
+                store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE, {
                     user: res.data.id
                 });
                 resolve(res)
@@ -1176,38 +1179,37 @@ const actions = {
     },
     [types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE](store, options = {}) {
 
-            options.path = '/employment_contracts/';
-            options.params = {
-                user: options.user,
-                is_active: 'True'
-            }
+        options.path = '/employment_contracts/';
+        options.params = {
+            user: options.user,
+            is_active: 'True'
+        }
 
-            return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
+            store.dispatch(
+                types.NINETOFIVER_API_REQUEST,
+                options
+            ).then((response) => {
+
                 store.dispatch(
-                    types.NINETOFIVER_API_REQUEST,
-                    options
-                ).then((response) => {
+                    types.NINETOFIVER_API_REQUEST, {
+                        path: '/work_schedules/' + response.data.results[0].work_schedule + '/'
+                    }
+                ).then(res => {
 
-                    store.dispatch(
-                        types.NINETOFIVER_API_REQUEST,
-                        {
-                            path: '/work_schedules/' + response.data.results[0].work_schedule + '/'
-                        }
-                    ).then(res => {
-                        
-                        store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
-                            user_work_schedule: res.data
-                        });
-
-                        resolve(res);
-                    }, res => {
-                        reject(res);
+                    store.commit(types.NINETOFIVER_SET_USER_WORK_SCHEDULE, {
+                        user_work_schedule: res.data
                     });
 
-                }, (response) => {
-                    reject(response);
+                    resolve(res);
+                }, res => {
+                    reject(res);
                 });
+
+            }, (response) => {
+                reject(response);
             });
+        });
     },
 
     [types.NINETOFIVER_RELOAD_WHEREABOUTS](store, options = {}) {
