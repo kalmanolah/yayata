@@ -29,16 +29,16 @@ div.row
           tbody(v-if='contractTimeEntries')
             template(v-for='timeEntry in contractTimeEntries')
               template(v-if='!getImportStatus(timeEntry)')
-                tr
-                td {{ timeEntry.activity.name }}
-                td {{ timeEntry.spent_on }}
-                td {{ timeEntry.hours }}
-                td(v-if='timeEntry.issue') 
-                  a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
-                td(v-else) N.A.
-                td {{ timeEntry.comments }}
-                td
-                  b-form-checkbox(v-model='timeEntry.checked') &nbsp;
+                tr(class='timesheetPending ? text-muted : ""')
+                  td {{ timeEntry.activity.name }}
+                  td {{ timeEntry.spent_on }}
+                  td {{ timeEntry.hours }}
+                  td(v-if='timeEntry.issue') 
+                    a(:href="'https://redmine.inuits.eu/issues/' + timeEntry.issue.id") {{ timeEntry.issue.id }}
+                  td(v-else) N.A.
+                  td {{ timeEntry.comments }}
+                  td
+                    b-form-checkbox(v-model='timeEntry.checked', :disabled='timesheetPending(timeEntry)') &nbsp;
     .alert.alert-info.text-md-center(v-if='notImportedTimeEntries && notImportedTimeEntries.length == 0') No redmine time entries.
     .row.mb-3
       .col
@@ -138,7 +138,9 @@ export default {
       if(store.getters.redmine_time_entries) {
         let timeEntries = store.getters.redmine_time_entries;
         timeEntries.forEach((te) => {
-          te.checked = true;
+          console.log(!this.timesheetPending(te))
+          te.checked = !this.timesheetPending(te);
+          // te.checked = true;
         });
         return timeEntries
       }
@@ -193,6 +195,12 @@ export default {
   },
 
   methods: {
+    timesheetPending: function(te) {
+     let timesheet = store.getters.timesheets.find(ts => {
+        return ts.month == moment(te.spent_on).month() + 1;
+      });
+      return timesheet.status === 'PENDING';
+    }, 
     toggleAllImported() {
       this.contractTimeEntries.forEach((te) => {
         if(!this.getImportStatus(te)){
@@ -247,58 +255,61 @@ export default {
       let success = true;
       let x = await this.contractTimeEntries.forEach((te) => {
         // Check if Time Entry has been imported already and if it has been updated.
-        if(this.getImportStatus(te)){
-          // Patch performance
-          if(te.checked && this.checkDiff(te)) {
-            let performance = this.performances.find((perf) => perf.redmine_id === te.id);
-            let body = {
-              timesheet: performance.timesheet,
-              day: performance.day,
-              duration: te.hours,
-              description: te.comments,
-              performance_type: performance.performance_type,
-              contract: performance.contract,
-              contract_role: performance.contract_role,
-              redmine_id: performance.redmine_id
+        if(!this.timesheetPending(te)) {
+
+          if(this.getImportStatus(te)){
+            // Patch performance
+            if(te.checked && this.checkDiff(te)) {
+              let performance = this.performances.find((perf) => perf.redmine_id === te.id);
+              let body = {
+                timesheet: performance.timesheet,
+                day: performance.day,
+                duration: te.hours,
+                description: te.comments,
+                performance_type: performance.performance_type,
+                contract: performance.contract,
+                contract_role: performance.contract_role,
+                redmine_id: performance.redmine_id
+              }
+              store.dispatch(types.NINETOFIVER_API_REQUEST, {
+                path: '/my_performances/activity/' + performance.id + '/',
+                method: 'PATCH',
+                body: body,
+                emulateJSON: true,
+              }).then((res) => {
+              }).catch((error) => {
+                console.log(error);
+                success = false;
+              })
             }
-            store.dispatch(types.NINETOFIVER_API_REQUEST, {
-              path: '/my_performances/activity/' + performance.id + '/',
-              method: 'PATCH',
-              body: body,
-              emulateJSON: true,
-            }).then((res) => {
-            }).catch((error) => {
-              console.log(error);
-              success = false;
-            })
-          }
-        } else {
-          // Create a new performance for each selected time entry
-          if(te.checked) {
-            let contract_id = this.contracts.find((c) => te.project.id === c.redmine_id).id;
-            let body = {
-              timesheet: this.timesheet.id,
-              day: moment(te.spent_on).date(),
-              duration: te.hours * 1,
-              description: te.comments,
-              performance_type: 1,
-              contract: contract_id,
-              contract_role: this.contractRoles[0].id,
-              redmine_id: te.id
+          } else {
+            // Create a new performance for each selected time entry
+            if(te.checked) {
+              let contract_id = this.contracts.find((c) => te.project.id === c.redmine_id).id;
+              let body = {
+                timesheet: this.timesheet.id,
+                day: moment(te.spent_on).date(),
+                duration: te.hours * 1,
+                description: te.comments,
+                performance_type: 1,
+                contract: contract_id,
+                contract_role: this.contractRoles[0].id,
+                redmine_id: te.id
+              }
+              // Create new performance
+              store.dispatch(types.NINETOFIVER_API_REQUEST, {
+                path: '/my_performances/activity/',
+                method: 'POST',
+                body: body,
+                emulateJSON: true,
+              }).then((res) => {
+              }).catch((error) => {
+                console.log(error);
+                success = false;
+              });
             }
-            // Create new performance
-            store.dispatch(types.NINETOFIVER_API_REQUEST, {
-              path: '/my_performances/activity/',
-              method: 'POST',
-              body: body,
-              emulateJSON: true,
-            }).then((res) => {
-            }).catch((error) => {
-              console.log(error);
-              success = false;
-            });
-          }
-        };
+          };
+        }
       });
       let message = success ? 'Time entries imported!' : 'Something went wrong.';
       success ? this.showSuccessToast(message) : this.showDangerToast(message);
