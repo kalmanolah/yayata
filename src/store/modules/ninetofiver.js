@@ -44,6 +44,7 @@ const state = {
     leave_overview: null,
 
     //Predefined
+    backend_base_url: null,
     timesheet_statuses: ['CLOSED', 'ACTIVE', 'PENDING'],
     leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
     group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
@@ -190,6 +191,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_LEAVE_OVERVIEW](state, { leave_overview }) {
         state.leave_overview = leave_overview
+    },
+    [types.NINETOFIVER_SET_BACKEND_BASE_URL](state, { backend_base_url }) {
+        state.backend_base_url = backend_base_url
     }
 }
 
@@ -197,6 +201,7 @@ const mutations = {
 const getters = {
     user: state => state.user,
     holidays: state => state.holidays,
+    backend_base_url: state => state.backend_base_url,
 
     whereabouts: state => state.whereabouts,
     leave_types: state => state.leave_types,
@@ -551,6 +556,14 @@ const actions = {
             })
 
         })
+    },
+
+    [types.NINETOFIVER_RELOAD_BACKEND_BASE_URL](store, options = {}) {
+        let oauth2State = store.rootState.oauth2
+        let url = `${oauth2State.config.baseUrl}/admin/ninetofiver`
+        store.commit(types.NINETOFIVER_SET_BACKEND_BASE_URL, {
+            backend_base_url: url
+        });
     },
 
     [types.NINETOFIVER_RELOAD_ATTACHMENTS](store, options = {}) {
@@ -933,19 +946,13 @@ const actions = {
 
     [types.NINETOFIVER_RELOAD_TIMESHEETS](store, options = {}) {
 
-        options.path = '/timesheets/';
-        let user__id = options.params && options.params.user__id ? options.params.user__id : store.getters.user.id;
+        options.path = '/my_timesheets/';
 
         if (options.filter_future_timesheets) {
             options.params = {
                 year__lte: moment().year(),
                 month__lte: moment().month() + 1,
-                user__id: user__id,
             };
-        } else {
-            options.params = {
-                user__id: user__id
-            }
         }
 
         return new Promise((resolve, reject) => {
