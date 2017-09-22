@@ -50,16 +50,11 @@ export default {
         contractuser__user__id: this.defaultUser.id
       }
     });
-    store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-      params: {
-        user__id: this.defaultUser.id
-      }
-    })
   },
 
   computed: {
-    today: function() { 
-      return this.defaultProperties ? this.defaultProperties.date : moment(); 
+    today: function() {
+      return this.defaultProperties ? this.defaultProperties.date : moment();
     },
 
     submitButtonStyle: function() {
@@ -105,9 +100,9 @@ export default {
     },
 
     formHasData: function() {
-      if(this.model.contract 
-        // && this.model.duration 
-        && this.model.performance_type 
+      if(this.model.contract
+        // && this.model.duration
+        && this.model.performance_type
         && this.model.contract_role) {
         return true;
       } else {
@@ -117,7 +112,7 @@ export default {
 
     activityPerformances: function() {
       if(store.getters.monthly_activity_performances) {
-        return store.getters.monthly_activity_performances; 
+        return store.getters.monthly_activity_performances;
       }
     },
 
@@ -149,7 +144,7 @@ export default {
 
       return activeContracts.map(x => {
         return { id: x.id, name: x.name +  ' → ' + x.customerName }
-        });                
+        });
       }
     },
 
@@ -174,9 +169,9 @@ export default {
         contract_users.forEach( cu => {
           contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
         });
-        
+
         return contract_roles;
-      } 
+      }
     }
   },
 
@@ -245,7 +240,7 @@ export default {
         this.showWarningToast('Please fill in all information before submitting.');
       } else {
 
-        var timesheet = this.timesheets.find(x => 
+        var timesheet = this.timesheets.find(x =>
           x.month == (this.today.month() + 1)
           &&
           x.year == this.today.year()
@@ -335,7 +330,7 @@ export default {
     //Posts the new performance
     postRequest: function(body) {
       store.dispatch(
-        types.NINETOFIVER_API_REQUEST, 
+        types.NINETOFIVER_API_REQUEST,
         {
           path: '/performances/activity/',
           method: 'POST',
@@ -386,7 +381,7 @@ export default {
                   let aName = a.name.toLowerCase();
                   let bName = b.name.toLowerCase();
                   return aName > bName ? 1 : (aName < bName ? -1 : 0)
-                });                
+                });
             }
           },
 
@@ -445,7 +440,7 @@ export default {
                 contract_users.forEach( cu => {
                   contract_roles.push(store.getters.contract_roles.find( cr => cr.id === cu.contract_role));
                 });
-                
+
                 return contract_roles;
               }
             },
