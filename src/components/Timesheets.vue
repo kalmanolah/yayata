@@ -209,6 +209,9 @@ div.row
           doc.line(baseX, baseY + 2, baseX + 190, baseY + 2)
           baseY += 7;
           // Performances
+          performances.sort((a, b) => {
+            return a.day > b.day ? 1 : a.day < b.day ? -1 : 0;
+          })
           performances.forEach((perf) => {
             totalPerformances += parseFloat(perf.duration);
             let performance_type_label = store.getters.performance_types.find((pType) => pType.id == perf.performance_type).name | 'ERROR';
@@ -218,7 +221,7 @@ div.row
               doc.addPage();
               baseY = 20;
             }
-            doc.text(moment().year(sheet.year).month(sheet.month).date(perf.day).format('ddd'), baseX, baseY) 
+            doc.text(moment().year(sheet.year).month(sheet.month - 1).date(perf.day).format('ddd'), baseX, baseY) 
             doc.text(perf.day.toString(), baseX + 10, baseY)
             if(perf.description.length > 70) {
               doc.text(perf.description.slice(1, 70) + '...', baseX + 20, baseY)
