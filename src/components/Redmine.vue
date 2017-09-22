@@ -39,6 +39,7 @@ div.row
                 td {{ timeEntry.comments }}
                 td
                   b-form-checkbox(v-model='timeEntry.checked') &nbsp;
+    .alert.alert-info.text-md-center(v-if='notImportedTimeEntries && notImportedTimeEntries.length == 0') No (new) redmine time entries.
     .row.mb-3
       .col
         h3.text-md-center Imported
@@ -146,7 +147,7 @@ export default {
     importedTimeEntries: function() {
       if(this.contractTimeEntries) {
         return this.contractTimeEntries.filter((te) => {
-          if(!this.getImportStatus(te)){
+          if(this.getImportStatus(te)){
             return te;
           }
         });
@@ -156,7 +157,7 @@ export default {
     notImportedTimeEntries: function() {
       if(this.contractTimeEntries) {
         return this.contractTimeEntries.filter((te) => {
-          if(this.getImportStatus(te)){
+          if(!this.getImportStatus(te)){
             return te;
           }
         });
@@ -320,7 +321,7 @@ export default {
       let performance = this.performances.find((p) => {
         return p.redmine_id === timeEntry.id
       })
-      return performance ? true : false; 
+      return !!performance;
     },
 
     checkDiff(timeEntry) {
