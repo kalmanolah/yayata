@@ -39,7 +39,7 @@ div.row
                 td {{ timeEntry.comments }}
                 td
                   b-form-checkbox(v-model='timeEntry.checked') &nbsp;
-    .alert.alert-info.text-md-center(v-if='notImportedTimeEntries && notImportedTimeEntries.length == 0') No (new) redmine time entries.
+    .alert.alert-info.text-md-center(v-if='notImportedTimeEntries && notImportedTimeEntries.length == 0') No redmine time entries.
     .row.mb-3
       .col
         h3.text-md-center Imported
