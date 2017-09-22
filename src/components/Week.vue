@@ -119,21 +119,19 @@
           hr.smaller-horizontal-hr.smaller-vertical-hr
 
           //- Body of performances
-          //- Check if timesheet status is active
-          template( v-if='getTimesheetStatus(weekDay)')
-            .card-block.performance-list
-              //- Holidays
-              template(v-if='holidays')
-                li.list-group-item.leave-entry(
-                  v-for='holiday in getDaysHolidays(weekDay.date())',
-                  :class='[list-group, performances-list]'
-                )
-                  .list-group-item-heading {{ holiday.name }}
-                  .list-group-item-text
-                    hr.smaller-vertical-hr
-                    small.row.justify-content-between.align-items-center
-                      i.fa.fa-university.col
-                      .col.ml-auto 8 h
+          .card-block.performance-list
+            //- Holidays
+            template(v-if='holidays')
+              li.list-group-item.leave-entry(
+                v-for='holiday in getDaysHolidays(weekDay.date())',
+                :class='[list-group, performances-list]'
+              )
+                .list-group-item-heading {{ holiday.name }}
+                .list-group-item-text
+                  hr.smaller-vertical-hr
+                  small.row.justify-content-between.align-items-center
+                    i.fa.fa-university.col
+                    .col.ml-auto 8 h
 
               //- Leaves
               template(v-if='leaves')
@@ -154,24 +152,26 @@
                       i.fa.fa-plane.col
                       .col.ml-auto {{ leave.leaveDuration}} h
 
-              //- Performances
-              li.list-group-item.performance-entry(
-                v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
-                :key='perf.id',
-                :class='[list-group, performance-list]'
+          //- Check if timesheet status is active
+          template( v-if='currentUserSelected && getTimesheetStatus(weekDay)')
+            //- Performances
+            li.list-group-item.performance-entry(
+              v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+              :key='perf.id',
+              :class='[list-group, performance-list]'
+            )
+              hovercard(
+              :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})', 
+              @success='onSubmitSuccess'
               )
-                hovercard(
-                :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})', 
-                @success='onSubmitSuccess'
-                )
-                  //- Visible text
-                  .list-group-item-heading {{ findContractName(perf.contract) }}
-                  .list-group-item-text 
-                    div {{ perf.description }}
-                    hr.smaller-vertical-hr
-                    small.row.justify-content-between.align-items-center
-                      .col {{ findPerformanceTypeName(perf.performance_type) }}
-                      .col.ml-auto {{ perf.duration }} h
+                //- Visible text
+                .list-group-item-heading {{ findContractName(perf.contract) }}
+                .list-group-item-text 
+                  div {{ perf.description }}
+                  hr.smaller-vertical-hr
+                  small.row.justify-content-between.align-items-center
+                    .col {{ findPerformanceTypeName(perf.performance_type) }}
+                    .col.ml-auto {{ perf.duration }} h
 
           //- If timesheet status is NOT active
           template(v-else)

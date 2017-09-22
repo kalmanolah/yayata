@@ -52,6 +52,9 @@ export default {
     if(!store.getters.contracts) {
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
     }
+    if (!store.getters.timesheets) {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    }
   },
 
   computed: {
