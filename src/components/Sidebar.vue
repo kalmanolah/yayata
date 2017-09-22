@@ -1,39 +1,39 @@
 <template lang="pug">
 .sidebar.col-md-auto
-  .side-container.col-auto.pr-5.pt-4.pl-0
+  .side-container.col-auto.pr-4.pt-2.pl-0
     //- LOGO
-    .row.pl-4
+    .row.pl-3
       .col
         router-link(
           :to='{ name: "home" }'
         )
-          img.logo(class='card-img-top img-fluid px-1 pt-2' src='../assets/img/logo_text.svg')
+          img.logo(class='card-img-top img-fluid px-1 pt-2 pb-3' src='../assets/img/logo_text.svg')
 
     //- PAGES
-    .row.pl-4
+    .row.pl-3
       .col
         nav
           router-link(:to='{ name: "timesheets" }')
-            h3 Timesheets 
-            p.small.d-none.d-lg-block All open timesheets
+            h3.mb-0 Timesheets 
+            p.small.d-none.d-lg-block.hide-on-small--side-text All open timesheets
           router-link(:to='{ name: "contracts" }')
-            h3 Contracts
-            p.small.d-none.d-lg-block What am I working on
+            h3.mb-0 Contracts
+            p.small.d-none.d-lg-block.hide-on-small--side-text What am I working on
           router-link(:to='{ name: "leaves" }')
-            h3 Leaves
-            p.small.d-none.d-lg-block Sickness / Vacation
+            h3.mb-0 Leaves
+            p.small.d-none.d-lg-block.hide-on-small--side-text Sickness / Vacation
           router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
-            h3 Colleagues
-            p.small.d-none.d-lg-block The weirdos I work with
+            h3.mb-0 Colleagues
+            p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
           router-link(:to='{ name: "calendar_month_redirect" }')
-            h3 Calendar
-            p.small.d-none.d-lg-block Monthly overview
+            h3.mb-0 Calendar
+            p.small.d-none.d-lg-block.hide-on-small--side-text Monthly overview
           router-link(:to='{ name: "redmine" }')
-            h3 Redmine
-            p.small.d-none.d-lg-block Time entries
+            h3.mb-0 Redmine
+            p.small.d-none.d-lg-block.hide-on-small--side-text Time entries
 
     //- DATEPICKER
-    .row
+    .row.hide-on-small--date-picker
       .bottom.ml-0.pl-0.pr-4
         input#datepicker(type='hidden' ref='datepicker')
         #container(ref='container')
@@ -88,5 +88,16 @@ export default {
 .sidebar {
   width: 230px;
 }
-
+.hide-on-small {
+  &--side-text {
+    @media (max-height: 700px) {
+      display: none!important;
+    }
+  }
+  &--date-picker {
+    @media (max-height: 500px) {
+      display: none!important;
+    }
+  }
+}
 </style>
