@@ -182,6 +182,8 @@
               :class='[list-group, performance-list]'
             )
               .list-group-item-heading {{ findContractName(perf.contract) }}
+                a(:href="getBackendURL(perf)", :target='_blank')
+                  i.fa.fa-pencil-square-o.pull-right
               .list-group-item-text 
                 div {{ perf.description }}
                 hr.smaller-vertical-hr
@@ -268,6 +270,9 @@ export default {
     }
     if(!store.getters.timesheets) {
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    }
+    if (!store.getters.backend_base_url) {
+      store.dispatch(types.NINETOFIVER_RELOAD_BACKEND_BASE_URL)
     }
   },
 
@@ -369,6 +374,11 @@ export default {
   },
 
   methods: {
+    getBackendURL: function(performance) {
+      let url = store.getters.backend_base_url;
+      return url + "/performance/" + performance.id + "/change";
+    },
+
     reloadTimesheets: function(user) {
       let lowMonth = moment(this.periodStartMonth).month() + 1;
       let highMonth = moment(this.periodEndMonth).month() + 1;
