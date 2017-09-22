@@ -55,8 +55,8 @@ export default {
   },
 
   computed: {
-    today: function() { 
-      return this.defaultProperties ? this.defaultProperties.date : moment(); 
+    today: function() {
+      return this.defaultProperties.date ? this.defaultProperties.date : moment(); 
     },
 
     submitButtonStyle: function() {
@@ -206,7 +206,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
         {
-          path: '/performances/activity/' + this.defaultPerformance['id'] + '/',
+          path: '/my_performances/activity/' + this.defaultPerformance['id'] + '/',
           method: 'DELETE'
         }
       ).then((response) => {
@@ -268,11 +268,7 @@ export default {
             console.log( response );
             if(response.status == 201)
               this.submitForm(response.data.id);
-            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
-              params: {
-                user: this.defaultUser.id
-              }
-            });
+            store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
           }).catch((error) => {
             console.log(error);
             this.showDangerToast('Timesheet could not be created for this performance');
@@ -306,7 +302,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST,
         {
-          path: '/performances/activity/' + id + '/',
+          path: '/my_performances/activity/' + id + '/',
           method: 'PATCH',
           body: body,
           emulateJSON: true,
@@ -334,7 +330,7 @@ export default {
       store.dispatch(
         types.NINETOFIVER_API_REQUEST, 
         {
-          path: '/performances/activity/',
+          path: '/my_performances/activity/',
           method: 'POST',
           body: body,
           emulateJSON: true,

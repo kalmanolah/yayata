@@ -266,6 +266,9 @@ export default {
     if(!store.getters.contracts) {
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS);
     }
+    if(!store.getters.timesheets) {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS);
+    }
   },
 
   computed: {
@@ -367,11 +370,10 @@ export default {
 
   methods: {
     reloadTimesheets: function(user) {
-      let lowMonth = moment(this.periodStartMonth).month();
-      let highMonth = moment(this.periodEndMonth).month();
+      let lowMonth = moment(this.periodStartMonth).month() + 1;
+      let highMonth = moment(this.periodEndMonth).month() + 1;
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
         params: {
-          user__id: user.id,
           year: this.$route.params.year,
           month__lte: lowMonth,
           month__gte: highMonth
