@@ -146,7 +146,7 @@ export default {
 
     contracts: function() {
       if(store.getters.filtered_contracts) {
-      var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
+      var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true && x.external_only === false});
 
       return activeContracts.map(x => {
         return { id: x.id, name: x.name +  ' → ' + x.customerName }
@@ -373,7 +373,7 @@ export default {
 
             values: function() {
               if(store.getters.filtered_contracts) {
-              var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true });
+              var activeContracts = store.getters.filtered_contracts.filter(x => { return x.active === true && x.external_only === false });
 
               return activeContracts
                 .map(x => {
