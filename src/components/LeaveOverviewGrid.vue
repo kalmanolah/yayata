@@ -161,8 +161,12 @@ export default {
     },
 
     contracts: function() {
-      if(store.getters.contracts)
-        return store.getters.contracts
+      if(store.getters.contracts) {
+        let contracts = store.getters.contracts;
+        return contracts.sort((a, b) => {
+          return a.display_label < b.display_label ? -1 : a.display_label > b.display_label ? 1 : 0;
+        });
+      }
     },
 
     daysInMonth: function() {
