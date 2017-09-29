@@ -75,18 +75,8 @@
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
                 //- Standby
-                template.col(v-if='userHasSupportContracts')
-                  b-popover(triggers='hover' placement='top' class='hidden-md-down')
-                    hovercard(
-                      :id='"hc_standby_" + i', 
-                      :component='getHoverCardComponent("StandbyContractSelect", weekDay, data={"timesheet": getTimesheetForDay(weekDay)})', 
-                      @success='onSubmitSuccess'
-                    )
-                      .btn.btn-outline-primary.card-header-button
-                        i.fa.fa-phone
-                    div(slot='content')
-                      template(v-for='standby in getStandbys(weekDay)') 
-                        div {{ standby.contract_label }}
+                button.btn.btn-outline-primary.card-header-button(@click='toggleStandby(weekDay)')
+                  i.fa.fa-phone
 
                 //- Whereabouts
                 template.col
@@ -371,6 +361,38 @@ export default {
   },
 
   methods: {
+    toggleStandby: function(weekDay) {
+      // Delete existing standby if user is already on stanby
+      if(this.standbyPerformances.find(sbp => sbp.day === moment(weekDay).date())) {
+        let standby = this.standbyPerformances.find(sbp => sbp.day === moment(weekDay).date())
+        store
+          .dispatch(types.NINETOFIVER_API_REQUEST, {
+            path: '/my_performances/standby/' + standby.id + '/',
+            method: 'DELETE' })
+          .then(() => {
+            this.showInfoToast('Standby Performance Deleted!')
+            store
+              .dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES)
+              .then(() => this.getDaysOfWeek())})
+          .catch(error => this.showDangerToast('Something went wrong. Check console for more information'));
+      } else {
+        // Create new standby if user is not yet on standby
+        store
+          .dispatch(types.NINETOFIVER_API_REQUEST, {
+            path: '/my_performances/standby/',
+            method: 'POST',
+            body: {
+              timesheet: this.timesheets.find(ts => ts.month === moment(weekDay).month() + 1).id,
+              day: moment(weekDay).date() }})
+          .then(() => {
+            this.showSuccessToast('Standby Performance Created!')
+            store
+              .dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES)
+              .then(() => this.getDaysOfWeek())})
+          .catch(error => this.showDangerToast('Something went wrong. Check console for more information'));
+      }
+    },
+
     getBackendURL: function(performance) {
       let url = store.getters.backend_base_url;
       return url + "/performance/" + performance.id + "/change";
@@ -380,7 +402,7 @@ export default {
       let lowMonth = moment(this.periodStartMonth).month() + 1;
       let highMonth = moment(this.periodEndMonth).month() + 1;
       let lowYear = moment(this.periodStartMonth).year();
-      let hightYear = moment(this.periodEndMonth).year();
+      let highYear = moment(this.periodEndMonth).year();
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
         params: {
           year: this.$route.params.year,
