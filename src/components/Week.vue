@@ -75,7 +75,7 @@
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
                 //- Standby
-                button.btn.btn-outline-primary.card-header-button(@click='toggleStandby(weekDay)')
+                button.btn.btn-outline-primary.card-header-button(@click='toggleStandby(weekDay)', :class='getStandbyButtonStyle(weekDay)')
                   i.fa.fa-phone
 
                 //- Whereabouts
@@ -361,6 +361,12 @@ export default {
   },
 
   methods: {
+    getStandbyButtonStyle: function(weekDay) {
+      return this.standbyPerformances.find(sbp => sbp.day === moment(weekDay).date())
+        ? 'buttonInverse'
+        : ''; 
+    },
+
     toggleStandby: function(weekDay) {
       // Delete existing standby if user is already on stanby
       if(this.standbyPerformances.find(sbp => sbp.day === moment(weekDay).date())) {
@@ -801,6 +807,12 @@ div.btn-group {
   border-color: #fff;
 }
 .card-header-button:hover {
+  color: #5bc0de;
+  border-color: #5bc0de;
+  background: #fff;
+}
+
+.buttonInverse {
   color: #5bc0de;
   border-color: #5bc0de;
   background: #fff;
