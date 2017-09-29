@@ -220,8 +220,10 @@ export default {
           if(names.indexOf(contract.customerName) === -1) {
             names.push(contract.customerName);
           }
+        })
+        return names.sort((a, b) => {
+          return a < b ? -1 : a > b ? 1 : 0;
         });
-        return names;
       }
     },
 
