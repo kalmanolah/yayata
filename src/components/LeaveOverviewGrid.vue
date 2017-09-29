@@ -144,7 +144,9 @@ export default {
         if(user.userinfo && this.countries.indexOf(user.userinfo.country) === -1)
           this.countries.push(user.userinfo.country);
       });
-
+      this.countries.sort((a, b) => {
+        return a < b ? -1 : a > b ? 1 : 0;
+      });
       this.loading = false;
     });
 
