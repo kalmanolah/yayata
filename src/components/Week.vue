@@ -379,11 +379,15 @@ export default {
     reloadTimesheets: function(user) {
       let lowMonth = moment(this.periodStartMonth).month() + 1;
       let highMonth = moment(this.periodEndMonth).month() + 1;
+      let lowYear = moment(this.periodStartMonth).year();
+      let hightYear = moment(this.periodEndMonth).year();
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS, {
         params: {
           year: this.$route.params.year,
-          month__lte: lowMonth,
-          month__gte: highMonth
+          month__lte: highMonth,
+          month__gte: lowMonth,
+          year__gte: lowYear,
+          year__lte: highYear
         }
       });
     },
