@@ -141,7 +141,6 @@ export default {
       if(store.getters.redmine_time_entries) {
         let timeEntries = store.getters.redmine_time_entries;
         timeEntries.forEach((te) => {
-          console.log(!this.timesheetPending(te))
           te.checked = !this.timesheetPending(te);
           // te.checked = true;
         });
@@ -202,7 +201,9 @@ export default {
      let timesheet = store.getters.timesheets.find(ts => {
         return ts.month == moment(te.spent_on).month() + 1;
       });
-      return timesheet.status === 'PENDING';
+      if(timesheet) {
+        return timesheet.status === 'PENDING';
+      }
     }, 
     toggleAllImported() {
       this.contractTimeEntries.forEach((te) => {
