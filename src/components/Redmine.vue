@@ -116,7 +116,10 @@ export default {
   computed: {
     contracts: function() {
       if(store.getters.filtered_contracts) {
-        return store.getters.filtered_contracts;
+        let contracts = store.getters.filtered_contracts;
+        return contracts.sort((a, b) => {
+          return a.display_label < b.display_label ? -1 : a.display_label > b.display_label ? 1 : 0;
+        });
       }
     },
 
