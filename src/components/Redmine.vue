@@ -29,7 +29,7 @@ div.row
           tbody(v-if='contractTimeEntries')
             template(v-for='timeEntry in contractTimeEntries')
               template(v-if='!getImportStatus(timeEntry)')
-                tr(class='timesheetPending ? text-muted : ""')
+                tr(:class='timesheetPending ? text-muted : ""')
                   td {{ timeEntry.activity.name }}
                   td {{ timeEntry.spent_on }}
                   td {{ timeEntry.hours }}
@@ -204,6 +204,7 @@ export default {
       if(timesheet) {
         return timesheet.status === 'PENDING';
       }
+      return false;
     }, 
     toggleAllImported() {
       this.contractTimeEntries.forEach((te) => {
