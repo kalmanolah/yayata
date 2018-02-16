@@ -53,7 +53,7 @@ export default {
         }).then(() => {
           this.$router.push({ name: 'home' })
         }, (error) => {
-          this.errorMessage = error.data.error_description
+          this.errorMessage = error.data.error_description || error.data.error
         })
       }
     }

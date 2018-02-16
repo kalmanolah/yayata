@@ -4,7 +4,7 @@ div
     .col
       //- WARNING
       .alert.alert-warning.card-top-red.mb-3(v-if='open_timesheet_count > 0')
-        .text-center You have {{ open_timesheet_count }} due timesheet(s) still open. Please fix that ASAP or Johan will haunt your dreams.
+        .text-center You have {{ open_timesheet_count }} due timesheet(s) still open.
   .row
     .col-xl-6
       //- BIRTHDAYS
@@ -28,7 +28,7 @@ div
 
       //- TIMESHEETS
       .card.card-top-blue.mb-3.p-2
-        h4.card-title.text-center Timesheets for 
+        h4.card-title.text-center Timesheets for&nbsp;
           router-link(:to='{ name: "calendar_month_redirect" }')
             | {{ today | moment('MMMM YYYY') }}
         table.table
@@ -59,7 +59,7 @@ div
                 i.fa.fa-chevron-left.chevron-l.chevron(@click='dayEarlier')
                 | {{ selectedDay | moment('DD MMMM') }}
               span(title='Go to next day')
-                i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater') 
+                i.fa.fa-chevron-right.chevron-r.chevron(@click='dayLater')
 
             .card-block
               table.table
@@ -78,11 +78,10 @@ div
                     td.text-md-right {{ holiday.date | moment('DD MMM YYYY') }}
                   tr(v-if='holidaysSelectedDay.length === 0')
                     td.text-center <strong>No holidays!</strong>
-      .row 
+      .row
         .col
           //- Leaverequest form
           LeaveRequestForm
-
 </template>
 
 <script>
@@ -142,7 +141,7 @@ export default {
       this.days[weekday]++;
       dayOfMonth.add(1, 'days');
     }
-    
+
     //Get all leaves for this month
     //Make param for month's range
     var startOfMonth = moment().startOf('month');
@@ -155,14 +154,17 @@ export default {
         status: store.getters.leave_statuses[2],
         leavedate__range: range,
       }
-    }).then((response) => {      
+    }).then((response) => {
       response.data.results.forEach(lv => {
         lv.leavedate_set.forEach(lvd => {
           lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
           lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
-        });
-        lv['leave_start'] = lv.leavedate_set[0].starts_at;
-        lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
+        })
+
+        if (lv.leavedate_set.length) {
+          lv['leave_start'] = lv.leavedate_set[0].starts_at
+          lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at
+        }
       });
       this.leaves = response.data.results;
     }, () => {
@@ -171,7 +173,7 @@ export default {
       console.log(error);
     });
 
-    if (!store.getters.holidays) 
+    if (!store.getters.holidays)
       store.dispatch(types.NINETOFIVER_RELOAD_HOLIDAYS);
     if(!store.getters.monthly_activity_performances)
       store.dispatch(types.NINETOFIVER_RELOAD_MONTHLY_ACTIVITY_PERFORMANCES);
@@ -234,8 +236,8 @@ export default {
         return store.getters.open_timesheet_count;
     },
 
-    monthlyActivityPerformances: function() {      
-      if(store.getters.monthly_activity_performances) 
+    monthlyActivityPerformances: function() {
+      if(store.getters.monthly_activity_performances)
         return store.getters.monthly_activity_performances;
     },
 
@@ -254,7 +256,7 @@ export default {
 
           c.monthly_duration = total;
         });
-        
+
         return active_contrs;
       };
     },
@@ -296,15 +298,15 @@ export default {
 
   methods: {
     dayEarlier: function() {
-      this.selectedDay.subtract(1, 'days');      
+      this.selectedDay.subtract(1, 'days');
       this.filterLeaves();
-      this.filterHolidays();      
+      this.filterHolidays();
     },
 
     dayLater: function() {
-      this.selectedDay.add(1, 'days');      
+      this.selectedDay.add(1, 'days');
       this.filterLeaves();
-      this.filterHolidays(); 
+      this.filterHolidays();
     },
 
     dayEarlierBirthdays: function() {
@@ -321,7 +323,7 @@ export default {
       this.birthdaysSelectedDay = [];
       this.users.forEach((user) => {
         if(user.userinfo
-        && user.userinfo.birth_date 
+        && user.userinfo.birth_date
         && moment(user.userinfo.birth_date).month() === moment(this.selectedBirthday).month()
         && moment(user.userinfo.birth_date).date() === moment(this.selectedBirthday).date()){
           this.birthdaysSelectedDay.push(user);
@@ -340,7 +342,7 @@ export default {
 
     filterLeaves: function() {
       // Empty leaveSelectedDay array.
-      this.leavesSelectedDay = [];    
+      this.leavesSelectedDay = [];
       // Check if selected day is between the start of the first and last leave of the leaves.
       if(this.selectedDay.isBetween(this.earliestLeave, this.latestLeave)){
         // Selected day is between leaves.
@@ -385,10 +387,10 @@ export default {
             ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
             // Keep track of the earliest and latest leave in this set.
             this.earliestLeave = ld.starts_at.isBefore(this.earliestLeave, 'day') ? ld.starts_at : this.earliestLeave;
-            this.latestLeave = ld.ends_at.isAfter(this.latestLeave, 'day') ? ld.ends_at : this.latestLeave;          
+            this.latestLeave = ld.ends_at.isAfter(this.latestLeave, 'day') ? ld.ends_at : this.latestLeave;
           });
           this.filterLeaves();
-        });         
+        });
       }).catch((error) => {
         console.log(error);
       });

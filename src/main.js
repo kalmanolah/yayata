@@ -151,7 +151,9 @@ router.beforeEach((to, from, next) => {
     }
 })
 
+console.debug(`Loading configuration file at ${cfg_file_path}`)
 Vue.http.get(cfg_file_path).then((response) => {
+    console.debug('Configuration loaded', response.data)
     store.commit(types.OAUTH2_CONFIGURE, response.data.oauth2.config)
 
     new Vue({
@@ -160,5 +162,5 @@ Vue.http.get(cfg_file_path).then((response) => {
         store
     })
 }, (error) => {
-    console.error(`Could not load configuration file at ${cfg_file_path}!`)
+    console.error(`Could not load configuration file!`)
 })
