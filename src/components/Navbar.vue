@@ -1,7 +1,6 @@
 <template lang="pug">
 .row
-  .col.navbar-yayata.d-flex.mr-auto
-
+  .col.bg-light.d-flex.mr-auto
     .col.pull-left.d-md-none
       b-btn.m-2(v-b-modal="'modalio'")
         i.fa.fa-bars
@@ -13,7 +12,7 @@
       )
         nav.text-center(@click='hideModal()')
           router-link(:to='{ name: "timesheets" }')
-            h2 Timesheets 
+            h2 Timesheets
           router-link(:to='{ name: "contracts" }')
             h2 Contracts
           router-link(:to='{ name: "leaves" }')
@@ -38,14 +37,14 @@
               aria-haspopup='true'
               aria-expanded='false'
             ) {{ user.display_label }}
-            .dropdown-menu(
+            .dropdown-menu.dropdown-menu-right(
               aria-labelledby='responsiveNavbarDropdown'
             )
               router-link(
                 :to='{ name: "auth.logout" }',
                 class='dropdown-item'
               ) Logout
-  </template>
+</template>
 
 <script>
 import store from '../store'
@@ -74,7 +73,4 @@ export default {
 </script>
 
 <style lang="less" scoped>
-
-
-
 </style>

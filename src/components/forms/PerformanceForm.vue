@@ -1,17 +1,18 @@
 <template lang="pug">
   div
-    .text-center
-      i.fa.fa-calendar-check-o
-      span &nbsp; {{ today | moment('DD/MM/YYYY') }}
+    div(class='text-center')
+      i(class='fa fa-calendar-check-o')
+      span &nbsp;{{ today | moment('DD/MM/YYYY') }}
+
     vue-form-generator(:id='"vfg-" + i', :schema="schema", :model="model", :options="formOptions")
 
-    button.btn.btn-success.col(v-bind:class='submitButtonStyle', @click='validateForm', :disabled='!formHasData')
-      i.fa.fa-check
-      span &nbsp; Submit
+    button(class='btn btn-success col' v-bind:class='submitButtonStyle' @click='validateForm', :disabled='!formHasData')
+      i(class='fa fa-check')
+      span &nbsp;Submit
 
-    button.btn.btn-danger.col-6(v-if='defaultPerformance', @click='deleteEntry')
-      i.fa.fa-remove
-      span &nbsp; Delete
+    button(class='btn btn-danger-col-6' v-if='defaultPerformance', @click='deleteEntry')
+      i(class='fa fa-remove')
+      span &nbsp;Delete
 </template>
 
 <script>
@@ -26,7 +27,6 @@ var model = { contract: null };
 export default {
   mixins: [ ToastMixin, RequiredPerformedDayMixin ],
   props: {
-
     properties: {
       type: Object,
       default: null,
@@ -34,15 +34,21 @@ export default {
         return (value !== null && value !== undefined && typeof value === 'object')
       }
     }
-
   },
 
   created: function() {
     model.contract = this.defaultContract;
     model.duration = this.defaultPerformance ? this.defaultDuration : this.getHours();
-    model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : store.getters.performance_types[0].id ;
     model.description = this.defaultDescription;
-    model.contract_role = this.defaultContractRole ? this.defaultContractRole : store.getters.contract_roles[0].id;
+
+    model.performance_type = this.defaultPerformanceType ? this.defaultPerformanceType : null;
+    if (!model.performance_type && store.getters.performance_types.length) {
+        model.performance_type = store.getters.performance_types[0].id;
+    }
+    model.contract_role = this.defaultContractRole ? this.defaultContractRole : null;
+    if (!model.contract_role && store.getters.contract_roles.length) {
+        model.contract_role = store.getters.contract_roles[0].id;
+    }
 
     if(!store.getters.contract_users) {
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS);
@@ -60,7 +66,7 @@ export default {
 
   computed: {
     today: function() {
-      return this.defaultProperties.date ? this.defaultProperties.date : moment(); 
+      return this.defaultProperties.date ? this.defaultProperties.date : moment();
     },
 
     submitButtonStyle: function() {

@@ -1,30 +1,21 @@
 <template lang="pug">
-div
-  .card.card-top-blue.col-12.mb-3.p-2
-    h4.card-title.text-md-center
-      i.fa.fa-plane
-      | &nbsp; Request a Leave
+div(clas='form')
+  div(class='text-center')
+    toggle-button(
+      @change='switchForm()',
+      :sync='true',
+      :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
+      :labels={
+        checked: 'Single day',
+        unchecked: 'Multiple days'
+      },
+      :width='95',
+    )
 
-    .card-block
-      .form
-
-        .row
-          .col.text-center
-            toggle-button(
-              @change='switchForm()',
-              :sync='true',
-              :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
-              :labels={
-                checked: 'Single day',
-                unchecked: 'Multiple days'
-              },
-              :width='95',
-            )
-
-        LeaveDayForm(v-if='singleDay')
-        LeavePeriodForm(v-else)
-
+  LeaveDayForm(v-if='singleDay')
+  LeavePeriodForm(v-else)
 </template>
+
 <script>
 import LeavePeriodForm from './LeavePeriodForm.vue';
 import LeaveDayForm from './LeaveDayForm.vue';
@@ -33,33 +24,27 @@ import * as types from '../../store/mutation-types';
 
 export default {
   name: 'leaverequestform',
-  components: { 
+
+  components: {
     LeavePeriodForm,
-    LeaveDayForm    
+    LeaveDayForm
   },
+
   data() {
       return {
-        // Full day
         singleDay: false,
       }
   },
 
-  created () {
-    if(!store.getters.upcoming_leaves)
-      store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
-  },
-
   methods: {
     switchForm: function() {
-      // Switches form and resets the depending fields.
       this.singleDay = !this.singleDay;
     },
   },
-
 }
 </script>
-<style lang='less'>
 
+<style lang='less'>
 .select-warning {
   border: solid 1px #f0ad4e;
   border-radius: .25em;
@@ -68,10 +53,7 @@ export default {
   padding: 0px 5px;
 }
 .form-control {
-  
-}
-.form-group {
-  margin: 0px;
+
 }
 .form-header-title {
   padding: 10px 15px;
@@ -109,5 +91,4 @@ export default {
     color: white;
     content: attr(data-drop);
 }
-
 </style>

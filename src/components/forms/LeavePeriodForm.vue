@@ -2,42 +2,37 @@
 div
   .row
     //- Multiple days
-    .col-6.form-field
-      .form-field
-        .col.form-header-title <strong>From</strong>
-      .form-field
-        b-form-fieldset(:feedback='fromDateFeedback', :state='fromDateState', :label-size='1')
-          input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
-    .col-6.form-field
-      .form-field
-        .col.form-header-title <strong>To</strong>
-      .form-field
-        b-form-fieldset(:feedback='toDateFeedback', :state='toDateState', :label-size='1')
-          input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
+    .col-6
+      b-form-fieldset(:feedback='fromDateFeedback', :state='fromDateState', :label-size='1')
+        label From
+        input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
+    .col-6
+      b-form-fieldset(:feedback='toDateFeedback', :state='toDateState', :label-size='1')
+        label Until
+        input.form-control#toDatepicker(ref='toDatePicker' v-model='toDate')
 
   .row
     .col-12
-      .col.form-header-title <strong>Description</strong>
-    .col
       b-form-fieldset(:feedback='descriptionFeedback', :state='descriptionState')
-        b-form-input.form-control(textarea v-model='description' placeholder='Why are you leaving us')
+        label Description
+        b-form-input.form-control(textarea v-model='description')
 
   .row
     .col-6
-      .col.form-header-title <strong>Leave type</strong>
       b-form-fieldset(v-if='leaveTypes', :feedback='leaveTypeFeedback', :state='leaveTypeState', :label-size='1', input-selector='select')
-        b-form-select(:options='leaveTypes' v-model='leaveType', :class='getSelectClass()')
+        label Type
+        b-form-select.form-control(:options='leaveTypes' v-model='leaveType')
     .col-6
-      .col.form-header-title <strong>Attachments</strong>
       b-form-fieldset
+        label Attachments
         b-form-file(v-model='attachments', :multiple='true', placeholder='Upload files', drop-label='file', choose-label='Select')
   .row
     .col
-      .col
-        button.btn.btn-success.col.mt-2.mb-2(@click='submitLeaveRequest()', :disabled='!buttonState')
-          i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
-          i.fa.fa-plus.submit-icons(v-else)
+      button.btn.btn-success.btn-block(@click='submitLeaveRequest()', :disabled='!buttonState')
+        i.fa.fa-spinner.fa-pulse.fa-fw(v-if='requestLoading')
+        i.fa.fa-plus.submit-icons(v-else)
 </template>
+
 <script>
 import store from '../../store';
 import * as types from '../../store/mutation-types.js';
@@ -77,13 +72,6 @@ export default {
       showWeekNumber: true,
       showDaysInNextAndPreviousMonths: true,
       format: 'DD MMM YYYY',
-      disableDayFn: val => {
-        if(this.upcomingLeaves) {
-          return this.upcomingLeaves.find(x => {
-            return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
-          });          
-        }
-      },
       onSelect: val => {
         this.fromDate = moment(val).format('DD MMM YYYY');
       }
@@ -98,14 +86,6 @@ export default {
       formatStrict: true,
       showWeekNumber: true,
       showDaysInNextAndPreviousMonths: true,
-      disableDayFn: val => {
-        if(this.upcomingLeaves) {
-          // Return true if date falls before this.fromDate OR if it's in upcomingleaves
-          return moment(val).isBefore(moment(this.fromDate).add(1, 'day')) ? true : this.upcomingLeaves.find(x => {
-            return moment(val).isBetween(x.leave_start, x.leave_end, null, '[]');
-          });          
-        }
-      },
       onSelect: val => {
         this.toDate = moment(val).format('DD MMM YYYY');
       }
@@ -113,9 +93,8 @@ export default {
   },
 
   methods: {
-
     submitLeaveRequest: function() {
-      if( this.buttonState ) {
+      if (this.buttonState) {
         this.requestLoading = true;
 
         let start = moment(this.fromDate).startOf('date');
@@ -137,21 +116,18 @@ export default {
             emulateJSON: true,
           }
         ).then((lvdResponse) => {
-
           //SUCCESS
-          if(lvdResponse.status == 201) {
-
+          if (lvdResponse.status == 201) {
             this.showSuccessToast('Leave successfully requested.');
-            store.dispatch(types.NINETOFIVER_RELOAD_UPCOMING_LEAVES);
             this.requestLoading = false;
 
             //If attachments were added to the leaverequest
-            if(this.attachments) {
+            if (this.attachments) {
               var attachIDs = [];
 
               for(var i = 0; i < this.attachments.length; i++) {
                 var formData = new FormData();
-                formData.append('label', this.attachments[i].name)
+                formData.append('name', this.attachments[i].name)
                 formData.append('file', this.attachments[i]);
 
                 //Make attachment
@@ -171,24 +147,23 @@ export default {
                     store.dispatch(
                       types.NINETOFIVER_API_REQUEST,
                       {
-                        path: '/my_leaves/' + lvResponse.body.id + '/',
+                        path: '/my_leaves/' + lvdResponse.data.leave + '/',
                         method: 'PATCH',
                         body: {
-                          attachments: attachIDs 
+                          attachments: attachIDs
                         }
                       }
                     );
                   }
-                  // reset form
+
                   this.resetForm();
                 }, (res) => {
                   this.requestLoading = false;
                   this.showDangerToast("ERROR: " + res.bodyText);
-                  console.log(res);
+                  console.error(res);
                 });
               }
             } else {
-              // reset form
               this.resetForm();
             }
 
@@ -196,13 +171,13 @@ export default {
           } else {
             this.requestLoading = false;
             this.showDangerToast('Something went wrong during the request. Check console for more info.');
-            console.log(lvdResponse);
+            console.error(lvdResponse);
           }
 
         }, (res) => {
             this.requestLoading = false;
             this.showDangerToast("ERROR: " + res.bodyText);
-            console.log(res);
+            console.error(res);
         });
 
       //Model did not properly validate
@@ -211,42 +186,12 @@ export default {
       }
     },
     resetForm: function() {
-
-      this.determineMinDate(this.upcomingLeaves);
       this.attachments = null;
       this.description = '';
       this.fromFullDay = true;
       this.leaveType = null;
       this.toFullDay = true;
     },
-    
-    determineMinDate: function(leaves) {
-      let today = moment();
-      leaves.forEach(lv => {
-        
-          if(lv.status !== store.getters.leave_statuses[1]) {
-            lv.leavedate_set.forEach(ld => {
-              let start = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
-              let end = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
-
-              // If today is same date as lvd's start/end
-              // && lvd's start && end are at the start <> end of the day
-              if( today.startOf('day').isSameOrBefore(start)
-                && today.endOf('day').isSameOrAfter(end)) {
-                today = today.add(1, 'days');
-              }
-
-            });
-          }
-        });
-      this.fromDate = moment(today).format('DD MMM YYYY');
-      this.toDate = moment(today).format('DD MMM YYYY');
-    },
-
-    // Check if leaveType is null and return the coresponding class
-    getSelectClass: function() {
-      return this.leaveType ? '' : 'select-warning';
-    }
   },
 
   computed: {
@@ -267,16 +212,10 @@ export default {
       return moment(this.toDate, 'DD MMM YYYY').isValid() ? 'valid' : 'invalid'
     },
     descriptionFeedback: function() {
-      if(moment(this.fromDate).isBefore(moment().add(7, 'days')) && this.description.length == 0) {
-        return "You're pretty late with this leave request. Please prodive a description"; 
-      }
+      return null
     },
     descriptionState: function() {
-      if(moment(this.fromDate).isBefore(moment().add(7, 'days')) && this.description.length == 0) {
-        return 'invalid';
-      } else {
-        return 'valid';
-      }
+      return 'valid'
     },
     leaveTypeFeedback: function() {
       return this.leaveType ? '' : 'Please provide a leave type.'
@@ -285,15 +224,11 @@ export default {
       return this.leaveType ? 'valid' : 'invalid'
     },
     // END OF VALIDATION
-    
-    upcomingLeaves: function() {
-      if(store.getters.upcoming_leaves)
-        return store.getters.upcoming_leaves;
-    },
 
     leaveTypes: function() {
-      let leave_types = [{ text: 'Select leavetype', value: null }];
-      if(store.getters.leave_types){
+      let leave_types = [{ text: 'Select leave type', value: null }];
+
+      if (store.getters.leave_types) {
         store.getters.leave_types.forEach((lt) => {
           leave_types.push({
             text: lt.display_label,
@@ -301,11 +236,12 @@ export default {
           });
         });
       }
+
       return leave_types;
     }
-
   }
 }
 </script>
+
 <style lang='less'>
 </style>

@@ -431,23 +431,27 @@ const getters = {
     //Calculated
     open_timesheet_count: state => {
         if (state.timesheets && state.month_info) {
-            let REQUIRED_HOURS_FILLED_IN_PERCENTAGE = 75;
+            let allowed_remaining_hours_pct = 25;
             let open = 0;
             let today = moment();
             let naughty = false;
+
             if (today.date() >= 25) {
-                let hours_filled_in_percentage = parseFloat(state.month_info.hours_performed) / parseFloat(state.month_info.hours_required) * 100;
-                naughty = (hours_filled_in_percentage < REQUIRED_HOURS_FILLED_IN_PERCENTAGE);
+                let hours_remaining_pct = (state.month_info.remaining_hours / state.month_info.work_hours) * 100;
+                naughty = (hours_remaining_pct > allowed_remaining_hours_pct);
             }
+
             state.timesheets.forEach((ts) => {
                 // Check if the timesheet is active and if the timesheet is of this month; check if user has been naughty
-                if (ts.status == 'ACTIVE' && (ts.month === today.month() + 1) && naughty) {
+                if (naughty && (ts.status == 'ACTIVE') && (ts.year === today.year()) && (ts.month === today.month() + 1)) {
                     open++;
                 }
             })
+
             return open;
         }
     },
+
     contract_users_count: state => {
         if (state.contract_users)
             return state.contract_users.length;
@@ -1013,7 +1017,7 @@ const actions = {
 
 
     [types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS](store, options = {}) {
-        //  Check show_extra_info 
+        //  Check show_extra_info
         if (store.getters.show_extra_info !== null && !store.getters.show_extra_info) {
             options.path = '/my_contracts/'
         } else if (!options.path) {
