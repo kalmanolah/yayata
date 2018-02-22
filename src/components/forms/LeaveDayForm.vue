@@ -1,17 +1,17 @@
 <template lang="pug">
 div
   .row
-    .col-6
+    .col-4
       b-form-fieldset(:feedback='fromDateFeedback', :state='fromDateState', :label-size='1')
         label Date
         input.form-control#fromDatepicker(ref='fromDatePicker' v-model='fromDate')
 
-    .col-3
+    .col-4
       b-form-fieldset(:label-size='1')
         label From
         b-form-input.form-control(type='time' step='300' v-model='fromTime')
 
-    .col-3
+    .col-4
       b-form-fieldset(:label-size='1')
         label To
         b-form-input.form-control(type='time' step='300' v-model='toTime')

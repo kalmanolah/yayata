@@ -12,6 +12,8 @@ import jspdf from 'jspdf'
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
 import Toast from 'vue-easy-toast'
+// import {ServerTable, ClientTable, Event} from 'vue-tables-2'
+import { ClientTable } from 'vue-tables-2'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -38,6 +40,7 @@ Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
 Vue.use(VueChartJs)
 Vue.use(jspdf)
+Vue.use(ClientTable, null, null, 'bootstrap4')
 
 require('file-loader?name=/css/bootstrap-vue.css!../node_modules/bootstrap-vue/dist/bootstrap-vue.css');
 
@@ -73,6 +76,11 @@ export const router = new VueRouter({
                     name: 'calendar_week',
                     path: '/calendar/week/:year/:week',
                     component: Week,
+                },
+                {
+                    name: 'colleagues_redirect',
+                    path: '/colleagues',
+                    redirect: '/colleagues/all'
                 },
                 {
                     name: 'colleagues',

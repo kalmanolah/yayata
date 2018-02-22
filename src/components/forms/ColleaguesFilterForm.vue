@@ -1,34 +1,26 @@
 <template lang="pug">
-.card.p-3.fixed.filter-form
-  .card-block
-    .row
-      .col.text-center
-        h3 Advanced Filter
-        p.subtitle More indepth filtering
+div(class='filter-form card')
+  div(class='card-body')
+    div(class='text-center')
+      h3 Advanced Filter
+      p(class='subtitle') In-depth filtering
 
-    .row
-      .col-6.form-buttons
-        button.btn.btn-primary.btn-block(@click='submitUserFilterForm')
-          i.fa.fa-filter(aria-hidden="true") &nbsp;
-          span.d-none.d-xl-inline Submit
+    div(class='row')
+      div(class='col-6')
+        button(class='btn btn-primary btn-block' @click='submitUserFilterForm')
+          i(class='fa fa-filter' aria-hidden="true") &nbsp;
+          span(class='d-none d-xl-inline') Submit
 
-      .col-6.form-buttons
-        button.btn.btn-danger.btn-block(@click='resetForm')
-          i.fa.fa-refresh(aria-hidden="true") &nbsp; 
-          span.d-none.d-xl-inline Reset
+      div(class='col-6')
+        button(class='btn btn-danger btn-block' @click='resetForm')
+          i(class='fa fa-refresh' aria-hidden="true") &nbsp;
+          span(class='d-none d-xl-inline') Reset
     hr
 
-    .pre-scrollable.filter-scrollable
-      .row
-        .col
-          strong.active-toggle User
-      .row
-        .col
-          toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
-      .row
-        .col
-          vue-form-generator(:schema="schema", :model="model", :options="formOptions") 
-      
+    div(class='pre-scrollable filter-scrollable')
+      h4 User
+      toggle-button(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70')
+      vue-form-generator(class='mt-3' :schema="schema", :model="model", :options="formOptions")
 </template>
 <script>
 import VueFormGenerator from 'vue-form-generator';
@@ -38,31 +30,54 @@ import ToastMixin from '../mixins/ToastMixin.vue';
 
 export default {
     name: 'ColleaguesFilterForm',
+
     mixins: [ToastMixin],
+
+    created: function() {
+      new Promise((resolve, reject) => {
+        if (!store.getters.employment_contract_types) {
+          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES).then(() => resolve())
+        } else{
+          resolve()
+        }
+      })
+    },
+
     data () {
         return {
           toggleButtonLabels: {
             checked: 'Active',
             unchecked: 'All'
           },
+          daysOfWeek: [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+          ],
            model: {
                 first_name__icontains: '',
                 last_name__icontains: '',
-                username: '',
-                email: '',
+                username__icontains: '',
+                email__icontains: '',
                 is_active: true,
-                groups__icontains: '',
-                label__icontains: '',
+                groups__name__icontains: '',
                 userinfo__gender__iexact: null,
-                userinfo__birth_date__year__gte: '',
-                userinfo__birth_date__year__lte: '',
+                userinfo__birth_date__year: '',
+                userinfo__birth_date__year__gt: '',
+                userinfo__birth_date__year__lt: '',
                 userrelative__name__icontains: '',
-                employmentcontract_type: null,
+                employmentcontract__employment_contract_type: null,
                 employmentcontract__company__name__icontains: '',
-                employmentcontract__started_at__year__gte: '',
-                employmentcontract__started_at__year__lte: '',
-                employmentcontract__ended_at__year__gte: '',
-                employmentcontract__ended_at__year__lte: '',
+                employmentcontract__started_at__year: '',
+                employmentcontract__started_at__year__gt: '',
+                employmentcontract__started_at__year__lt: '',
+                employmentcontract__ended_at__year: '',
+                employmentcontract__ended_at__year__gt: '',
+                employmentcontract__ended_at__year__lt: '',
                 leave__leavedate__starts_at__lte: null,
                 leave__leavedate__ends_at__gte: null,
                 workschedule_label__icontains: '',
@@ -83,10 +98,8 @@ export default {
                       type: "input",
                       inputType: "text",
                       model: "first_name__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
                       placeholder: "First name",
+                      // label: "First name",
                       styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
                     },
@@ -95,9 +108,6 @@ export default {
                       type: "input",
                       inputType: "text",
                       model: "last_name__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
                       placeholder: "Last name",
                       styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
@@ -106,48 +116,27 @@ export default {
                       // username
                       type: "input",
                       inputType: "text",
-                      model: "username",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "username__icontains",
                       placeholder: "Username",
-                      styleClasses: 'no-label-field',                                            
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
                     },
                     {
                       // email
                       type: "input",
                       inputType: "text",
-                      model: "email",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "email__icontains",
                       placeholder: "Email",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
                     },
                     {
-                      // groups__icontains
+                      // groups__name__icontains
                       type: "input",
                       inputType: "text",
-                      model: "groups__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "groups__name__icontains",
                       placeholder: "Group",
                       styleClasses: "no-label-field",
-                      validator: VueFormGenerator.validators.string
-                    },
-                    {
-                      // label__icontains
-                      type: "input",
-                      inputType: "text",
-                      model: "label__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Label",
-                      styleClasses: 'no-label-field',                      
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -156,7 +145,7 @@ export default {
                       model: "userinfo__gender__iexact",
                       styleClasses: "no-label-field",
                       selectOptions: {
-                        noneSelectedText: "Select gender"
+                        noneSelectedText: "-- Gender --"
                       },
                       values: function() {
                         return [
@@ -166,13 +155,21 @@ export default {
                       }
                     },
                     {
-                      // userinfo__birth_date__year__gte
+                      // userinfo__birth_date__year
                       type: "input",
                       inputType: "number",
-                      model: "userinfo__birth_date__year__gte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "userinfo__birth_date__year",
+                      min: 1900,
+                      max: moment().year(),
+                      placeholder: "Born in year",
+                      styleClasses: 'no-label-field',
+                      validator: VueFormGenerator.validators.integer,
+                    },
+                    {
+                      // userinfo__birth_date__year__gt
+                      type: "input",
+                      inputType: "number",
+                      model: "userinfo__birth_date__year__gt",
                       min: 1900,
                       max: moment().year(),
                       placeholder: "Born after year",
@@ -180,17 +177,14 @@ export default {
                       validator: VueFormGenerator.validators.integer,
                     },
                     {
-                      // userinfo__birth_date__year__lte
+                      // userinfo__birth_date__year__lt
                       type: "input",
                       inputType: "number",
-                      model: "userinfo__birth_date__year__lte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "userinfo__birth_date__year__lt",
                       min: 1900,
                       max: moment().year(),
                       placeholder: "Born before year",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.integer
                     },
                     {
@@ -198,100 +192,104 @@ export default {
                       type: "input",
                       inputType: "text",
                       model: "userrelative__name__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Name relative",
-                      styleClasses: 'no-label-field',                      
+                      placeholder: "Name of relative",
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.string
                     },
                     // EMPLOYMENTCONTRACT
                     {
-                      // employmentcontract_type
+                      // employmentcontract__employment_contract_type
                       type: "select",
-                      label: "Employmentcontract",
-                      model: "employmentcontract_type",
+                      model: "employmentcontract__employment_contract_type",
                       selectOptions: {
-                        noneSelectedText: "Select type"
+                        noneSelectedText: "-- Employment contract type --"
                       },
-                      values: function() {
-                        if(store.getters.employment_contract_types) {
-                          return store.getters.employment_contract_types.map(ect => {
-                            return ect.name;
-                          });
+                      styleClasses: 'no-label-field',
+                      values: () => {
+                        if (store.getters.employment_contract_types) {
+                          return store.getters.employment_contract_types
                         }
+
+                        return []
                       }
                     },
                     {
-                      // employmentcontract__company__name__icontains 
+                      // employmentcontract__company__name__icontains
                       type: "input",
                       inputType: "text",
                       model: "employmentcontract__company__name__icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
                       placeholder: "Company name",
                       styleClasses: "no-label-field",
                       validator: VueFormGenerator.validators.string
                     },
                     {
-                      // employmentcontract__started_at__year__gte
+                      // employmentcontract__started_at__year
                       type: "input",
                       inputType: "number",
-                      model: "employmentcontract__started_at__year__gte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "employmentcontract__started_at__year",
+                      min: 0,
+                      max: moment().year(),
+                      placeholder: "Started in year",
+                      styleClasses: 'no-label-field',
+                      validator: VueFormGenerator.validators.integer
+                    },
+                    {
+                      // employmentcontract__started_at__year__gt
+                      type: "input",
+                      inputType: "number",
+                      model: "employmentcontract__started_at__year__gt",
                       min: 0,
                       max: moment().year(),
                       placeholder: "Started after year",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.integer
                     },
                     {
-                      // employmentcontract__started_at__year__lte
+                      // employmentcontract__started_at__year__lt
                       type: "input",
                       inputType: "number",
-                      model: "employmentcontract__started_at__year__lte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "employmentcontract__started_at__year__lt",
                       min: 0,
                       max: moment().year(),
                       placeholder: "Started before year",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.integer
                     },
                     {
-                      // employmentcontract__ended_at__year__gte 
+                      // employmentcontract__ended_at__year
                       type: "input",
                       inputType: "number",
-                      model: "employmentcontract__ended_at__year__gte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "employmentcontract__ended_at__year",
+                      min: 0,
+                      max: moment().year(),
+                      placeholder: "Ended in year",
+                      styleClasses: 'no-label-field',
+                      validator: VueFormGenerator.validators.integer
+                    },
+                    {
+                      // employmentcontract__ended_at__year__gt
+                      type: "input",
+                      inputType: "number",
+                      model: "employmentcontract__ended_at__year__gt",
                       min: 0,
                       max: moment().year(),
                       placeholder: "Ended after year",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.integer
                     },
                     {
-                      // employmentcontract__ended_at__year__lte 
+                      // employmentcontract__ended_at__year__lt
                       type: "input",
                       inputType: "number",
-                      model: "employmentcontract__ended_at__year__lte",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
+                      model: "employmentcontract__ended_at__year__lt",
                       min: 0,
                       max: moment().year(),
                       placeholder: "Ended before year",
-                      styleClasses: 'no-label-field',                      
+                      styleClasses: 'no-label-field',
                       validator: VueFormGenerator.validators.integer
                     },
                     {
-                      // leave__leavedate__starts_at__lte 
+                      // leave__leavedate__starts_at__lte
                       type: "pikaday",
                       placeholder: "Has a leave before",
                       model: "leave__leavedate__starts_at__lte",
@@ -305,7 +303,7 @@ export default {
                       }
                     },
                     {
-                      // leave__leavedate__ends_at__gte 
+                      // leave__leavedate__ends_at__gte
                       type: "pikaday",
                       placeholder: "Has a leave that ends after",
                       model: "leave__leavedate__ends_at__gte",
@@ -320,12 +318,8 @@ export default {
                       // workschedule_label__icontains
                       type: "input",
                       inputType: "text",
-                      label: "Workschedule",
                       model: "workschedule_label_icontains",
-                      readonly: false,
-                      required: false,
-                      disabled: false,
-                      placeholder: "Workschedule label",
+                      placeholder: "Work schedule",
                       validator: VueFormGenerator.validators.string
                     },
                     {
@@ -335,14 +329,14 @@ export default {
                       model: "active_days",
                       listBox: true,
                       values: [
-                          { name: "Monday", value: {active_monday: 'True'} },
-                          { name: "Tuesday", value: { active_tuesday: 'True'}},
-                          { name: "Wednesday", value: { active_wednesday: 'True'}},
-                          { name: "Thursday", value: { active_thursday: 'True'} },
-                          { name: "Friday", value: { active_friday: 'True' } },
-                          { name: "Saturday", value: { active_saturday: 'True' } },
-                          { name: "Sunday", value: { active_saturday: 'True' } }
-                      ]    
+                          { name: "Monday", value: 'monday' },
+                          { name: "Tuesday", value: 'tuesday' },
+                          { name: "Wednesday", value: 'wednesday' },
+                          { name: "Thursday", value: 'thursday' },
+                          { name: "Friday", value: 'friday' },
+                          { name: "Saturday", value: 'saturday' },
+                          { name: "Sunday", value: 'sunday' }
+                      ]
                    }
                  ]
             },
@@ -356,25 +350,24 @@ export default {
 
     methods: {
       submitUserFilterForm: function() {
+        this.daysOfWeek.forEach(day => {
+          this.model[`active_${day}`] = ''
+        })
+        if (this.model.active_days) {
+          this.model.active_days.forEach(day => {
+            this.model[`active_${day}`] = 'True'
+          });
+        }
 
-        console.log( this.model.leave__leavedate__starts_at__lte );
         Object.keys(this.model).filter((key) => {
           if(this.model[key] === '' || this.model[key] === null)
             delete this.model[key];
         });
 
-        if(this.model.active_days) {
-          this.model.active_days.forEach( (day) => {
-            this.model[Object.keys(day)] = Object.values(day)[0];
-          });
-
-          delete this.model.active_days;
-        }
-        
         var options = {
             path: '/users/',
             params: this.model
-          }                        
+          }
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_USERS, options)
           .catch((error) => {
             this.showDangerToast('Something went wrong while getting the results. Check the console for more info.')
@@ -385,31 +378,33 @@ export default {
       resetForm: function() {
         this.model.first_name__icontains= '',
         this.model.last_name__icontains= '',
-        this.model.username= '',
-        this.model.email= '',
+        this.model.username__icontains = '',
+        this.model.email__icontains = '',
         this.model.is_active= true,
-        this.model.groups__icontains= '',
-        this.model.label__icontains= '',
+        this.model.groups__name__icontains= '',
         this.model.userinfo__gender__iexact= null,
-        this.model.userinfo__birth_date__year__gte= null,
-        this.model.userinfo__birth_date__year__lte= null,
+        this.model.userinfo__birth_date__year = null,
+        this.model.userinfo__birth_date__year__gt = null,
+        this.model.userinfo__birth_date__year__lt = null,
         this.model.userrelative__name__icontains= '',
-        this.model.employmentcontract_type= null,
-        this.model.employmentcontract__company__name__icontains= '',
-        this.model.employmentcontract__started_at__year__gte= '',
-        this.model.employmentcontract__started_at__year__lte= '',
-        this.model.employmentcontract__ended_at__year__gte= '',
-        this.model.employmentcontract__ended_at__year__lte= '',
-        this.model.leave__leavedate__starts_at__lte= null,
-        this.model.leave__leavedate__ends_at__gte= null,
+        this.model.employmentcontract__employment_contract_type = null,
+        this.model.employmentcontract__company__name__icontains = '',
+        this.model.employmentcontract__started_at__year = '',
+        this.model.employmentcontract__started_at__year__gt = '',
+        this.model.employmentcontract__started_at__year__lt = '',
+        this.model.employmentcontract__ended_at__year = '',
+        this.model.employmentcontract__ended_at__year__gt = '',
+        this.model.employmentcontract__ended_at__year__lt = '',
+        this.model.leave__leavedate__starts_at__lte = null,
+        this.model.leave__leavedate__ends_at__gte = null,
         this.model.workschedule_label__icontains= null,
-        this.model.active_monday= '',
-        this.model.active_tuesday= '',
-        this.model.active_wednesday= '',
-        this.model.active_thursday= '',
-        this.model.active_friday= '',
-        this.model.active_saturday= '',
-        this.model.active_sunday= '',
+        this.model.active_monday = '',
+        this.model.active_tuesday = '',
+        this.model.active_wednesday = '',
+        this.model.active_thursday = '',
+        this.model.active_friday = '',
+        this.model.active_saturday = '',
+        this.model.active_sunday = '',
         this.model.active_days = []
 
         var options = {
@@ -428,7 +423,13 @@ export default {
     }
 }
 </script>
-<style>
+
+<style scoped>
+.filter-scrollable {
+  max-height: 60vh;
+  overflow-x: hidden;
+}
+
 .form-group {
   padding: 0px 6px;
 }
@@ -436,18 +437,6 @@ export default {
   font-weight: bold;
   padding-bottom: .5em;
   padding-top: .5em;
-}
-
-.no-label-field {
-  margin-top: -1.2rem;
-}
-
-.field-wrap {
-  padding-bottom: 5px;
-}
-
-.filter-scrollable {
-  max-height: 60vh;
 }
 
 .active-toggle {

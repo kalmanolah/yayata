@@ -35,7 +35,7 @@ export default {
   created: () => {
 
     //Initialize constants
-    if (!store.getters.user) 
+    if (!store.getters.user)
       store.dispatch(types.NINETOFIVER_RELOAD_USER).then(() => {
         if (!store.getters.leave_types)
           store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
@@ -134,18 +134,10 @@ export default {
   margin-top: 1rem;
 }
 
-.filter-scrollable {
-  max-height: 70vh;
-  overflow-x: hidden;
-}
-
 .fixed {
   position: fixed;
 }
 
-.filter-form {
-  width: 20%;
-}
 .wrapper{
   position: relative;
 }
@@ -183,7 +175,7 @@ a {
 }
 a:hover {
   color: @primary-color;
-  
+
 }
 .dropdown-menu {
   max-height: 70vh;

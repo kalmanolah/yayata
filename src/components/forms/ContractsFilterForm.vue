@@ -14,7 +14,7 @@
 
         .col-6.form-buttons
           button.btn.btn-danger.btn-block(@click='resetForm')
-            i.fa.fa-refresh(aria-hidden="true") &nbsp; 
+            i.fa.fa-refresh(aria-hidden="true") &nbsp;
             span.hidden-lg-down Reset
       hr
 
@@ -22,13 +22,13 @@
         .row
           .col
             strong.active-toggle Contract status
-        .row  
+        .row
           .col
-            toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70') 
-        .row  
+            toggle-button.active-toggle(@change='toggleActive()', :value='getActiveValue()', color='#5CB85C', :sync='true', :labels='toggleButtonLabels', :width='70')
+        .row
           .col
             vue-form-generator(:schema="schema", :model="model", :options="formOptions")
-      
+
 </template>
 <script>
 import VueFormGenerator from 'vue-form-generator';
@@ -103,7 +103,7 @@ export default {
                     required: false,
                     disabled: false,
                     placeholder: "Username",
-                    styleClasses: 'no-label-field',                      
+                    styleClasses: 'no-label-field',
                     validator: VueFormGenerator.validators.string
                   },
                   {
@@ -112,11 +112,13 @@ export default {
                     label: "Contractuser groups",
                     model: "contractuser__user__groups",
                     listBox: true,
+                    checklistOptions: {
+                      name: 'display_label',
+                      value: 'id'
+                    },
                     values: function() {
                       if(store.getters.user_groups)
-                        return store.getters.user_groups.map(ug => {
-                          return ug.name;
-                        });
+                        return store.getters.user_groups
                     }
                   },
                   {
@@ -129,7 +131,7 @@ export default {
                     required: false,
                     disabled: false,
                     placeholder: "Usergroup",
-                    styleClasses: 'no-label-field',                                            
+                    styleClasses: 'no-label-field',
                     validator: VueFormGenerator.validators.string
                   },
                   // CUSTOMER
@@ -155,7 +157,7 @@ export default {
                     required: false,
                     disabled: false,
                     placeholder: "Name",
-                    styleClasses: 'no-label-field',                      
+                    styleClasses: 'no-label-field',
                     validator: VueFormGenerator.validators.string
                   },
                   {
@@ -172,10 +174,12 @@ export default {
                   {
                     // Company_internal
                     type: "select",
-                    label: "Company",                      
+                    label: "Company",
                     model: "company__internal",
                     selectOptions: {
-                      noneSelectedText: 'Select company'
+                      noneSelectedText: 'Select company',
+                      name: 'display_label',
+                      value: 'id'
                     },
                     values: function() {
                       if(store.getters.companies)
@@ -205,7 +209,7 @@ export default {
                     required: false,
                     disabled: false,
                     placeholder: "Label",
-                    styleClasses: 'no-label-field',                      
+                    styleClasses: 'no-label-field',
                     validator: VueFormGenerator.validators.string
                   },
                   {
@@ -218,7 +222,7 @@ export default {
                     required: false,
                     disabled: false,
                     placeholder: "Description",
-                    styleClasses: 'no-label-field',                      
+                    styleClasses: 'no-label-field',
                     validator: VueFormGenerator.validators.string
                   },
                   {
@@ -227,7 +231,9 @@ export default {
                     model: "performance_types__id",
                     styleClasses: 'no-label-field',
                     selectOptions: {
-                      noneSelectedText: 'Select performance type'
+                      noneSelectedText: 'Select performance type',
+                      name: 'display_label',
+                      value: 'id'
                     },
                     values: function() {
                       if(store.getters.performance_types)
@@ -253,7 +259,7 @@ export default {
         var options = {
             path: '/contracts/',
             params: this.model
-          }                        
+          }
         store.dispatch(types.NINETOFIVER_RELOAD_FILTERED_CONTRACTS, options)
           .catch((error) => {
             this.showDangerToast('Something went wrong while getting the results. Check the console for more info.')
@@ -298,7 +304,7 @@ export default {
     },
 }
 </script>
-<style>
+<style scoped>
 .form-group {
   padding-left: 0px;
 }
@@ -309,7 +315,7 @@ export default {
 }
 
 .no-label-field {
-  margin-top: -1.2rem;
+  margin-top: 0;
 }
 
 .active-toggle {

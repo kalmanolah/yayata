@@ -1,18 +1,18 @@
 <script>
 export default {
   methods: {
-    //Get the amount of hours spent 
+    //Get the amount of hours spent
     getDurationTotal: function(day) {
       let total = 0;
 
       if(this.activityPerformances) {
         for(let val of this.activityPerformances.filter(x => x.day == day.format('D')))
-          total += parseFloat(val.duration);        
+          total += parseFloat(val.duration);
       }
-      
-      return total;
+
+      return Math.round(total * 100) / 100;
     },
-    
+
     //Get total hours/day from the workSchedule per user
     getHoursTotal: function(day) {
       if(this.workSchedule) {
@@ -35,7 +35,7 @@ export default {
         }
 
         return total > 0 ? total : 0;
-      } 
+      }
     },
 
     getDaysHolidays: function(day) {

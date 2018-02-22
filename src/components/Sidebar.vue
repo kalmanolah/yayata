@@ -14,15 +14,15 @@
       .col
         nav
           router-link(:to='{ name: "timesheets" }')
-            h3.mb-0 Timesheets 
+            h3.mb-0 Timesheets
             p.small.d-none.d-lg-block.hide-on-small--side-text All open timesheets
           router-link(:to='{ name: "contracts" }')
             h3.mb-0 Contracts
-            p.small.d-none.d-lg-block.hide-on-small--side-text What am I working on
+            p.small.d-none.d-lg-block.hide-on-small--side-text What I'm working on
           router-link(:to='{ name: "leaves" }')
             h3.mb-0 Leaves
             p.small.d-none.d-lg-block.hide-on-small--side-text Sickness / Vacation
-          router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
+          router-link(:to='{ name: "colleagues_redirect" }')
             h3.mb-0 Colleagues
             p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
           router-link(:to='{ name: "calendar_month_redirect" }')

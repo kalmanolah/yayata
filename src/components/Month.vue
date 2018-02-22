@@ -4,9 +4,9 @@ div(class='calendar')
   .row
     .col
     .col-8.justify-content-center.text-center
-      .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.hours_performed }} / {{ month_info.hours_required }}
+      .h6(v-if='month_info') <strong>Total:</strong> {{ month_info.work_hours - month_info.remaining_hours }} / {{ month_info.work_hours }}
     .col.align-self-center.text-right
-      template(v-if='isAdmin')  
+      template(v-if='isAdmin')
         .btn-group(
           role='group'
           aria-label='Button group with nested dropdown'
@@ -52,11 +52,11 @@ div(class='calendar')
                   template(v-if='isHoliday(n)')
                     .text-center.alert-primary <strong>Holiday</strong>
                     .text-center {{ isHoliday(n).name }}
-                  
+
                   template(v-for='leave in getLeaveForDay(n)')
                     .text-center
-                      .alert-success(v-if='leave.status == "APPROVED"') <strong> {{ leave.leave_type }} </strong>
-                      .alert-warning(v-else)  <strong> {{ leave.leave_type }} </strong>
+                      .alert-success(v-if='leave.status == "approved"') <strong> {{ leave.leave_type.display_label }} </strong>
+                      .alert-warning(v-else)  <strong> {{ leave.leave_type.display_label }} </strong>
 
                     div <strong>From: </strong> {{ leave.leave_start | moment('DD MMMM  HH:mm') }}
                     div <strong>Until: </strong> {{ leave.leave_end | moment('DD MMMM  HH:mm') }}
@@ -66,7 +66,6 @@ div(class='calendar')
                 small.badge.float-right(v-bind:class='getDailyQuota(n)' class='d-none d-lg-inline')
                   | {{ getPerformedHours(n) | roundHoursFilter }} /
                   | {{ getRequiredHours(n) | roundHoursFilter}}
-
 </template>
 
 <script>
@@ -75,15 +74,13 @@ import store from '../store';
 import moment from 'moment';
 import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
 import ToastMixin from './mixins/ToastMixin.vue';
-import Invoice from './Invoice.vue';
 
 export default {
   name: 'month',
   mixins: [RequiredPerformedDayMixin, ToastMixin],
   components: {
-    Invoice
   },
-  
+
   watch: {
 
     // Watches selected user from parent component.
@@ -132,14 +129,14 @@ export default {
           }
         }).catch((error) => {
           this.showDangerToast('Something went wrong while reloading employment contracts: ' + error.data)
-        });        
+        });
       }
     },
 
     //Get all leaves for this month
     getLeaves: function(month) {
         //Make param for month's range
-        if(this.selectedUser && this.leaveTypes) {
+        if(this.selectedUser) {
           let startOfMonth = moment().year(this.year).month(month - 1).startOf('month');
           let endOfMonth = moment().year(this.year).month(month - 1).endOf('month');
           let range = startOfMonth.format('YYYY-MM-DDTHH:mm:ss') + ',' + endOfMonth.format('YYYY-MM-DDTHH:mm:ss');
@@ -157,13 +154,9 @@ export default {
                 lvd.starts_at = moment(lvd.starts_at, 'YYYY-MM-DD HH:mm:ss');
                 lvd.ends_at = moment(lvd.ends_at, 'YYYY-MM-DD HH:mm:ss');
               });
-            
+
               lv['leave_start'] = lv.leavedate_set[0].starts_at;
               lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
-
-              lv['leave_type'] = !this.leaveTypes ? 'UNKNOWN TYPE' : this.leaveTypes.find(x => {
-                return x.id === lv.leave_type; 
-              }).display_label;
             });
 
             this.leaves = response.data.results;
@@ -215,7 +208,7 @@ export default {
       if(this.year && this.month){
         let holiday = false;
         let today = moment().year(this.year).month(this.month - 1).date(day);
-  
+
         if(store.getters.employment_contracts) {
           let emplContr = store.getters.employment_contracts.find(ec => {
             return ec.user === this.selectedUser.id;
@@ -231,16 +224,16 @@ export default {
             }
           }
         }
-  
+
         return holiday
       }
-    }, 
+    },
 
     //Check whether user is on a requested leave on that particular day
     getLeaveForDay: function(day) {
       if(this.year && this.month && this.leaves) {
         let today = moment().year(this.year).month(this.month - 1).date(day);
-  
+
         return this.filteredLeaves.filter(x => {
           return today.isBetween(x.leave_start, x.leave_end, 'date', '[]');
         });
@@ -250,7 +243,7 @@ export default {
     //Return style according to leave/no-leave
     determineLeaveStyle: function(day) {
       if(this.isExcusedFromWork(day))
-        return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' : 
+        return this.isCurrentDay(day) ? 'calendar-day-current-on-leave' :
                 this.isWeekendDay(day) ? 'calendar-day-weekend-on-leave' :
                 'calendar-day-on-leave';
     },
@@ -271,7 +264,7 @@ export default {
       if(this.year && this.month){
         let today = moment();
         let date = moment().year(this.year).month(this.month - 1).date(day);
-  
+
         return today.startOf('day').isSame(date.startOf('day'));
       }
     },
@@ -313,7 +306,7 @@ export default {
   computed: {
 
     filteredLeaves: function() {
-      return this.leaves.filter(lv => lv.status === store.getters.leave_statuses[0] || lv.status === store.getters.leave_statuses[2]);
+      return this.leaves.filter(lv => lv.status === 'approved' || lv.status === 'pending');
     },
 
     // Returns whether the currently authenticated user is selected.
@@ -340,7 +333,7 @@ export default {
       });
     },
 
-      
+
     users: function() {
       if(store.getters.users)
         return store.getters.users;
@@ -425,18 +418,13 @@ export default {
       }
     },
 
-    leaveTypes: function() {
-      if(store.getters.leave_types)
-        return store.getters.leave_types;
-    },
-
     employment_contracts: function() {
       if(store.getters.employment_contracts)
         return store.getters.employment_contracts
     },
 
     workSchedule: function() {
-      if(store.getters.user_work_schedule) 
+      if(store.getters.user_work_schedule)
         return store.getters.user_work_schedule;
     },
 

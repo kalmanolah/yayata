@@ -8,13 +8,13 @@ div(class='calendar')
         p.text-center The first one upcoming, or currently active.
 
         .list-group-item.text-center(v-if='nearestLeave')
-          p <strong> {{ nearestLeave.leave_type }} </strong>
+          p <strong> {{ nearestLeave.leave_type.display_label }} </strong>
           p {{ nearestLeave.description }}
           hr
           template(v-if='nearestLeave')
             | <strong>From:</strong> {{ nearestLeave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
             | <strong>To:</strong> {{ nearestLeave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
-        p.alert.alert-info(v-else) 
+        p.alert.alert-info(v-else)
           | No leaves coming up. Are you sure you don't need a break from all that hard work?
 
         hr.pb-4
@@ -40,8 +40,8 @@ div(class='calendar')
 
                       template(v-for='leave in leaves')
                         tr
-                          td <strong>{{ leave.leave_type }}</strong> 
-                            .badge.float-left.p-1.mr-3(v-bind:class='getBadgeStyleClass(leave)') 
+                          td <strong>{{ leave.leave_type.display_label }}</strong>
+                            .badge.float-left.p-1.mr-3(v-bind:class='getBadgeStyleClass(leave)')
                               //- .d-none.d-xl-block {{ leave.status }}
                               .fa(:class='getStatusStyleClass(leave)')
                           td.text-right.row.justify-content-center.pr-0.mr-2
@@ -75,11 +75,11 @@ div(class='calendar')
               .card-header.leave__header(role='tab', v-bind:id='"pendHeading-" + i', data-toggle='collapse', data-parent='#accordion', aria-expanded='false', v-bind:aria-controls='"pendCollapse-" + i', v-bind:href='"#pendCollapse-" + i')
                 .row
                   .col-9
-                    a  <strong>{{ leave.leave_type }}:</strong> {{ leave.description }}
-                  .col-3 
+                    a  <strong>{{ leave.leave_type.display_label }}:</strong> {{ leave.description }}
+                  .col-3
                     .badge.float-right(:class='getBadgeStyleClass(leave)')
                       | {{ leave.status }}
-                    
+
               .collapse.p-2(role='tabpanel', v-bind:id='"pendCollapse-" + i', v-bind:aria-labelledby='"pendHeading-" + i')
                 .card-block.row.p-2
                   .col
@@ -87,7 +87,7 @@ div(class='calendar')
                       strong.col From:
                       .col-auto.float-right {{ leave.leave_start | moment('DD MMM YYYY - HH:mm') }}<br>
                     .row
-                      strong.col To: 
+                      strong.col To:
                       .col-auto.float-right {{ leave.leave_end | moment('DD MMM YYYY - HH:mm') }}<br>
                   .col-3
                     button.btn.btn-danger(@click='cancelPendingLeave(leave)')
@@ -121,11 +121,7 @@ export default {
   created: function () {
     this.getLeaves();
   },
-  watch: {
-    leaveTypes: function(leaveTypes, newLeaveTypes){
-      this.getLeaves();
-    },
-  },
+
   computed: {
 
     leaveTypes: function() {
@@ -135,32 +131,29 @@ export default {
 
     acceptedLeaves: function() {
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[2])
-          return x;
+        return x.status === 'accepted'
       });
     },
 
     pendingLeaves: function() {
       return this.leaves.filter(x => {
-        if(x.status === store.getters.leave_statuses[0] ){
-          return x;
-        }
+        return x.status === 'pending'
       });
     },
 
     processedLeaves: function() {
       if(this.leaves){
         let procLeaves = {};
-        
+
         let leaves = this.leaves.filter(x => {
-          if(x.status !== store.getters.leave_statuses[0] 
-            && x.status !== store.getters.leave_statuses[3]) {
+          if(x.status !== 'draft'
+            && x.status !== 'pending') {
               x.year = x.leave_start.year();
               x.month = x.leave_start.month() + 1;
               return x;
             }
         });
-        
+
         leaves.forEach((leave) => {
           if(!procLeaves[leave.year])
             procLeaves[leave.year] = {};
@@ -182,9 +175,9 @@ export default {
     },
 
     //Filters for upcoming leaves, sorts them & returns the first result
-    nearestLeave: function(val) {
-      let upcoming = this.acceptedLeaves.filter(x => {
-        return moment().isSameOrBefore(x.leave_end, 'date')
+    nearestLeave: function() {
+      let upcoming = this.leaves.filter(x => {
+        return x.status == 'approved' && moment().isSameOrBefore(x.leave_end, 'date')
       });
 
       return this.sortLeaves(upcoming).reverse()[0];
@@ -200,7 +193,7 @@ export default {
   },
 
   methods: {
-    
+
     //Cancels the pending
     cancelPendingLeave: function(lv) {
 
@@ -223,23 +216,20 @@ export default {
 
     //Load all leaves
     getLeaves: function() {
-      
+
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/my_leaves/'
       }).then((response) => {
-        
+
         //Converts the start / end datetime from strings to actual JS datetimes
         response.data.results.forEach(lv => {
           lv.leavedate_set.forEach(ld => {
             ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
             ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
           });
-          
+
           lv['leave_start'] = lv.leavedate_set[0].starts_at;
           lv['leave_end'] = lv.leavedate_set[lv.leavedate_set.length-1].ends_at;
-
-          let lType = this.leaveTypes.find(x => { return x.id === lv.leave_type});
-          lv['leave_type'] = lType ? lType.display_label : 'UNKNOWN';
         });
 
         this.leaves = response.data.results
@@ -263,18 +253,18 @@ export default {
     //Get the style class of the ribbon based on the leave_status
     getRibbonStyleClass: function(leave) {
       let tempObj = {
-        [store.getters.leave_statuses[2]]: 'card-top-green',
-        [store.getters.leave_statuses[1]]: 'card-top-red',
+        'approved': 'card-top-green',
+        'rejected': 'card-top-red',
       };
 
-      return tempObj[leave.status] || 'card-top-blue';                           
+      return tempObj[leave.status] || 'card-top-blue';
     },
 
     //Get the style class of the badge based on the leave_status
     getBadgeStyleClass: function(leave) {
       let tempObj = {
-        [store.getters.leave_statuses[2]]: 'badge-success',
-        [store.getters.leave_statuses[1]]: 'badge-danger',
+        'approved': 'badge-success',
+        'rejected': 'badge-danger',
       };
 
       return tempObj[leave.status] || 'badge-primary';
@@ -283,8 +273,8 @@ export default {
     //Get the style based on the status of the leave
     getStatusStyleClass: function(leave) {
       let tempObj = {
-        [store.getters.leave_statuses[2]]: 'fa-check',
-        [store.getters.leave_statuses[1]]: 'fa-times'
+        'approved': 'fa-check',
+        'rejected': 'fa-times'
       };
 
       return tempObj[leave.status] || 'fa-question';

@@ -26,7 +26,7 @@
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
 
-      
+
   //- Getting the months now shown and allowing routing back to where you came from
   .row
     .col.text-center
@@ -44,10 +44,10 @@
               button.btn.btn-outline-dark.dropdown-toggle#btnUserDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-if='selectedUser') {{ selectedUser.display_label }}
               .dropdown-menu(aria-labelledby='btnUserDrop')
                 a.dropdown-item(v-for='u in users' @click='selectUser(u)') {{ u.display_label }}
-            
+
 
       hr
-  
+
   //- Buttons to toggle what to display
   .row.justify-content-center
     .btn-group-wrap
@@ -69,14 +69,14 @@
             h6.col-12.pl-1.pr-1
               strong {{ weekDay | moment('dddd') }}
 
-            h5.col-md-12 
+            h5.col-md-12
               strong {{ weekDay | moment('DD/MM') }}
 
             .col-md-12.pl-1.pr-1
               .row.justify-content-center
                 //- Standby
-                button.btn.btn-outline-primary.card-header-button(@click='toggleStandby(weekDay)', :class='getStandbyButtonStyle(weekDay)')
-                  i.fa.fa-phone
+                //- button.btn.btn-outline-primary.card-header-button(@click='toggleStandby(weekDay)', :class='getStandbyButtonStyle(weekDay)')
+                //-   i.fa.fa-phone
 
                 //- Whereabouts
                 template.col
@@ -101,7 +101,7 @@
 
           //- CALCULATED FROM WITHIN THE MIXIN
           small.text-muted
-            | {{ getDurationTotal(weekDay) }}<strong> / 
+            | {{ getDurationTotal(weekDay) }}<strong> /
             | {{ getHoursTotal(weekDay) }} h</strong>
           .pull-right.quota__icon
             i.fa(:class='getDailyQuotaStyling(weekDay)')
@@ -131,8 +131,8 @@
                 )
                   .list-group-item-heading
                     .row
-                      .col {{ leave.leave_type | leaveTypeAsString }} 
-                        b-tooltip.badge.badge-warning.pull-right(v-if="leave.status=='PENDING'", :content='leave.status')
+                      .col {{ leave.leave_type.display_label }}
+                        b-tooltip.badge.badge-warning.pull-right(v-if="leave.status=='pending'", :content='leave.status')
                           i.fa.fa-exclamation-triangle.p-1
 
                   .list-group-item-text
@@ -146,41 +146,40 @@
           template( v-if='currentUserSelected && getTimesheetStatus(weekDay)')
             //- Performances
             li.list-group-item.performance-entry(
-              v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+              v-for='(perf, i) in getDaysPerformances(weekDay.date())',
               :key='perf.id',
               :class='[list-group, performance-list]'
             )
               hovercard(
-              :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})', 
+              :component='getHoverCardComponent("PerformanceForm", {"date": weekDay, "data": perf, "user": selectedUser})',
               @success='onSubmitSuccess'
               )
                 //- Visible text
-                .list-group-item-heading {{ findContractName(perf.contract) }}
-                .list-group-item-text 
+                .list-group-item-heading {{ perf.contract.display_label }}
+                .list-group-item-text
                   div {{ perf.description }}
                   hr.smaller-vertical-hr
                   small.row.justify-content-between.align-items-center
-                    .col {{ findPerformanceTypeName(perf.performance_type) }}
+                    .col {{ perf.performance_type.display_label }}
                     .col.ml-auto {{ perf.duration }} h
 
           //- If timesheet status is NOT active
           template(v-else)
             .card-block.performance-list
             li.list-group-item.performance-entry.disabled(
-              v-for='(perf, i) in getDaysPerformances(weekDay.date())', 
+              v-for='(perf, i) in getDaysPerformances(weekDay.date())',
               :key='perf.id',
               :class='[list-group, performance-list]'
             )
-              .list-group-item-heading {{ findContractName(perf.contract) }}
+              .list-group-item-heading {{ perf.contract.display_label }}
                 a(:href="getBackendURL(perf)", :target='_blank')
                   i.fa.fa-pencil-square-o.pull-right
-              .list-group-item-text 
+              .list-group-item-text
                 div {{ perf.description }}
                 hr.smaller-vertical-hr
                 small.row.justify-content-between.align-items-center
-                  .col {{ findPerformanceTypeName(perf.performance_type) }}
+                  .col {{ perf.performance_type.display_label }}
                   .col.ml-auto {{ perf.duration }} h
-
 </template>
 
 <script>
@@ -196,7 +195,12 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'week',
-  mixins: [ RequiredPerformedDayMixin, ToastMixin ],
+
+  mixins: [
+    RequiredPerformedDayMixin,
+    ToastMixin,
+  ],
+
   components: {
     hovercard: HoverCard,
     performanceform: PerformanceForm,
@@ -210,7 +214,7 @@ export default {
       this.selectedYear = to.params.year;
       this.selectUser(to.params.user);
     },
-    
+
     selectedUser: function(newSelectedUser, oldSelectedUser) {
       this.reloadTimesheets(this.selectedUser);
       store.dispatch(types.NINETOFIVER_RELOAD_STANDBY_PERFORMANCES, {
@@ -222,7 +226,7 @@ export default {
         params: {
           contractuser__user__id: this.selectedUser.id
         }
-      }); 
+      });
       store.dispatch(types.NINETOFIVER_RELOAD_LEAVES, {
           params: {
             user_id: this.selectedUser.id
@@ -271,7 +275,7 @@ export default {
         }
         return store.getters.user;
       }
-    },   
+    },
     // User dropdown options
     options: function() {
       if(store.getters.users) {
@@ -293,17 +297,17 @@ export default {
     },
 
     isAdmin: function() {
-      return store.getters.user.groups.find(g => g.name == 'admin');
+      return store.getters.user.is_superuser || store.getters.user.groups.find(g => g.name == 'admin');
     },
+
     // Get the holidays for this period
     holidays: function() {
       if(store.getters.holidays && this.periodStartMonth && this.periodEndMonth) {
-
         return store.getters.holidays.filter((h) => {
           return (
             h.country == store.getters.user.userinfo.country && (
               moment(h.date).month() == this.periodStartMonth.month() ||
-              moment(h.date).month() == this.periodEndMonth.month() 
+              moment(h.date).month() == this.periodEndMonth.month()
             )
           );
         });
@@ -313,14 +317,14 @@ export default {
     // Get the leaves for the currently authenticated user
     leaves: function() {
       if(store.getters.leaves && this.selectedUser.id)
-        return store.getters.leaves.filter((leave) => leave.user === this.selectedUser.id );
+        return store.getters.leaves.filter((leave) => leave.user.id === this.selectedUser.id );
     },
 
     // Get the timesheets for this week
     timesheets: function() {
       if(store.getters.timesheets && this.periodStartMonth && this.periodEndMonth) {
         return store.getters.timesheets.filter((ts) => {
-          return (ts.year === this.periodStartMonth.year() && ts.month === this.periodStartMonth.month() + 1) 
+          return (ts.year === this.periodStartMonth.year() && ts.month === this.periodStartMonth.month() + 1)
             || (ts.year === this.periodEndMonth.year() && ts.month === this.periodEndMonth.month() + 1);
         });
       }
@@ -364,7 +368,7 @@ export default {
     getStandbyButtonStyle: function(weekDay) {
       return this.standbyPerformances.find(sbp => sbp.day === moment(weekDay).date())
         ? 'buttonInverse'
-        : ''; 
+        : '';
     },
 
     toggleStandby: function(weekDay) {
@@ -439,11 +443,11 @@ export default {
         if(ts) {
           let staPerfs = store.getters.standby_performances.filter(p => {
             if(p.day == day.date() && p.timesheet == ts.id) {
-              let contr = store.getters.contracts.find(c => c.id === p.contract);
+              let contr = store.getters.contracts.find(c => c.id === p.contract.id);
               p.contract_label = contr ? contr.display_label : 'Not found';
 
               return p;
-            } 
+            }
           });
 
           return staPerfs.length > 0 ? staPerfs : [{'contract_label': 'Not on standby'}];
@@ -469,8 +473,8 @@ export default {
     // Check if the status for the timesheet is active or not
     getTimesheetStatus: function(day) {
       let ts = this.getTimesheetForDay(day);
-      
-      return ts ? ts.status == store.getters.timesheet_statuses[1] : null;
+
+      return ts ? ts.status == 'active' : null;
     },
 
     // Returns a style based on how much the user has logged / is supposed to log per day
@@ -525,27 +529,6 @@ export default {
       this.getDaysOfWeek(this.currentWeekFormat);
     },
 
-    //Find the contract's name that belongs to the contract id
-    findContractName: function(id) {
-      if(store.getters.contracts) {
-        return store.getters.contracts.find(x => x.id == id)['name'];
-      }
-    },
-
-    //Find the contract's customerName that belongs to the contract id
-    findCustomerName: function(contractID) {
-      if(store.getters.contracts) {
-        return store.getters.contracts.find(x => x.id == contractID)['customerName'];
-      }
-    },
-
-    //Find the performance_type's name
-    findPerformanceTypeName: function(id) {
-      if(store.getters.performance_types) {
-        return store.getters.performance_types.find(x => x.id == id)['name'];
-      }
-    },
-
     //Go to specified week, get params from URI
     setSelectedWeek: function (year, week) {
       this.$router.push({
@@ -598,9 +581,9 @@ export default {
       var dayOfWeek = moment().isoWeekYear(year).isoWeek(week).startOf('isoWeek');
 
       for(var i = 1; i < 8; i++) {
-        if(i >= period.start && i <= period.end) 
+        if(i >= period.start && i <= period.end)
           daysofweek[index++] = dayOfWeek;
-        
+
         dayOfWeek = moment(dayOfWeek).add(1, ('days'));
       }
 
@@ -619,7 +602,7 @@ export default {
       //If the index of the lowest value in the array is not the first,
       //the days are transitioning from one month to the other
       if(arr.indexOf(Math.min.apply(Math, arr)) != 0) {
-        
+
         //Get index of highest in array (automatically final day of month that)
         var maxIndex = arr.indexOf(Math.max.apply(Math, arr));
 
@@ -636,7 +619,7 @@ export default {
         month = this.periodEndMonth.month() + 1;
 
         this.callPerformance(month, start, end);
-      
+
       } else {
         start = arr[0],
         end = arr[arr.length - 1],
@@ -702,12 +685,6 @@ export default {
       }
 
   },
-
-  filters: {
-    leaveTypeAsString: function(val) {
-      return store.getters.leave_types.find(lt => lt.id === val).display_label;
-    }
- },
 }
 </script>
 
@@ -751,7 +728,7 @@ export default {
   margin: 2px;
   position: relative;
   border-width: 1px;
-  border-color: rgba(0, 0, 0, 0.08);  
+  border-color: rgba(0, 0, 0, 0.08);
 }
 
 .performance-entry.disabled {
@@ -794,7 +771,7 @@ export default {
 }
 
 div.btn-group {
-    margin: 0 auto; 
+    margin: 0 auto;
     text-align: center;
     width: inherit;
     display: inline-block;

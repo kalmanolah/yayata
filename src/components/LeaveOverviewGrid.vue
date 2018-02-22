@@ -3,58 +3,58 @@ div
   .row.mb-3
     .col.mt-2
       toggle-button.m-1(
-                @change='toggleSwitch("showHome")', 
-                :value='showFilters["showHome"]', 
-                color='#ffbb33', 
-                :sync='true', 
+                @change='toggleSwitch("showHome")',
+                :value='showFilters["showHome"]',
+                color='#ffbb33',
+                :sync='true',
                 :labels={
                   checked: 'Home',
                   unchecked: 'Home'
-                }, 
+                },
                 :width='65'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("showSickness")', 
-                :value='showFilters["showSickness"]', 
-                color='#ff4444', 
-                :sync='true', 
+                @change='toggleSwitch("showSickness")',
+                :value='showFilters["showSickness"]',
+                color='#ff4444',
+                :sync='true',
                 :labels={
                   checked: 'Sickness',
                   unchecked: 'Sickness'
-                }, 
+                },
                 :width='75'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("showLeave")', 
-                :value='showFilters["showLeave"]', 
-                color='#00c851', 
-                :sync='true', 
+                @change='toggleSwitch("showLeave")',
+                :value='showFilters["showLeave"]',
+                color='#00c851',
+                :sync='true',
                 :labels={
                   checked: 'Leave',
                   unchecked: 'Leave'
-                }, 
+                },
                 :width='65'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("showHoliday")', 
-                :value='showFilters["showHoliday"]', 
-                color='#59b8e6', 
-                :sync='true', 
+                @change='toggleSwitch("showHoliday")',
+                :value='showFilters["showHoliday"]',
+                color='#59b8e6',
+                :sync='true',
                 :labels={
                   checked: 'Holiday',
                   unchecked: 'Holiday'
-                }, 
+                },
                 :width='70'
               )
       toggle-button.m-1(
-                @change='toggleSwitch("showNonWorkingDay")', 
-                :value='showFilters["showNonWorkingDay"]', 
-                color='#37474f', 
-                :sync='true', 
+                @change='toggleSwitch("showNonWorkingDay")',
+                :value='showFilters["showNonWorkingDay"]',
+                color='#37474f',
+                :sync='true',
                 :labels={
                   checked: 'Nonworking day',
                   unchecked: 'Nonworking day'
-                }, 
+                },
                 :width='110'
               )
     .col
@@ -91,9 +91,8 @@ div
               .d-xl-none.d-lg-inline
                 router-link(:to='{ name: "colleagues", params: { userId: user.id }}') {{ user.username }}
             td.day-cell.pl-2.pr-2(v-for='d in 31' v-bind:class='determineCellColor(user, d)') &nbsp;
-
-
 </template>
+
 <script>
 import Vue from 'vue';
 import store from '../store';
@@ -104,16 +103,13 @@ export default {
   name: 'LeaveOverviewGrid',
 
   watch: {
-
     '$route': function(to, from) {
+      this.setDate();
       this.buildPageInfo();
-      this.setDate();      
     },
-
-
   },
 
-  data() { 
+  data() {
     return {
       cu_filter: 'Contract',
       cu_label: 'Contract',
@@ -127,7 +123,7 @@ export default {
         showHome: true,
         showSickness: true,
         showLeave: true,
-        showNonWorkingDay: true 
+        showNonWorkingDay: true
       }
     }
   },
@@ -165,7 +161,7 @@ export default {
     contracts: function() {
       if(store.getters.contracts) {
         let contracts = store.getters.contracts;
-        return contracts.sort((a, b) => {
+        return contracts.slice(0).sort((a, b) => {
           return a.display_label < b.display_label ? -1 : a.display_label > b.display_label ? 1 : 0;
         });
       }
@@ -187,7 +183,7 @@ export default {
         return store.getters.contract_users
     },
 
-    // Returns the users of a secific contract if specified. 
+    // Returns the users of a secific contract if specified.
     contract_users: function() {
       if(this.users) {
 
@@ -196,9 +192,9 @@ export default {
 
         else if (this.all_contract_users) {
 
-          let contract_users = store.getters.contract_users.filter((cu) => cu.contract === this.cu_filter);
+          let contract_users = store.getters.contract_users.filter((cu) => cu.contract.id === this.cu_filter);
           return this.users.filter( user => {
-            return contract_users.find(cu => cu.user === user.id)
+            return contract_users.find(cu => cu.user.id === user.id)
           });
 
         }
@@ -225,14 +221,15 @@ export default {
   methods: {
     setDate: function() {
       this.date = moment({
-        year: this.$route.params.year, 
-        month: this.$route.params.month - 1 
+        year: this.$route.params.year,
+        month: this.$route.params.month - 1
       }).startOf('month');
     },
     // Requests all data
     buildPageInfo: function() {
       store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW, {
-        date: this.date
+        year: this.date ? this.date.format('YYYY') : null,
+        month: this.date ? this.date.format('MM') : null,
       });
     },
 
@@ -270,7 +267,7 @@ export default {
         }
 
         if(this.showFilters['showHome']) {
-          let userHomeWork = this.leaveOverview['homeWork'][user.id];
+          let userHomeWork = this.leaveOverview['home_work'][user.id];
           if(userHomeWork && userHomeWork.find(d => d == day))
             return 'cell-home';
         }
@@ -281,8 +278,8 @@ export default {
             return 'cell-holiday';
         }
 
-        if(this.showFilters['showNonWorkingDay']) {          
-          let userNonWorkingday = this.leaveOverview['nonWorkingday'][user.id];
+        if(this.showFilters['showNonWorkingDay']) {
+          let userNonWorkingday = this.leaveOverview['no_work'][user.id];
           if(userNonWorkingday && userNonWorkingday.find(d => d == day))
             return 'cell-nonWorkingDay';
         }
@@ -310,12 +307,12 @@ table-layout: fixed;
 }
 
 table{
-  height: 75vh; 
+  height: 75vh;
   display: -moz-groupbox;    // Firefox Bad Effect
 }
 tbody{
-  overflow-y: scroll;      
-  height: 73vh; 
+  overflow-y: scroll;
+  height: 73vh;
   position: absolute;
 }
 

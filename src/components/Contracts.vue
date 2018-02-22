@@ -5,7 +5,7 @@ div.row
     .row
       .col
         h3 Contracts
-          .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter') 
+          .btn.btn-outline-primary.pull-right(@click='showFilter = !showFilter')
             i.fa(aria-hidden='true', :class="showFilter ? 'fa-angle-double-right' : 'fa-filter'")
         p.subtitle Overview of all contracts
 
@@ -30,7 +30,6 @@ div.row
                 button.btn.btn-outline-dark.dropdown-toggle#btnGroupDropContractType(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") {{ contractType }}
                 .dropdown-menu(aria-labelledby='btnGroupDropContractType')
                   a.dropdown-item(v-for='type in contractTypes' @click='setContractType(type)') {{ type }}
-                Invoice.pull-right.ml-2
 
           .col-lg-4
             .input-group
@@ -42,12 +41,12 @@ div.row
             .card-columns
               div#accordion(v-for='(contract, index) in queryContracts'  role='tablist' aria-multiselectable='true')
                 .card(v-bind:class='getRibbonStyleClass(contract)')
-                  .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true') 
-                    div.contract-name {{ contract.name }}
+                  .card-header(v-bind:id='"heading-" + index' data-toggle='collapse'  aria-expanded='false' v-bind:data-target='"#collapse-" + index' @click='generate = true')
+                    div.contract-name {{ contract.display_label }}
                       span(v-if='contract.end_date') &nbsp;- {{ contract.end_date}}
                       span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClass(contract)') {{ contract.active ? 'Active' : 'Inactive'}}
                       span.badge.float-md-right.ml-1(v-bind:class='getBadgeStyleClassContractType(contract)') {{ contract.type }}
-                    small.text-muted {{ contract.companyName }} → {{ contract.customerName }}
+                    small.text-muted {{ contract.company.display_label }} → {{ contract.customer.display_label }}
 
                   .collapse(role='tabpanel' v-bind:id='"collapse-" + index' v-bind:aria-labelledby='"heading-" + index')
                     .card-block.p-3
@@ -55,7 +54,7 @@ div.row
                         .col
                           .card-text
                             .row
-                              .col-md-4 <strong>Description:</strong> 
+                              .col-md-4 <strong>Description:</strong>
                               .col-md-8.text-md-right {{ contract.description }}
                             hr
                             .row
@@ -68,9 +67,9 @@ div.row
                             hr
                             .row
                               .col-md-4 <strong>Users:</strong>
-                              .col-md-8.text-md-right 
-                                div(v-for='user in contract.contract_users') 
-                                  router-link(:to='{ name: "colleagues", params: { userId: user.user }}') {{ user.display_label }}
+                              .col-md-8.text-md-right
+                                div(v-for='user in contract.contract_users')
+                                  router-link(:to='{ name: "colleagues", params: { userId: user.user.id }}') {{ user.display_label }}
                             div(v-if='contract.type !== "SupportContract"')
                               hr
                               .row
@@ -80,9 +79,9 @@ div.row
                               hr
                               .row
                                 .col-md-4 <strong>Project estimates:</strong>
-                                .col-md-8.text-md-right 
-                                  .row(v-for='estimate in contract.project_estimate') 
-                                    .col-8.estimate {{ estimate[1] | getRoleAsString }}: 
+                                .col-md-8.text-md-right
+                                  .row(v-for='estimate in contract.project_estimate')
+                                    .col-8.estimate {{ estimate[1] | getRoleAsString }}:
                                     .col.estimate {{ estimate[0] }} h
                             hr(v-if='contract.type === "ProjectContract"')
                             .row(v-if='contract.type === "ProjectContract"')
@@ -102,7 +101,6 @@ div.row
                             p.pt-2.text-center.small.text-muted DISCLAIMER: Outer circle is actual, inner circle is estimate
                           div(v-else)
                             PieChart.chart-container(v-if='generate', :chart-data='generateTimeLeftChart(contract)', :options='chartOptions')
-
 </template>
 
 <script>
@@ -111,7 +109,6 @@ import store from '../store';
 import ContractsFilterForm from './forms/ContractsFilterForm.vue';
 import PieChart from './charts/PieChart.js';
 import moment from 'moment';
-import Invoice from './Invoice.vue';
 import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
@@ -121,7 +118,6 @@ export default {
   components: {
     ContractsFilterForm,
     PieChart,
-    Invoice
   },
 
   data () {
@@ -170,22 +166,19 @@ export default {
 
   filters: {
     urlFilter: function(attachment){
-      // base url is localhost:8080 but files are served from 127.0.0.1:8080
-      return 'http://127.0.0.1:8000' + attachment.file_url;
+      return store.state.oauth2.config.baseUrl + attachment.file_url;
     },
 
     //Return array as joined strings
     getContractGroupAsString: function(arr) {
-      //If we're provided a value
-      if(arr && arr.length > 0 && store.getters.contract_groups) {
-        var output = '';
+      if (arr && arr.length && store.getters.contract_groups) {
+        let output = []
 
-        for(var i = 0; i < arr.length; i++) {
-          if(i > 0) 
-            output += ', ';
-          output += store.getters.contract_groups.find(x => x.id == arr[i]).name;
-        }
-        return output;
+        arr.forEach(x => {
+          output.push(store.getters.contract_groups.find(y => x == y.id).display_label)
+        })
+
+        return output.join(', ')
       }
 
       return 'None';
@@ -194,7 +187,6 @@ export default {
     getRoleAsString: function(val) {
       if(val && store.getters.contract_roles){
         var output = '';
-
         output += store.getters.contract_roles.find(x => x.id == val).name;
         return output;
       }
@@ -337,17 +329,16 @@ export default {
             data.push(estimate.hours_estimated);
 
             let cRole = store.getters.contract_roles.find(r => estimate.role === r.id);
-
             if(cRole) {
               // Push contractrole objects in labels so we can use their .name and .id properties later on
               // Make the total_spent_per_role object with the names, so the ids dont get mixed up with the indices..
               labels.push(cRole);
-              total_spent_per_role[cRole.name] = 0;              
+              total_spent_per_role[cRole.name] = 0;
             }
           }
         });
 
-        let performances = store.getters.activity_performances.filter((p) => p.contract === contract.id);
+        let performances = store.getters.activity_performances.filter((p) => p.contract && (p.contract.id === contract.id));
 
         // Loop over performances and allocate each to the corresponding contractrole
         performances.forEach((perf) => {
@@ -386,10 +377,10 @@ export default {
     generateTimeLeftChart: function(contract) {
       var data = [];
       var daysLeft = moment().diff(moment(contract.end_date), 'days');
-      daysLeft = daysLeft > 0 ? 0 : -daysLeft; 
+      daysLeft = daysLeft > 0 ? 0 : -daysLeft;
       var daysSinceStart = moment(contract.end_date).diff(moment(contract.start_date), 'days');
       daysSinceStart = daysSinceStart < 0 ? 0 :daysSinceStart;
-      
+
       var datacollection = {
         labels: ['Days left', 'Days spent'],
         datasets :[
@@ -405,8 +396,19 @@ export default {
 
     //Checks to see if there is some actual data for the chart to be rendered
     validChartData: function(contract) {
-      let data = contract.type == 'ProjectContract' ? this.generateProjectChart(contract) : contract.end_date ? this.generateTimeLeftChart(contract) : null;
-      return data ? data.datasets[0].data.length >= 2 : null;
+      let data = null
+
+      if (contract.type == 'ProjectContract') {
+        data = this.generateProjectChart(contract)
+      } else if (contract.end_date) {
+        data = this.generateTimeLeftChart(contract)
+      }
+
+      if (data && (data.datasets[0].data.length < 2)) {
+        data = null
+      }
+
+      return data
     },
 
     setCustomerName: function(value) {
@@ -414,11 +416,11 @@ export default {
     },
 
     setContractType: function(type) {
-        this.contractType = this.contracts.find(x => x.type == type).type;      
+        this.contractType = this.contracts.find(x => x.type == type).type;
     },
 
     getRibbonStyleClass: function(contract) {
-      return contract.active ? 'card-top-green' : 'card-top-red';                           
+      return contract.active ? 'card-top-green' : 'card-top-red';
     },
 
     getBadgeStyleClass: function(contract) {
@@ -429,11 +431,11 @@ export default {
       // var contract_type = store.getters.contract_types.find(c => contract.type === c);
       if(contract){
         var tempObj = {
-          [store.getters.contract_types[2]]: 'badge-danger',        
+          [store.getters.contract_types[2]]: 'badge-danger',
           [store.getters.contract_types[1]]: 'badge-primary',
           [store.getters.contract_types[0]]: 'badge-success',
         }
-        return (tempObj[contract.type]) ? tempObj[contract.type] : 'badge-primary';   
+        return (tempObj[contract.type]) ? tempObj[contract.type] : 'badge-primary';
       }
     },
 

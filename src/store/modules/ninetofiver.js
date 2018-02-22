@@ -89,7 +89,14 @@ const state = {
         total: {
             hour: 8
         }
-    }
+    },
+
+    // ng
+    my_contracts: null,
+    my_contract_users: null,
+    my_current_timesheet: null,
+    my_current_month_info: null,
+    my_open_timesheets: null,
 }
 
 // mutations
@@ -194,7 +201,24 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_BACKEND_BASE_URL](state, { backend_base_url }) {
         state.backend_base_url = backend_base_url
-    }
+    },
+
+    // ng
+    [types.NINETOFIVER_SET_MY_CONTRACTS](state, { my_contracts }) {
+        state.my_contracts = my_contracts;
+    },
+    [types.NINETOFIVER_SET_MY_CONTRACT_USERS](state, { my_contract_users }) {
+        state.my_contract_users = my_contract_users;
+    },
+    [types.NINETOFIVER_SET_MY_CURRENT_TIMESHEET](state, { my_current_timesheet }) {
+        state.my_current_timesheet = my_current_timesheet;
+    },
+    [types.NINETOFIVER_SET_MY_CURRENT_MONTH_INFO](state, { my_current_month_info }) {
+        state.my_current_month_info = my_current_month_info;
+    },
+    [types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS](state, { my_open_timesheets }) {
+        state.my_open_timesheets = my_open_timesheets;
+    },
 }
 
 // getters
@@ -243,34 +267,7 @@ const getters = {
 
     //User specific
     timesheets: state => state.timesheets,
-    contracts: state => {
-        if (state.contracts && state.companies) {
-            return state.contracts.map(x => {
-                return {
-                    id: x.id,
-                    name: x.label,
-                    type: x.type,
-                    display_label: x.display_label,
-                    description: x.description,
-                    performance_types: x.performance_types,
-                    contract_groups: x.contract_groups,
-                    contract_type: x.type,
-                    active: x.active,
-                    customer: x.customer,
-                    company: x.company,
-                    projectName: x.name,
-                    project_estimate: x.hours_estimated,
-                    start_date: x.starts_at,
-                    end_date: x.ends_at,
-                    external_only: x.external_only,
-                    attachments: x.attachments,
-                    customerName: state.companies.find(com => com.id == x.customer).name,
-                    companyName: state.companies.find(com => com.id == x.company).name,
-                    total_duration: (x.hours_spent * 1)
-                };
-            });
-        }
-    },
+    contracts: state => state.contracts,
     filtered_contracts: state => {
         if (!state.filtered_contracts || !state.companies)
             return null;
@@ -278,7 +275,7 @@ const getters = {
             return state.filtered_contracts.map(x => {
                 return {
                     id: x.id,
-                    name: x.label,
+                    name: x.name,
                     type: x.type,
                     display_label: x.display_label,
                     description: x.description,
@@ -295,8 +292,8 @@ const getters = {
                     redmine_id: x.redmine_id || null,
                     external_only: x.external_only,
                     attachments: x.attachments,
-                    customerName: state.companies.find(com => com.id == x.customer).name,
-                    companyName: state.companies.find(com => com.id == x.company).name,
+                    customerName: state.companies.find(com => com.id == x.customer.id).name,
+                    companyName: state.companies.find(com => com.id == x.company.id).name,
                     total_duration: (x.hours_spent * 1)
                 };
             });
@@ -320,7 +317,7 @@ const getters = {
                 // Calculate how many hours were spent this month
                 let hours_spent_this_month = 0;
                 state.all_monthly_activity_performances.forEach((maPerformance) => {
-                    if (maPerformance.contract === c.id) {
+                    if (maPerformance.contract && (maPerformance.contract.id === c.id)) {
                         hours_spent_this_month += (maPerformance.duration * 1);
                     }
                 });
@@ -332,7 +329,7 @@ const getters = {
                 // Get the contract users
                 let contract_users = [];
                 state.contract_users.forEach((cu) => {
-                    if (cu.contract === c.id) {
+                    if (cu.contract.id === c.id) {
                         contract_users.push(cu);
                     }
                 });
@@ -351,7 +348,8 @@ const getters = {
 
                 return {
                     id: c.id,
-                    name: c.label,
+                    name: c.name,
+                    display_label: c.display_label,
                     type: c.type,
                     description: c.description,
                     performance_types: c.performance_types,
@@ -365,8 +363,8 @@ const getters = {
                     end_date: c.ends_at,
                     project_estimate: c.hours_estimated,
                     external_only: c.external_only,
-                    customerName: state.companies.find(com => com.id == c.customer).name,
-                    companyName: state.companies.find(com => com.id == c.company).name,
+                    customerName: state.companies.find(com => com.id == c.customer.id).name,
+                    companyName: state.companies.find(com => com.id == c.company.id).name,
                     // CALCULATED:
                     total_hours_spent: c.hours_spent,
                     total_hours_allocated: total_hours_allocated,
@@ -428,41 +426,22 @@ const getters = {
         }
     },
 
-    //Calculated
-    open_timesheet_count: state => {
-        if (state.timesheets && state.month_info) {
-            let allowed_remaining_hours_pct = 25;
-            let open = 0;
-            let today = moment();
-            let naughty = false;
-
-            if (today.date() >= 25) {
-                let hours_remaining_pct = (state.month_info.remaining_hours / state.month_info.work_hours) * 100;
-                naughty = (hours_remaining_pct > allowed_remaining_hours_pct);
-            }
-
-            state.timesheets.forEach((ts) => {
-                // Check if the timesheet is active and if the timesheet is of this month; check if user has been naughty
-                if (naughty && (ts.status == 'ACTIVE') && (ts.year === today.year()) && (ts.month === today.month() + 1)) {
-                    open++;
-                }
-            })
-
-            return open;
-        }
-    },
-
     contract_users_count: state => {
         if (state.contract_users)
             return state.contract_users.length;
-    }
+    },
 
+    // ng
+    my_contracts: state => state.my_contracts,
+    my_contract_users: state => state.my_contract_users,
+    my_current_timesheet: state => state.my_current_timesheet,
+    my_current_month_info: state => state.my_current_month_info,
+    my_open_timesheets: state => state.my_open_timesheets,
 }
 
 // actions
 const actions = {
-
-    [types.NINETOFIVER_API_REQUEST](store, options = {}, ) {
+    [types.NINETOFIVER_API_REQUEST](store, options = {}) {
 
         var oauth2State = store.rootState.oauth2
         var url = `${oauth2State.config.baseUrl}/api/v1${options.path}`
@@ -669,9 +648,7 @@ const actions = {
             ).then((res) => {
 
                 store.commit(types.NINETOFIVER_SET_PERFORMANCE_TYPES, {
-                    performance_types: res.data.results.map(x => {
-                        return { id: x.id, name: x.label }
-                    })
+                    performance_types: res.data.results
                 });
                 resolve(res);
 
@@ -694,9 +671,7 @@ const actions = {
             ).then((res) => {
 
                 store.commit(types.NINETOFIVER_SET_EMPLOYMENT_CONTRACT_TYPES, {
-                    employment_contract_types: res.data.results.map(x => {
-                        return { id: x.id, name: x.label }
-                    })
+                    employment_contract_types: res.data.results
                 });
                 resolve(res);
 
@@ -719,9 +694,7 @@ const actions = {
             ).then((res) => {
 
                 store.commit(types.NINETOFIVER_SET_CONTRACT_GROUPS, {
-                    contract_groups: res.data.results.map(x => {
-                        return { id: x.id, name: x.label }
-                    })
+                    contract_groups: res.data.results
                 });
                 resolve(res);
 
@@ -744,9 +717,7 @@ const actions = {
             ).then((res) => {
 
                 store.commit(types.NINETOFIVER_SET_CONTRACT_ROLES, {
-                    contract_roles: res.data.results.map(x => {
-                        return { id: x.id, name: x.label }
-                    })
+                    contract_roles: res.data.results
                 });
                 resolve(res);
 
@@ -784,33 +755,27 @@ const actions = {
     },
 
     [types.NINETOFIVER_RELOAD_LEAVE_OVERVIEW](store, options = {}) {
-        let date = moment();
+        let year = options.year ? options.year : moment().year()
+        let month = options.month ? options.month : (moment().month() + 1)
 
-        if (options.date) {
-            date = options.date;
-        }
         options.path = '/services/monthly_availability/';
-        if (!options.params)
-            options.params = {}
-
-        options.params['period'] = moment(date).date(1).format('YYYY-MM-DDTHH:mm:ss');
 
         return new Promise((resolve, reject) => {
-            store.dispatch(
-                types.NINETOFIVER_API_REQUEST,
-                options
-            ).then((res) => {
-
+            store.dispatch(types.NINETOFIVER_API_REQUEST, {
+                path: '/services/monthly_availability/',
+                params: {
+                    year: year,
+                    month: month
+                }
+            }).then(res => {
                 store.commit(types.NINETOFIVER_SET_LEAVE_OVERVIEW, {
                     leave_overview: res.data
-                });
-                resolve(res);
-
-            }, (res) => {
-                reject(res);
+                })
+                resolve(res)
+            }, res => {
+                reject(res)
             })
-        });
-
+        })
     },
 
     [types.NINETOFIVER_RELOAD_USER_GROUPS](store, options = {}) {
@@ -1329,8 +1294,92 @@ const actions = {
         });
 
 
-    }
+    },
 
+    // ng
+    [types.NINETOFIVER_RELOAD_MY_CONTRACTS](store, options = {}) {
+        options.path = '/my_contracts/';
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_CONTRACTS, {
+                    my_contracts: res.data.results
+                });
+                resolve(res);
+            }, (res) => {
+                reject(res);
+            })
+        });
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS](store, options = {}) {
+        options.path = '/my_contract_users/';
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_CONTRACT_USERS, {
+                    my_contract_users: res.data.results
+                });
+                resolve(res);
+            }, (res) => {
+                reject(res);
+            })
+        });
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET](store, options = {}) {
+        options.path = '/my_timesheets/'
+        options.params = {}
+        options.params['year'] = new Date().getFullYear()
+        options.params['month'] = new Date().getMonth() + 1
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_CURRENT_TIMESHEET, {
+                    my_current_timesheet: res.data.results.length ? res.data.results[0] : null
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_CURRENT_MONTH_INFO](store, options = {}) {
+        options.path = '/services/month_info/'
+        options.params = {}
+        options.params['year'] = new Date().getFullYear()
+        options.params['month'] = new Date().getMonth() + 1
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_CURRENT_MONTH_INFO, {
+                    my_current_month_info: res.data
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS](store, options = {}) {
+        options.path = '/my_timesheets/'
+        options.params = {}
+        options.params['status!'] = 'closed'
+        options.params['order_by'] = '-year,-month'
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS, {
+                    my_open_timesheets: res.data.results
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
 }
 
 export default {
