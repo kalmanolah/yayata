@@ -1,6 +1,7 @@
 # yayata
 
 ![yayata](https://cdn.rawgit.com/kalmanolah/yayata/master/src/assets/img/logo_text.svg)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fkalmanolah%2Fyayata.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fkalmanolah%2Fyayata?ref=badge_shield)
 
 Yet Another Timesheet Application... Yet Again. This is a frontend for
 [ninetofiver](https://github.com/kalmanolah/925r).
@@ -58,3 +59,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ```
 
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fkalmanolah%2Fyayata.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fkalmanolah%2Fyayata?ref=badge_large)
