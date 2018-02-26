@@ -110,7 +110,9 @@ export default {
   computed: {
     timesheets: function() {
       if (store.getters.my_open_timesheets) {
-        return store.getters.my_open_timesheets
+        return store.getters.my_open_timesheets.filter(timesheet => {
+          return timesheet.status == 'active'
+        })
       }
     },
 
