@@ -31,20 +31,12 @@
   .row
     .col.text-center
       .row.justify-content-center
-        .col
         .col-auto.text-center
           router-link(:to='{ name: "calendar_month", params: { year: selectedYear, month: periodStartMonth.month()+1, user: selectedUser } }')
             h2 {{ periodStartMonth | moment('MMMM')}}
         .col-auto.text-center
           router-link(v-if='periodEndMonth.month() != periodStartMonth.month()' :to='{ name: "calendar_month", params: { year: selectedYear, month: periodEndMonth.month()+1, user: selectedUser } }')
             h2 {{ periodEndMonth | moment('MMMM')}}
-        .col
-          template(v-if='isAdmin && user')
-            .btn-group.text-right.pr-3
-              button.btn.btn-outline-dark.dropdown-toggle#btnUserDrop(type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-if='selectedUser') {{ selectedUser.display_label }}
-              .dropdown-menu(aria-labelledby='btnUserDrop')
-                a.dropdown-item(v-for='u in users' @click='selectUser(u)') {{ u.display_label }}
-
 
       hr
 
@@ -294,10 +286,6 @@ export default {
     currentUserSelected: function() {
       if(this.user && this.selectedUser)
         return this.user.id == this.selectedUser.id;
-    },
-
-    isAdmin: function() {
-      return store.getters.user.is_superuser || store.getters.user.groups.find(g => g.name == 'admin');
     },
 
     // Get the holidays for this period

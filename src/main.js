@@ -42,8 +42,6 @@ Vue.use(VueChartJs)
 Vue.use(jspdf)
 Vue.use(ClientTable, null, null, 'bootstrap4')
 
-require('file-loader?name=/css/bootstrap-vue.css!../node_modules/bootstrap-vue/dist/bootstrap-vue.css');
-
 export const cfg_file_path = '/cfg/config.json'
 
 export const router = new VueRouter({
