@@ -59,8 +59,6 @@ div
               )
     .col
       .pull-right
-        i.fa.fa-spinner.fa-pulse.fa-fw(v-show='loading')
-        span.sr-only Loading...
         .btn-group(role='group' aria-label='Button group with nested dropdown')
 
           .btn-group(role='group')
@@ -116,7 +114,6 @@ export default {
       country_label: 'Country',
       country_filter: 'Country',
       countries: [],
-      loading: true,
       date: null,
       showFilters: {
         showHoliday: true,
@@ -129,22 +126,24 @@ export default {
   },
 
  created: function() {
-    this.buildPageInfo();
     this.setDate();
-    store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACTS);
+    this.buildPageInfo();
 
-    store.dispatch(types.NINETOFIVER_RELOAD_USERS).then( () => {
+    new Promise((resolve, reject) => {
+      if (!store.getters.users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_USERS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    }).then(() => {
+      store.getters.users.forEach(user => {
+        if (user.userinfo && user.userinfo.country && (this.countries.indexOf(user.userinfo.country) === -1)) {
+          this.countries.push(user.userinfo.country)
+        }
+      })
 
-      // Get every unique country
-      store.getters.users.forEach( user => {
-        if(user.userinfo && this.countries.indexOf(user.userinfo.country) === -1)
-          this.countries.push(user.userinfo.country);
-      });
-      this.countries.sort((a, b) => {
-        return a < b ? -1 : a > b ? 1 : 0;
-      });
-      this.loading = false;
-    });
+      this.countries.sort()
+    })
 
     if(!store.getters.contract_users)
       store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS)
@@ -173,7 +172,7 @@ export default {
     },
 
     users: function() {
-      if(store.getters.users && !this.loading) {
+      if(store.getters.users) {
         return store.getters.users
       }
     },
