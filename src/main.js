@@ -7,6 +7,7 @@ import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 import VueChartJs from 'vue-chartjs'
+import VueMarkdown from 'vue-markdown'
 import jspdf from 'jspdf'
 
 import BootstrapVue from 'bootstrap-vue'
@@ -27,7 +28,7 @@ import Timesheets from './components/Timesheets.vue'
 import Companies from './components/Companies.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
-import Redmine from './components/Redmine.vue'
+import Import from './components/Import.vue'
 import LeaveOverviewGrid from './components/LeaveOverviewGrid.vue'
 
 // Vue.use(Vuex)
@@ -41,6 +42,7 @@ Vue.use(VueFormGenerator)
 Vue.use(VueChartJs)
 Vue.use(jspdf)
 Vue.use(ClientTable, null, null, 'bootstrap4')
+Vue.use(VueMarkdown)
 
 export const cfg_file_path = '/cfg/config.json'
 
@@ -111,9 +113,9 @@ export const router = new VueRouter({
                     component: Contracts,
                 },
                 {
-                    name: 'redmine',
-                    path: '/redmine',
-                    component: Redmine,
+                    name: 'import',
+                    path: '/import',
+                    component: Import,
                 }
             ],
         },

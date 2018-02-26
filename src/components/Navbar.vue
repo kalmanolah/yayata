@@ -17,12 +17,12 @@
             h2 Contracts
           router-link(:to='{ name: "leaves" }')
             h2 Leaves
-          router-link(:to='{ name: "colleagues", params: { userId: "all"}}')
+          router-link(:to='{ name: "colleagues_redirect" }')
             h2 Colleagues
           router-link(:to='{ name: "calendar_month_redirect" }')
             h2 Calendar
-          router-link(:to='{ name: "redmine" }')
-            h2 Redmine
+          router-link(:to='{ name: "import" }')
+            h2 Import
 
     .col.navbar.navbar-expand
       .collapse.navbar-collapse#navbarDropdown

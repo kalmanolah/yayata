@@ -97,6 +97,7 @@ const state = {
     my_current_timesheet: null,
     my_current_month_info: null,
     my_open_timesheets: null,
+    my_importable_performances: null,
 }
 
 // mutations
@@ -218,6 +219,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS](state, { my_open_timesheets }) {
         state.my_open_timesheets = my_open_timesheets;
+    },
+    [types.NINETOFIVER_SET_MY_IMPORTABLE_PERFORMANCES](state, { my_importable_performances }) {
+        state.my_importable_performances = my_importable_performances;
     },
 }
 
@@ -437,6 +441,7 @@ const getters = {
     my_current_timesheet: state => state.my_current_timesheet,
     my_current_month_info: state => state.my_current_month_info,
     my_open_timesheets: state => state.my_open_timesheets,
+    my_importable_performances: state => state.my_importable_performances,
 }
 
 // actions
@@ -1373,6 +1378,22 @@ const actions = {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
                 store.commit(types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS, {
                     my_open_timesheets: res.data.results
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_IMPORTABLE_PERFORMANCES](store, options = {}) {
+        options.path = '/services/performance_import/'
+        options.params = {}
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_IMPORTABLE_PERFORMANCES, {
+                    my_importable_performances: res.data
                 })
                 resolve(res)
             }, (res) => {

@@ -36,6 +36,7 @@
         "vue-form-generator": "^2.0.0-beta6",
         "vue-js-toggle-button": "^1.0.5",
         "vue-loader": "^9.9.5",
+        "vue-markdown": "^2.2.4",
         "vue-moment": "^2.0.2",
         "vue-resource": "^1.0.3",
         "vue-router": "^2.0.1",
