@@ -125,7 +125,7 @@ export default {
 
       if (!this.model.id) {
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/services/my_leave_request/',
+            path: '/services/leave_request/',
             method: 'POST',
             body: body,
         }).then((response) => {
@@ -151,7 +151,7 @@ export default {
                 })
 
                 store.dispatch(types.NINETOFIVER_API_REQUEST, {
-                  path: '/my_leaves/' + response.data.leave + '/',
+                  path: '/my_leaves/' + response.data.id + '/',
                   method: 'PATCH',
                   body: {
                     attachments: attachment_ids
