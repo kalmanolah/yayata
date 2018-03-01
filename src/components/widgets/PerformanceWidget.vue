@@ -153,7 +153,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['col-6 float-left']
+            styleClasses: ['half-width']
           },
           {
             type: "select",
@@ -174,7 +174,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['col-6 float-left']
+            styleClasses: ['half-width']
           },
           {
             type: "input",
@@ -182,10 +182,10 @@ export default {
             label: "Duration",
             model: "duration",
             required: true,
-            min: 0.1,
+            min: 0,
             max: 24,
             validator: VueFormGenerator.validators.number,
-            styleClasses: ['col-6 float-left']
+            styleClasses: ['half-width']
           },
           {
             type: "select",
@@ -212,8 +212,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['col-6 float-left']
-
+            styleClasses: ['half-width']
           },
           {
             type: "textArea",
@@ -243,5 +242,22 @@ export default {
 }
 </script>
 
-<style>
+<style lang="less">
+.half-width {
+  width: 50%;
+  float: left;
+
+  &+ .half-width {
+    padding-left: 5px;
+  }
+}
+
+.third-width {
+  width: 33%;
+  float: left;
+
+  &+ .third-width {
+    padding-left: 5px;
+  }
+}
 </style>

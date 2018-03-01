@@ -181,4 +181,7 @@ a:hover {
   max-height: 70vh;
   overflow: auto;
 }
+.fade {
+    display: inherit;
+}
 </style>

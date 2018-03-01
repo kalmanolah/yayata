@@ -97,7 +97,7 @@ div(class='calendar')
 import * as types from '../store/mutation-types';
 import store from '../store';
 import Holidays from './Holidays.vue';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import ToastMixin from './mixins/ToastMixin.vue';
 
 
@@ -224,8 +224,8 @@ export default {
         //Converts the start / end datetime from strings to actual JS datetimes
         response.data.results.forEach(lv => {
           lv.leavedate_set.forEach(ld => {
-            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ss');
-            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ss');
+            ld.starts_at = moment(ld.starts_at, 'YYYY-MM-DD HH:mm:ssZZ');
+            ld.ends_at = moment(ld.ends_at, 'YYYY-MM-DD HH:mm:ssZZ');
           });
 
           lv['leave_start'] = lv.leavedate_set[0].starts_at;

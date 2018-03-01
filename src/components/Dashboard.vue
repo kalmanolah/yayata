@@ -12,24 +12,19 @@ div
     div(class='col-xl-6')
       AbsenceWidget
       BirthdayWidget
-
-      //- Leaverequest form
-      div(class='card card-top-blue mb-3')
-        div(class='card-header text-center') 🏖️ Request leave
-        div(class='card-body')
-          LeaveRequestForm
+      LeaveWidget
 </template>
 
 <script>
 import store from '../store';
 import * as types from '../store/mutation-types';
 import moment from 'moment';
-import LeaveRequestForm from './forms/LeaveRequestForm.vue';
 import PerformanceWidget from './widgets/PerformanceWidget.vue';
 import AbsenceWidget from './widgets/AbsenceWidget.vue';
 import BirthdayWidget from './widgets/BirthdayWidget.vue';
 import DueTimesheetWarningWidget from './widgets/DueTimesheetWarningWidget.vue';
 import TimesheetWidget from './widgets/TimesheetWidget.vue';
+import LeaveWidget from './widgets/LeaveWidget.vue';
 
 
 export default {
@@ -40,12 +35,12 @@ export default {
   },
 
   components: {
-    LeaveRequestForm,
     PerformanceWidget,
     AbsenceWidget,
     BirthdayWidget,
     DueTimesheetWarningWidget,
     TimesheetWidget,
+    LeaveWidget,
   },
 
   methods: {

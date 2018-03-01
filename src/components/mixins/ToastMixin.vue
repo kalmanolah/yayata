@@ -8,9 +8,9 @@ export default {
           id: 'toast',
           horizontalPosition: 'right',
           verticalPosition: 'top',
-          duration: 2500,
+          duration: 5000,
           transition: 'slide-down',
-          mode: 'override'
+          mode: 'queue'
         });
     },
 
@@ -22,9 +22,9 @@ export default {
           horizontalPosition: 'right',
           verticalPosition: 'top',
           className: 'et-warn',
-          duration: 2500,
+          duration: 5000,
           transition: 'slide-down',
-          mode: 'override'
+          mode: 'queue'
         });
     },
 
@@ -36,9 +36,9 @@ export default {
           horizontalPosition: 'right',
           verticalPosition: 'top',
           className: 'et-danger',
-          duration: 2500,
+          duration: 5000,
           transition: 'slide-down',
-          mode: 'override'
+          mode: 'queue'
         });
     },
 
@@ -50,9 +50,9 @@ export default {
           horizontalPosition: 'right',
           verticalPosition: 'top',
           className: 'et-info',
-          duration: 2500,
+          duration: 5000,
           transition: 'slide-down',
-          mode: 'override'
+          mode: 'queue'
         });
     },
 
@@ -66,7 +66,7 @@ export default {
           className: 'et-success',
           duration: 2500,
           transition: 'slide-down',
-          mode: 'override'
+          mode: 'queue'
         });
     },
   }
