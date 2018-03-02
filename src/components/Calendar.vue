@@ -2,7 +2,7 @@
 div
   .row
     .col
-      button.btn.btn-outline-dark.float-left(@click='switchComponent()') {{ buttonText }}
+      | &nbsp;
     .col-6.text-center
       h1 {{ month | monthFilter }} {{ year }}
     .col
@@ -27,7 +27,6 @@ div
 <script>
 import Vue from 'vue'
 import Month from './Month.vue'
-import LeaveOverviewGrid from './LeaveOverviewGrid.vue'
 import store from '../store'
 import * as types from '../store/mutation-types'
 
@@ -35,7 +34,6 @@ export default {
 name: 'calendar',
 components: {
   Month,
-  LeaveOverviewGrid
 },
 data() {
   return {

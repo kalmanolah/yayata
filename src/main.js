@@ -29,7 +29,7 @@ import Companies from './components/Companies.vue'
 import Colleagues from './components/Colleagues.vue'
 import Contracts from './components/Contracts.vue'
 import Import from './components/Import.vue'
-import LeaveOverviewGrid from './components/LeaveOverviewGrid.vue'
+import Availability from './components/Availability.vue'
 
 // Vue.use(Vuex)
 Vue.use(Toast)
@@ -93,9 +93,19 @@ export const router = new VueRouter({
                     component: Leaves,
                 },
                 {
-                    name: 'leave_overview_grid',
-                    path: '/leave_overview',
-                    component: LeaveOverviewGrid
+                    name: 'availability_redirect',
+                    path: '/availability',
+                    redirect: `/availability/month`,
+                },
+                {
+                    name: 'availability_month_redirect',
+                    path: '/availability/month',
+                    redirect: `/availability/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+                },
+                {
+                    name: 'availability_month',
+                    path: '/availability/month/:year/:month',
+                    component: Availability,
                 },
                 {
                     name: 'timesheets',

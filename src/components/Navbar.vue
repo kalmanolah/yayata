@@ -21,6 +21,8 @@
             h2 Colleagues
           router-link(:to='{ name: "calendar_month_redirect" }')
             h2 Calendar
+          router-link(:to='{ name: "availability_redirect" }')
+            h2 Availability
           router-link(:to='{ name: "import" }')
             h2 Import
 

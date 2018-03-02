@@ -28,6 +28,9 @@
           router-link(:to='{ name: "calendar_month_redirect" }')
             h3.mb-0 Calendar
             p.small.d-none.d-lg-block.hide-on-small--side-text Monthly overview
+          router-link(:to='{ name: "availability_redirect" }')
+            h3.mb-0 Availability
+            p.small.d-none.d-lg-block.hide-on-small--side-text Availability overview
           router-link(:to='{ name: "import" }')
             h3.mb-0 Import
             p.small.d-none.d-lg-block.hide-on-small--side-text Time entries
