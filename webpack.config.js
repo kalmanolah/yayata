@@ -4,6 +4,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var DashboardPlugin = require('webpack-dashboard/plugin')
 
+var environment = process.env.NODE_ENV
 
 module.exports = {
   entry: {
@@ -25,7 +26,7 @@ module.exports = {
     new CopyWebpackPlugin([
       {
         from: './src/static'
-      },
+      }
     ])
   ],
   module: {
@@ -71,7 +72,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue'
+      'vue$': environment === 'production' ? 'vue/dist/vue.min' : 'vue/dist/vue'
     }
   },
   devServer: {
@@ -81,13 +82,13 @@ module.exports = {
   devtool: '#eval-source-map'
 }
 
-if (process.env.NODE_ENV !== 'production') {
+if (environment !== 'production') {
   module.exports.plugins = (module.exports.plugins || []).concat([
     new DashboardPlugin()
   ])
 }
 
-if (process.env.NODE_ENV === 'production') {
+if (environment === 'production') {
   module.exports.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
