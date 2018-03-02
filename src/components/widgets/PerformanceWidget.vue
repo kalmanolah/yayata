@@ -31,55 +31,54 @@ export default {
     ToastMixin
   ],
 
-  props: ['date'],
-
   created: function() {
-    this.model.day = this.day ? this.day : this.model.day,
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.performance_types) {
-        store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.model.performance_type = store.getters.performance_types[0].id
-    })
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.my_contract_users) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
-    })
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.my_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.model.contract = store.getters.my_contracts[0].id
-    })
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.my_current_timesheet) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.model.timesheet = store.getters.my_current_timesheet.id
-    })
-
     submit = this.submit
+
+    Promise.all([
+      new Promise((resolve, reject) => {
+        if (!store.getters.performance_types) {
+          store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES).then(() => resolve())
+        } else{
+          resolve()
+        }
+      }),
+      new Promise((resolve, reject) => {
+        if (!store.getters.my_contract_users) {
+          store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS).then(() => resolve())
+        } else{
+          resolve()
+        }
+      }),
+      new Promise((resolve, reject) => {
+        if (!store.getters.my_contracts) {
+          store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
+        } else{
+          resolve()
+        }
+      }),
+      new Promise((resolve, reject) => {
+        if (!store.getters.my_current_timesheet) {
+          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
+        } else{
+          resolve()
+        }
+      })
+    ]).then(() => {
+      this.resetForm()
+    })
   },
 
   methods: {
+    resetForm: function() {
+      this.model.performance_type = store.getters.performance_types[0].id
+      this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
+      this.model.contract = store.getters.my_contracts[0].id
+      this.model.timesheet = store.getters.my_current_timesheet.id
+      this.model.day = moment().date()
+      this.model.duration = 1
+      this.model.description = null
+    },
+
     submit: function() {
       if (this.loading) return
       this.loading = true
@@ -103,6 +102,7 @@ export default {
           this.$emit('success', response)
           this.showSuccessToast('Performance logged.')
           this.loading = false
+          this.resetForm()
         }).catch((error) => {
           this.$emit('error', error)
           this.showDangerToast('Error saving performance.')
@@ -145,9 +145,7 @@ export default {
             },
             values: () => {
               if (store.getters.my_contracts) {
-                return store.getters.my_contracts.filter((x) => {
-                  return x.active && (x.type == 'ProjectContract')
-                })
+                return store.getters.my_contracts
               }
 
               return []

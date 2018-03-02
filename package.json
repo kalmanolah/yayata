@@ -9,14 +9,13 @@
         "build": "cross-env NODE_ENV=production webpack --progress --colors --hide-modules"
     },
     "dependencies": {
-        "bootstrap-vue": "^0.12.4",
         "vue": "^2.5.13"
     },
     "devDependencies": {
         "babel-core": "^6.26.0",
         "babel-loader": "^6.0.0",
         "babel-preset-env": "^1.6.1",
-        "bootstrap-vue": "^0.12.4",
+        "bootstrap-vue": "^2.0.0-rc.1",
         "chart.js": "^2.5.0",
         "copy-webpack-plugin": "^4.0.1",
         "cross-env": "^3.0.0",
@@ -31,6 +30,7 @@
         "moment-timezone": "^0.5.14",
         "pug": "^2.0.0-rc.3",
         "pug-loader": "^2.3.0",
+        "style-loader": "^0.20.2",
         "vue-chartjs": "^2.8.2",
         "vue-clickaway": "^2.1.0",
         "vue-easy-toast": "^1.0.1",

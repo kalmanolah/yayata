@@ -15,11 +15,14 @@ div(class='card card-top-blue mb-3')
         :width='95',
       )
 
+    vue-form-generator(:schema="schema" :model="model" :options="formOptions")
+
     b-form-fieldset
       label Attachments
-      b-form-file(class='form-control' v-model='model.attachments' :multiple='true')
+      b-form-file(v-model='model.attachments' :multiple='true' ref='attachments')
 
-    vue-form-generator(:schema="schema" :model="model" :options="formOptions")
+    div(class='form-group')
+      input(type="submit" value="Save" @click="submit()")
 </template>
 
 <script>
@@ -40,8 +43,8 @@ var model = {
   until_time: null,
   attachments: [],
   multiple_days: false
-};
-var submit = null;
+}
+var submit = null
 
 export default {
   name: 'LeaveWidget',
@@ -51,24 +54,46 @@ export default {
   ],
 
   created: function() {
-    new Promise((resolve, reject) => {
-      if (!store.getters.performance_types) {
-        store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.model.leave_type = store.getters.leave_types[0].id
-    })
+    submit = this.submit
 
-    // @TODO Refactor this action
-    new Promise((resolve, reject) => {
-      if (!store.getters.user_work_schedule) {
-        store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
+    Promise.all([
+      new Promise((resolve, reject) => {
+        if (!store.getters.performance_types) {
+          store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES).then(() => resolve())
+        } else{
+          resolve()
+        }
+      }),
+      new Promise((resolve, reject) => {
+        if (!store.getters.user_work_schedule) {
+          store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE).then(() => resolve())
+        } else{
+          resolve()
+        }
+      })
+    ]).then(() => {
+      this.resetForm()
+    })
+  },
+
+  methods: {
+    toggleMultipleDays: function() {
+      this.model.multiple_days = !this.model.multiple_days
+    },
+
+    resetForm: function() {
+      this.model.leave_type = store.getters.leave_types[0].id
+      this.$refs.attachments.reset()
+
+      this.model.description = null
+      this.model.start_date = moment()
+      this.model.end_date = moment()
+      this.model.date = moment()
+      this.model.from_time = '09:00'
+      this.model.until_time = null
+      this.model.attachments = []
+      this.model.multiple_days = false
+
       if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.user_work_schedule) {
         let dow_prop = this.model.date.format('dddd').toLowerCase()
         let dow_work = store.getters.user_work_schedule[dow_prop]
@@ -83,14 +108,6 @@ export default {
       } else {
         this.model.until_time = '17:00'
       }
-    })
-
-    submit = this.submit
-  },
-
-  methods: {
-    toggleMultipleDays: function() {
-      this.model.multiple_days = !this.model.multiple_days
     },
 
     submit: function() {
@@ -167,6 +184,7 @@ export default {
             this.$emit('success', response)
             this.showSuccessToast('Leave requested.')
             this.loading = false
+            this.resetForm()
           })
         }).catch((error) => {
           this.$emit('error', error)
@@ -196,24 +214,6 @@ export default {
 
       schema: {
         fields: [
-          {
-            type: "select",
-            label: "Type",
-            model: "leave_type",
-            required: true,
-            selectOptions: {
-              value: "id",
-              name: "display_label"
-            },
-            values: () => {
-              if (store.getters.leave_types) {
-                return store.getters.leave_types
-              }
-
-              return []
-            },
-            validator: VueFormGenerator.validators.required
-          },
           {
             type: "pikaday",
             label: "Start date",
@@ -292,6 +292,24 @@ export default {
             styleClasses: ['third-width']
           },
           {
+            type: "select",
+            label: "Type",
+            model: "leave_type",
+            required: true,
+            selectOptions: {
+              value: "id",
+              name: "display_label"
+            },
+            values: () => {
+              if (store.getters.leave_types) {
+                return store.getters.leave_types
+              }
+
+              return []
+            },
+            validator: VueFormGenerator.validators.required
+          },
+          {
             type: "textArea",
             label: "Description",
             model: "description",
@@ -302,6 +320,7 @@ export default {
           {
             type: "submit",
             buttonText: "Save",
+            styleClasses: ["d-none"],
             validateBeforeSubmit: true,
             onSubmit: () => {
               submit()
@@ -336,39 +355,5 @@ export default {
   &+ .third-width {
     padding-left: 5px;
   }
-}
-
-.custom-file-control {
-    overflow: hidden;
-}
-.custom-file-control {
-    overflow: hidden;
-}
-.custom-file-control.dragging {
-    overflow: hidden;
-    filter: blur(3px);
-}
-.custom-file-control::after {
-    content: attr(data-selected);
-}
-.custom-file-control::before {
-    content: attr(data-choose);
-}
-.custom-file .drop-here {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, .5);
-    border-radius: 3px;
-    z-index: 99999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.custom-file .drop-here::before {
-    color: white;
-    content: attr(data-drop);
 }
 </style>

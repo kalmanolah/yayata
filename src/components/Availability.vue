@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   div(class='row justify-content-between align-items-center')
-    div(class='col-auto')
+    div(class='col-lg-auto text-center')
       div(class='btn-group' role='group')
         button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousMonth()')
           i(class='fa fa-angle-double-left')
@@ -12,7 +12,9 @@ div
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
 
-    div(class='col-auto')
+    div(class='col-lg-auto text-center')
+      hr(class='d-lg-none')
+
       toggle-button(
         class='my-0'
         @change='showHomeWork = !showHomeWork',
@@ -73,12 +75,14 @@ div
         },
         :width='115'
       )
-    div(class='col-auto')
+    div(class='col-lg-auto text-center')
+      hr(class='d-lg-none')
+
       div(class='btn-group' role='group')
         div(class='btn-group' role='group')
           button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span(v-if='filterContract') {{ filterContract.display_label }}
-            span(v-else) Select a contract
+            span(v-else) Contract
           div(class='dropdown-menu')
             a(class='dropdown-item' @click='filterByContract()') All
             a(v-for='contract in contracts' class='dropdown-item' @click='filterByContract(contract)') {{ contract.display_label }}
@@ -86,27 +90,28 @@ div
         div(class='btn-group' role='group')
           button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span(v-if='filterCountry') {{ filterCountry }}
-            span(v-else) Select a country
+            span(v-else) Country
           div(class='dropdown-menu dropdown-menu-right')
             a(class='dropdown-item' @click='filterByCountry()') All
             a(class='dropdown-item' v-for='country in countries' @click='filterByCountry(country)') {{ country }}
 
   hr
 
-  table(class='table table-bordered table-sm table-responsive' v-if='daysInMonth')
-    thead
-      tr
-        th Name
-        th(class='cell text-center' v-for='day in daysInMonth') {{ day }}
-        th(class='cell cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
-    tbody
-      tr(v-for='user in users')
-        td
-          router-link(:to='{ name: "colleagues", params: { userId: user.id }}')
-            | {{ user.display_label }}
-            small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
-        td(v-for='day in daysInMonth' v-bind:class='determineCellColor(user, day)') &nbsp;
-        td(class='cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
+  div(class='table-responsive')
+    table(class='table table-bordered table-sm' v-if='daysInMonth')
+      thead
+        tr
+          th Name
+          th(class='cell text-center' v-for='day in daysInMonth') {{ day }}
+          th(class='cell cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
+      tbody
+        tr(v-for='user in users')
+          td
+            router-link(:to='{ name: "colleagues", params: { userId: user.id }}')
+              | {{ user.display_label }}
+              small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
+          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(user, day)') &nbsp;
+          td(class='cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
 </template>
 
 <script>
