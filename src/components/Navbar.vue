@@ -19,7 +19,7 @@
             h2 Leaves
           router-link(:to='{ name: "colleagues_redirect" }')
             h2 Colleagues
-          router-link(:to='{ name: "calendar_month_redirect" }')
+          router-link(:to='{ name: "calendar_redirect" }')
             h2 Calendar
           router-link(:to='{ name: "availability_redirect" }')
             h2 Availability

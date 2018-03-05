@@ -21,7 +21,7 @@ import Auth from './components/Auth.vue'
 import AuthLogin from './components/AuthLogin.vue'
 import AuthLogout from './components/AuthLogout.vue'
 import Dashboard from './components/Dashboard.vue'
-import Calendar from './components/Calendar.vue'
+import Month from './components/Month.vue'
 import Week from './components/Week.vue'
 import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
@@ -58,14 +58,19 @@ export const router = new VueRouter({
                     component: Dashboard,
                 },
                 {
-                    name: 'calendar_month_redirect',
+                    name: 'calendar_redirect',
                     path: '/calendar',
+                    redirect: '/calendar/month'
+                },
+                {
+                    name: 'calendar_month_redirect',
+                    path: '/calendar/month',
                     redirect: `/calendar/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
                 },
                 {
                     name: 'calendar_month',
                     path: '/calendar/month/:year/:month',
-                    component: Calendar,
+                    component: Month,
                 },
                 {
                     name: 'calendar_week_redirect',

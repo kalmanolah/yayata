@@ -129,10 +129,10 @@ export default {
   box-shadow: rgba(0,0,0,.29) 0 0 4px 0;
 }
 
-.card-title{
+/* .card-title{
   font-weight: 300;
   margin-top: 1rem;
-}
+} */
 
 .fixed {
   position: fixed;
@@ -183,5 +183,11 @@ a:hover {
 }
 .fade {
     display: inherit;
+}
+
+.rendered-markdown {
+  > *:last-child {
+    margin-bottom: 0
+  }
 }
 </style>

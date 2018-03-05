@@ -1,8 +1,18 @@
 <template lang="pug">
 div(class='card card-top-blue mb-3')
-  div(class='card-header text-center') ⏳ Log performance
+  div(class='card-header text-center') ⏳&nbsp;
+    span(v-if='!model.id') Log performance
+    span(v-else) Update performance
+
   div(class='card-body')
     vue-form-generator(:schema="schema" :model="model" :options="formOptions")
+
+    div(class='form-group my-0')
+      div(class='row justify-content-between')
+        div(class='col')
+          input(class='btn btn-primary' type="submit" value="Save" @click="submit()")
+        div(class='col-auto' v-if='model.id')
+          input(class='btn btn-danger' type="submit" value="Delete" @click="remove()")
 </template>
 
 <script>
@@ -14,12 +24,12 @@ import ToastMixin from '../mixins/ToastMixin.vue';
 
 var model = {
   id: null,
-  day: moment().date(),
+  day: null,
   contract: null,
   contract_role: null,
   performance_type: null,
   timesheet: null,
-  duration: 1,
+  duration: null,
   description: null,
 };
 var submit = null;
@@ -29,6 +39,12 @@ export default {
 
   mixins: [
     ToastMixin
+  ],
+
+  props: [
+    'performance',
+    'day',
+    'timesheet'
   ],
 
   created: function() {
@@ -70,13 +86,45 @@ export default {
 
   methods: {
     resetForm: function() {
-      this.model.performance_type = store.getters.performance_types[0].id
-      this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
-      this.model.contract = store.getters.my_contracts[0].id
-      this.model.timesheet = store.getters.my_current_timesheet.id
-      this.model.day = moment().date()
-      this.model.duration = 1
-      this.model.description = null
+      if (this.performance) {
+        this.model.id = this.performance.id
+        this.model.performance_type = this.performance.performance_type.id
+        this.model.contract_role = this.performance.contract_role.id
+        this.model.contract = this.performance.contract.id
+        this.model.timesheet = this.performance.timesheet
+        this.model.day = this.performance.day
+        this.model.duration = Number(this.performance.duration)
+        this.model.description = this.performance.description
+      } else {
+        this.model.id = null
+        this.model.performance_type = store.getters.performance_types[0].id
+        this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
+        this.model.contract = store.getters.my_contracts[0].id
+        this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
+        this.model.day = this.day ? this.day : moment().date()
+        this.model.duration = 1
+        this.model.description = null
+      }
+
+    },
+
+    remove: function() {
+      if (this.loading) return
+      this.loading = true
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: `/my_performances/activity/${this.model.id}/`,
+          method: 'DELETE',
+      }).then((response) => {
+        this.$emit('success', response)
+        this.showSuccessToast('Performance deleted.')
+        this.loading = false
+        this.resetForm()
+      }).catch((error) => {
+        this.$emit('error', error)
+        this.showDangerToast('Error deleting performance.')
+        this.loading = false
+      });
     },
 
     submit: function() {
@@ -110,7 +158,7 @@ export default {
         });
       } else {
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: `/my_performances/activity/{this.model.id}/`,
+            path: `/my_performances/activity/${this.model.id}/`,
             method: 'PUT',
             body: body,
         }).then((response) => {
@@ -224,6 +272,7 @@ export default {
             type: "submit",
             buttonText: "Save",
             validateBeforeSubmit: true,
+            styleClasses: ["d-none"],
             onSubmit: () => {
               submit()
             }

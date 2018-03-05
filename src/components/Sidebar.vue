@@ -25,9 +25,9 @@
           router-link(:to='{ name: "colleagues_redirect" }')
             h3.mb-0 Colleagues
             p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
-          router-link(:to='{ name: "calendar_month_redirect" }')
+          router-link(:to='{ name: "calendar_redirect" }')
             h3.mb-0 Calendar
-            p.small.d-none.d-lg-block.hide-on-small--side-text Monthly overview
+            p.small.d-none.d-lg-block.hide-on-small--side-text Calendar overview
           router-link(:to='{ name: "availability_redirect" }')
             h3.mb-0 Availability
             p.small.d-none.d-lg-block.hide-on-small--side-text Availability overview

@@ -95,6 +95,14 @@ export default {
     })
 
     new Promise((resolve, reject) => {
+      if (!store.getters.my_contract_users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS).then(() => resolve())
+      } else {
+        resolve()
+      }
+    })
+
+    new Promise((resolve, reject) => {
       if (!store.getters.my_open_timesheets) {
         store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
       } else {
@@ -127,6 +135,22 @@ export default {
         return contracts
       }
     },
+
+    contractUsers: function() {
+      if (store.getters.my_contract_users) {
+        let contractUsers = []
+
+        store.getters.my_contract_users.forEach(contractUser => {
+          if (!contractUsers[contractUser.contract.id]) {
+            contractUsers[contractUser.contract.id] = []
+          }
+
+          contractUsers[contractUser.contract.id].push(contractUser)
+        })
+
+        return contractUsers
+      }
+    }
   },
 
   watch: {
@@ -171,6 +195,7 @@ export default {
 
         performances.forEach(performance => {
           performance.performance_type = this.contracts[performance.contract].performance_types[0].id
+          performance.contract_role = this.contractUsers[performance.contract][0].contract_role.id
         })
 
         this.performances = performances
@@ -196,6 +221,7 @@ export default {
             'day': moment(performance.date).format('DD'),
             'duration': performance.duration,
             'performance_type': performance.performance_type,
+            'contract_role': performance.contract_role,
             'redmine_id': performance.redmine_id
           }
         }))
