@@ -32,6 +32,7 @@ div
       :performance='selectedPerformance'
       :day='selectedDay'
       :timesheet='selectedTimesheet'
+      :duration='selectedDuration'
       v-on:success='onPerformanceModified()'
     )
 
@@ -136,6 +137,7 @@ export default {
       selectedPerformance: null,
       selectedStandby: null,
       selectedTimesheet: null,
+      selectedDuration: null,
       selectedDay: null,
     }
   },
@@ -262,6 +264,7 @@ export default {
     selectDay: function(date) {
       this.selectedTimesheet = this.getTimesheetForDay(date)
       this.selectedDay = moment(date).date()
+      this.selectedDuration = this.rangeInfo.details[date].remaining_hours
     },
 
     editStandby: function(date) {

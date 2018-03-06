@@ -15,7 +15,7 @@ div(class='card card-top-blue mb-3')
         :width='95',
       )
 
-    vue-form-generator(:schema="schema" :model="model" :options="formOptions")
+    vue-form-generator(:schema="schema" :model="model" :options="formOptions" v-bind:class='{ "single-day": !model.multiple_days, "multiple-days": model.multiple_days }')
 
     b-form-fieldset
       label Attachments
@@ -228,10 +228,10 @@ export default {
               position: "top left",
               firstDay: 1
             },
-            visible: function(model) {
-              return model.multiple_days
-            },
-            styleClasses: ['half-width']
+            // visible: function(model) {
+            //   return model.multiple_days
+            // },
+            styleClasses: ['half-width', 'multiple-days-input']
           },
           {
             type: "pikaday",
@@ -245,10 +245,10 @@ export default {
               position: "top left",
               firstDay: 1
             },
-            visible: function(model) {
-              return model.multiple_days
-            },
-            styleClasses: ['half-width']
+            // visible: function(model) {
+            //   return model.multiple_days
+            // },
+            styleClasses: ['half-width', 'multiple-days-input']
           },
           {
             type: "pikaday",
@@ -262,10 +262,10 @@ export default {
               position: "top left",
               firstDay: 1
             },
-            visible: function(model) {
-              return !model.multiple_days
-            },
-            styleClasses: ['third-width']
+            // visible: function(model) {
+            //   return !model.multiple_days
+            // },
+            styleClasses: ['third-width', 'single-day-input']
           },
           {
             type: "input",
@@ -275,10 +275,10 @@ export default {
             step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            visible: function(model) {
-              return !model.multiple_days
-            },
-            styleClasses: ['third-width']
+            // visible: function(model) {
+            //   return !model.multiple_days
+            // },
+            styleClasses: ['third-width', 'single-day-input']
           },
           {
             type: "input",
@@ -288,10 +288,10 @@ export default {
             step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            visible: function(model) {
-              return !model.multiple_days
-            },
-            styleClasses: ['third-width']
+            // visible: function(model) {
+            //   return !model.multiple_days
+            // },
+            styleClasses: ['third-width', 'single-day-input']
           },
           {
             type: "select",
@@ -356,6 +356,18 @@ export default {
 
   &+ .third-width {
     padding-left: 5px;
+  }
+}
+
+.multiple-days {
+  .single-day-input {
+    display: none;
+  }
+}
+
+.single-day {
+  .multiple-days-input {
+    display: none;
   }
 }
 </style>

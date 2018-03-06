@@ -44,7 +44,8 @@ export default {
   props: [
     'performance',
     'day',
-    'timesheet'
+    'timesheet',
+    'duration',
   ],
 
   created: function() {
@@ -102,7 +103,7 @@ export default {
         this.model.contract = store.getters.my_contracts[0].id
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.day = this.day ? this.day : moment().date()
-        this.model.duration = 1
+        this.model.duration = this.duration ? Number(this.duration) : 1
         this.model.description = null
       }
 

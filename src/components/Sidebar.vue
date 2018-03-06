@@ -1,5 +1,5 @@
 <template lang="pug">
-.sidebar.col-md-auto
+.sidebar.col-md-auto.ml-auto
   .side-container.col-auto.pr-4.pt-2.pl-0
     //- LOGO
     .row.pl-3
