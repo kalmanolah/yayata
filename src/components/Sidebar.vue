@@ -1,39 +1,31 @@
 <template lang="pug">
-.sidebar.col-md-auto.ml-auto
-  .side-container.col-auto.pr-4.pt-2.pl-0
-    //- LOGO
-    .row.pl-3
-      .col
-        router-link(
-          :to='{ name: "home" }'
-        )
-          img.logo(class='card-img-top img-fluid px-1 pt-2 pb-3' src='../assets/img/logo_text.svg')
+div(class='sidebar')
+  div(class='sidebar-container p-4')
+    router-link(:to='{ name: "home" }')
+      img(class='img-fluid pb-4' src='../assets/img/logo_text.svg')
 
-    //- PAGES
-    .row.pl-3
-      .col
-        nav
-          router-link(:to='{ name: "timesheets" }')
-            h3.mb-0 Timesheets
-            p.small.d-none.d-lg-block.hide-on-small--side-text All open timesheets
-          router-link(:to='{ name: "contracts" }')
-            h3.mb-0 Contracts
-            p.small.d-none.d-lg-block.hide-on-small--side-text What I'm working on
-          router-link(:to='{ name: "leaves" }')
-            h3.mb-0 Leaves
-            p.small.d-none.d-lg-block.hide-on-small--side-text Sickness / Vacation
-          router-link(:to='{ name: "colleagues_redirect" }')
-            h3.mb-0 Colleagues
-            p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
-          router-link(:to='{ name: "calendar_redirect" }')
-            h3.mb-0 Calendar
-            p.small.d-none.d-lg-block.hide-on-small--side-text Calendar overview
-          router-link(:to='{ name: "availability_redirect" }')
-            h3.mb-0 Availability
-            p.small.d-none.d-lg-block.hide-on-small--side-text Availability overview
-          router-link(:to='{ name: "import" }')
-            h3.mb-0 Import
-            p.small.d-none.d-lg-block.hide-on-small--side-text Time entries
+    nav
+      router-link(:to='{ name: "timesheets" }')
+        h3.mb-0 Timesheets
+        p.small.d-none.d-lg-block.hide-on-small--side-text All open timesheets
+      router-link(:to='{ name: "contracts" }')
+        h3.mb-0 Contracts
+        p.small.d-none.d-lg-block.hide-on-small--side-text What I'm working on
+      router-link(:to='{ name: "leaves" }')
+        h3.mb-0 Leaves
+        p.small.d-none.d-lg-block.hide-on-small--side-text Sickness / Vacation
+      router-link(:to='{ name: "colleagues_redirect" }')
+        h3.mb-0 Colleagues
+        p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
+      router-link(:to='{ name: "calendar_redirect" }')
+        h3.mb-0 Calendar
+        p.small.d-none.d-lg-block.hide-on-small--side-text Calendar overview
+      router-link(:to='{ name: "availability_redirect" }')
+        h3.mb-0 Availability
+        p.small.d-none.d-lg-block.hide-on-small--side-text Availability overview
+      router-link(:to='{ name: "import" }')
+        h3.mb-0 Import
+        p.small.d-none.d-lg-block.hide-on-small--side-text Time entries
 
     //- DATEPICKER
     .row.hide-on-small--date-picker
@@ -84,23 +76,13 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.side-container {
+.sidebar-container {
   height: 100%;
   position: fixed;
-}
-.sidebar {
   width: 230px;
 }
-.hide-on-small {
-  &--side-text {
-    @media (max-height: 700px) {
-      display: none!important;
-    }
-  }
-  &--date-picker {
-    @media (max-height: 500px) {
-      display: none!important;
-    }
-  }
+
+.sidebar {
+  width: 230px;
 }
 </style>

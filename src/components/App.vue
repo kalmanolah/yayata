@@ -3,8 +3,8 @@ div(
   id='app'
   class='container-fluid p-0'
 )
-  div(class='row application-wrapper')
-    sidebar(class='d-none d-md-block')
+  div(class='row no-gutters application-wrapper')
+    sidebar(class='col-auto d-none d-md-block')
 
     div(class='col')
       navbar
