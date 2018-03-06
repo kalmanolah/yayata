@@ -41,7 +41,7 @@ div
         td {{ performance.duration | round }} hours
         td {{ contracts[performance.contract].display_label }}
         td
-          vue-markdown {{ performance.description }}
+          vue-markdown(class='rendered-markdown' :source='performance.description')
         template(v-if='!performance.id')
           td
             select(class='form-control form-control-sm col' v-model='performance.performance_type')

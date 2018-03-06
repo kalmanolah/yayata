@@ -4,7 +4,7 @@ div
     button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousMonth()')
       i(class='fa fa-angle-double-left')
       | &nbsp;Previous
-    button(class='btn btn-sm btn-outline-dark' type='button')
+    button(class='btn btn-sm btn-outline-dark disabled' type='button')
       | {{ date | moment('MMMM YYYY') }}
     button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextMonth()')
       | Next&nbsp;

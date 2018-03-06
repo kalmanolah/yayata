@@ -22,7 +22,9 @@ div(class='card card-top-blue mb-3')
       b-form-file(v-model='model.attachments' :multiple='true' ref='attachments')
 
     div(class='form-group')
-      input(type="submit" value="Save" @click="submit()")
+      div(class='row justify-content-between')
+        div(class='col')
+          input(class='btn btn-primary' type="submit" value="Save" @click="submit()")
 </template>
 
 <script>

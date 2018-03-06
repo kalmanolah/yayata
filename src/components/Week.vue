@@ -6,7 +6,7 @@ div
         button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousWeek()')
           i(class='fa fa-angle-double-left')
           | &nbsp;Previous
-        button(class='btn btn-sm btn-outline-dark' type='button')
+        button(class='btn btn-sm btn-outline-dark disabled' type='button')
           | {{ date | moment('Wo [week of] YYYY') }}
         button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextWeek()')
           | Next&nbsp;
@@ -212,7 +212,7 @@ export default {
 
     getTimesheetForDay: function(date) {
       return store.getters.my_open_timesheets.filter(timesheet => {
-        return (timesheet.year == moment(date).format('YYYY')) && (timesheet.month == moment(date).format('MM'))
+        return (timesheet.status == 'active') && (timesheet.year == moment(date).format('YYYY')) && (timesheet.month == moment(date).format('MM'))
       })[0]
     },
 
