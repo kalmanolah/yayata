@@ -53,7 +53,7 @@ div
     div
       div(
         class='calendar-day'
-        v-for='(dayDetails, date) in rangeInfo.details'
+        v-for='(dayDetails, date) in sortByKey(rangeInfo.details)'
         v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
       )
         div(class='card' :id='"calendar-day-" + date')
@@ -181,6 +181,14 @@ export default {
   methods: {
     moment: function(args) {
       return moment(args)
+    },
+
+    sortByKey: function(obj) {
+      let res = {}
+      Object.keys(obj).sort().forEach(key => {
+        res[key] = obj[key]
+      })
+      return res
     },
 
     selectNextWeek: function() {

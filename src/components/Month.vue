@@ -25,7 +25,7 @@ div
 
       div(
         class='calendar-day'
-        v-for='(dayDetails, date) in rangeInfo.details'
+        v-for='(dayDetails, date) in sortByKey(rangeInfo.details)'
         v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
       )
         router-link(:to='{name: "calendar_week", params: { year: getYear(date), week: getWeek(date) } }')
@@ -81,6 +81,14 @@ export default {
   },
 
   methods: {
+    sortByKey: function(obj) {
+      let res = {}
+      Object.keys(obj).sort().forEach(key => {
+        res[key] = obj[key]
+      })
+      return res
+    },
+
     selectNextMonth: function() {
       let new_date = moment(this.date).add(1, 'month')
 
