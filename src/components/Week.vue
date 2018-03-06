@@ -35,6 +35,14 @@ div
       v-on:success='onPerformanceModified()'
     )
 
+  b-modal(ref='standbyModal' hide-header=true hide-footer=true lazy=true)
+    StandbyWidget(
+      :day='selectedDay'
+      :timesheet='selectedTimesheet'
+      :performances='selectedStandby'
+      v-on:success='onStandbyModified()'
+    )
+
   div(v-if='rangeInfo')
     div
       strong Total:&nbsp;
@@ -71,7 +79,7 @@ div
             li(
               class='list-group-item list-group-item-action p-2 cursor-pointer'
               v-for='performance in dayDetails.performances'
-              @click='getTimesheetForDay(date) ? editPerformance(performance) : null'
+              v-on:click.prevent='getTimesheetForDay(date) ? editPerformance(date, performance) : null'
             )
               div(class='d-flex justify-content-between')
                 div {{ performance.contract.display_label }}
@@ -83,8 +91,17 @@ div
                 vue-markdown(class='rendered-markdown' :source='performance.description')
 
           div(class='card-body p-0')
-          div(class='card-text p-2' v-if='getTimesheetForDay(date)')
-            button(class='btn btn-block btn-outline-dark btn-sm' @click='addPerformance(date)') Log performance
+          div(class='card-text p-2 justify-content-center d-flex' v-if='getTimesheetForDay(date)')
+            div(class='btn-group')
+              button(class='btn btn-outline-dark btn-sm' @click='addPerformance(date)' v-b-tooltip title='Log performance')
+                | ⏳
+              button(
+                v-if='supportContracts && supportContracts.length'
+                class='btn btn-outline-dark btn-sm'
+                v-b-tooltip title='Standby / On-call'
+                @click='editStandby(date)'
+              )
+                | 💤
 
           div(class='card-footer text-center')
             small
@@ -96,8 +113,9 @@ div
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
-import PerformanceWidget from './widgets/PerformanceWidget.vue';
 import VueMarkdown from 'vue-markdown';
+import PerformanceWidget from './widgets/PerformanceWidget.vue';
+import StandbyWidget from './widgets/StandbyWidget.vue';
 
 export default {
   name: 'Week',
@@ -107,6 +125,7 @@ export default {
   components: {
     VueMarkdown,
     PerformanceWidget,
+    StandbyWidget,
   },
 
   data () {
@@ -115,6 +134,7 @@ export default {
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
       rangeInfo: null,
       selectedPerformance: null,
+      selectedStandby: null,
       selectedTimesheet: null,
       selectedDay: null,
     }
@@ -138,9 +158,24 @@ export default {
         resolve()
       }
     })
+
+    new Promise((resolve, reject) => {
+      if (!store.getters.my_contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    })
   },
 
   computed: {
+    supportContracts: function() {
+      if (store.getters.my_contracts) {
+        return store.getters.my_contracts.filter(contract => {
+          return contract.type == 'SupportContract'
+        })
+      }
+    }
   },
 
   methods: {
@@ -221,7 +256,19 @@ export default {
       this.selectedDay = moment(date).date()
     },
 
-    editPerformance: function(performance) {
+    editStandby: function(date) {
+      this.selectDay(date)
+      this.selectedStandby = null
+      this.$refs.standbyModal.show()
+    },
+
+    onStandbyModified: function() {
+      this.$refs.standbyModal.hide()
+      this.selectedStandby = null
+    },
+
+    editPerformance: function(date, performance) {
+      this.selectDay(date)
       this.selectedPerformance = performance
       this.$refs.performanceModal.show()
     },
@@ -231,7 +278,7 @@ export default {
       this.$refs.performanceModal.show()
     },
 
-    onPerformanceModified: function(performance) {
+    onPerformanceModified: function() {
       this.$refs.performanceModal.hide()
       this.selectedPerformance = null
       this.reloadData()
