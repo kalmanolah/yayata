@@ -82,7 +82,7 @@ div
               div(v-if='performance.description' class='text-muted')
                 vue-markdown(class='rendered-markdown' :source='performance.description')
 
-          div(class='card-body')
+          div(class='card-body p-0')
           div(class='card-text p-2' v-if='getTimesheetForDay(date)')
             button(class='btn btn-block btn-outline-dark btn-sm' @click='addPerformance(date)') Log performance
 

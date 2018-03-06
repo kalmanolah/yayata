@@ -1,23 +1,15 @@
 <template lang="pug">
 div(
   id='app'
-  class='container-fluid'
+  class='container-fluid p-0'
 )
-  .row.application-wrapper
-    //- sidebar
-    sidebar.d-none.d-md-block
+  div(class='row application-wrapper')
+    sidebar(class='d-none d-md-block')
 
-    //- content
-    .col.p-0
-      .container-fluid.pl-0.pr-0
-        .row.no-gutters
-          .col
-            .main-app
-              navbar
-      .container-fluid
-        .row
-          .col.main-app
-            router-view.p-3(v-if='user')
+    div(class='col')
+      navbar
+      div(class='container-fluid main-app')
+        router-view(class='py-3' v-if='user')
 </template>
 
 <script>
@@ -93,9 +85,6 @@ export default {
 }
 
 .main-app {
-  padding-left: 1rem;
-  padding-left: 0;
-  // width: 100vw
 }
 
 .logo{
@@ -128,11 +117,6 @@ export default {
 .card-shadow{
   box-shadow: rgba(0,0,0,.29) 0 0 4px 0;
 }
-
-/* .card-title{
-  font-weight: 300;
-  margin-top: 1rem;
-} */
 
 .fixed {
   position: fixed;
