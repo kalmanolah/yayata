@@ -26,7 +26,7 @@ div(class='card card-top-blue mb-3')
         td(class='text-right') {{ monthInfo.work_hours | round }} hours
 
       tr(v-for="(contract, index) in contracts" v-if='loaded && contractPerformances[contract.id]')
-        td [{{ contract.customer.display_label }}] {{ contract.display_label }}
+        td {{ contract.display_label }}
         td
           button(class='btn-default btn btn-sm fa fa-print' @click='exportContractToPdf(contract)')
         td(class='text-right') {{ contractPerformances[contract.id] | round }} hours
