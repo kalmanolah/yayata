@@ -19,17 +19,17 @@ div(class='card card-top-blue mb-3')
     )
 
   table(class='table my-0')
-    tbody(v-if='contracts')
+    tbody(v-if='rangeInfo')
       tr(v-if='rangeInfo')
         th Work required
         td
         td(class='text-right') {{ rangeInfo.work_hours | round }} hours
 
-      tr(v-for="(contract, index) in contracts" v-if='loaded && contractPerformances[contract.id]')
-        td {{ contract.display_label }}
+      tr(v-if='rangeInfo' v-for='performance in rangeInfo.summary.performances')
+        td {{ performance.contract.display_label }}
         td
-          button(class='btn-default btn btn-sm fa fa-print' @click='exportContractToPdf(contract)')
-        td(class='text-right') {{ contractPerformances[contract.id] | round }} hours
+          button(class='btn-default btn btn-sm fa fa-print' @click='exportContractToPdf(performance.contract)')
+        td(class='text-right') {{ performance.duration | round }} hours
 
       tr(v-if='rangeInfo')
         th Total performed
@@ -82,27 +82,14 @@ export default {
 
   data: function() {
     return {
-      loaded: null,
       rangeInfo: null,
-      contractPerformances: {},
     }
   },
 
   computed: {
-    contracts: () => {
-      return store.getters.my_contracts
-    },
   },
 
   created: function() {
-    new Promise((resolve, reject) => {
-      if (!store.getters.my_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    })
-
     this.reloadData()
   },
 
@@ -118,36 +105,18 @@ export default {
 
   methods: {
     reloadData: function() {
-      let start = moment().year(this.timesheet.year).month(this.timesheet.month).startOf('month')
-      let end = moment().year(this.timesheet.year).month(this.timesheet.month).endOf('month')
+      let start = moment().year(this.timesheet.year).month(this.timesheet.month - 1).startOf('month')
+      let end = moment().year(this.timesheet.year).month(this.timesheet.month - 1).endOf('month')
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/services/range_info/',
         params: {
           'from': start.format('YYYY-MM-DD'),
-          'until': end.format('YYYY-MM-DD')
+          'until': end.format('YYYY-MM-DD'),
+          'summary': true
         }
       }).then(res => {
         this.rangeInfo = res.data
-      })
-
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_performances/activity/',
-        params: {
-          timesheet: this.timesheet.id
-        }
-      }).then(res => {
-        res.data.results.forEach(perf => {
-          if (!perf.contract) return
-
-          if (!this.contractPerformances[perf.contract.id]) {
-            this.contractPerformances[perf.contract.id] = 0
-          }
-
-          this.contractPerformances[perf.contract.id] += parseFloat(perf.duration)
-          this.loaded = null
-          this.loaded = true
-        })
       })
     },
 
