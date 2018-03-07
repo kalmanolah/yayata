@@ -1,38 +1,28 @@
 <template lang="pug">
-div(class='sidebar')
-  div(class='sidebar-container p-4')
-    router-link(:to='{ name: "home" }')
-      img(class='img-fluid pb-4' src='../assets/img/logo_text.svg')
+div
+  div(class='sidebar')
+    div(class='sidebar-container p-4')
+      router-link(:to='{ name: "home" }')
+        img(class='img-fluid mb-4' src='../assets/img/logo_text.svg')
 
-    nav
-      router-link(:to='{ name: "timesheets" }')
-        h3.mb-0 Timesheets
-        p.small.d-none.d-lg-block.hide-on-small--side-text All open timesheets
-      router-link(:to='{ name: "contracts" }')
-        h3.mb-0 Contracts
-        p.small.d-none.d-lg-block.hide-on-small--side-text What I'm working on
-      router-link(:to='{ name: "leaves" }')
-        h3.mb-0 Leaves
-        p.small.d-none.d-lg-block.hide-on-small--side-text Sickness / Vacation
-      router-link(:to='{ name: "colleagues_redirect" }')
-        h3.mb-0 Colleagues
-        p.small.d-none.d-lg-block.hide-on-small--side-text The weirdos I work with
-      router-link(:to='{ name: "calendar_redirect" }')
-        h3.mb-0 Calendar
-        p.small.d-none.d-lg-block.hide-on-small--side-text Calendar overview
-      router-link(:to='{ name: "availability_redirect" }')
-        h3.mb-0 Availability
-        p.small.d-none.d-lg-block.hide-on-small--side-text Availability overview
-      router-link(:to='{ name: "import" }')
-        h3.mb-0 Import
-        p.small.d-none.d-lg-block.hide-on-small--side-text Time entries
+      nav(class='nav flex-column nav-pills')
+        router-link(class='nav-item nav-link' :to='{ name: "timesheets" }')
+          | Timesheets
+        router-link(class='nav-item nav-link' :to='{ name: "leaves" }')
+          | Leaves
+        router-link(class='nav-item nav-link' :to='{ name: "colleagues_redirect" }')
+          | Colleagues
+        router-link(class='nav-item nav-link' :to='{ name: "calendar_redirect" }')
+          | Calendar
+        router-link(class='nav-item nav-link' :to='{ name: "availability_redirect" }')
+          | Availability
+        router-link(class='nav-item nav-link' :to='{ name: "import" }')
+          | Import
 
-    //- DATEPICKER
-    .row.hide-on-small--date-picker
-      .bottom.ml-0.pl-0.pr-4
-        input#datepicker(type='hidden' ref='datepicker')
-        #container(ref='container')
-  </template>
+      div(class='sidebar-datepicker')
+        input(type='hidden' ref='sidebar-datepicker')
+        div(ref='sidebar-datepicker-container')
+</template>
 
 <script>
 import store from '../store'
@@ -43,8 +33,8 @@ export default {
   mounted: function() {
     var vm = this;
     this.picker = new Pikaday({
-      field: this.$refs.datepicker,
-      container: this.$refs.container,
+      field: this.$refs['sidebar-datepicker'],
+      container: this.$refs['sidebar-datepicker-container'],
       firstDay: 1,
       minDate: new Date(2000, 0, 1),
       maxDate: new Date(2020, 12, 31),
@@ -75,14 +65,33 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
-.sidebar-container {
-  height: 100%;
-  position: fixed;
-  width: 230px;
-}
+<style lang="less">
+@sidebar-width: 230px;
 
 .sidebar {
-  width: 230px;
+  width: @sidebar-width;
+
+  .sidebar-container {
+    height: 100%;
+    position: fixed;
+    width: @sidebar-width;
+  }
+
+  .nav {
+    .nav-link {
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  .sidebar-datepicker {
+    position: absolute;
+    bottom: 0;
+
+    .pika-lendar {
+      width: auto;
+    }
+  }
 }
 </style>
