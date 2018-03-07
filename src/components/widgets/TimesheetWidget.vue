@@ -20,10 +20,10 @@ div(class='card card-top-blue mb-3')
 
   table(class='table my-0')
     tbody(v-if='contracts')
-      tr(v-if='monthInfo')
+      tr(v-if='rangeInfo')
         th Work required
         td
-        td(class='text-right') {{ monthInfo.work_hours | round }} hours
+        td(class='text-right') {{ rangeInfo.work_hours | round }} hours
 
       tr(v-for="(contract, index) in contracts" v-if='loaded && contractPerformances[contract.id]')
         td {{ contract.display_label }}
@@ -31,34 +31,34 @@ div(class='card card-top-blue mb-3')
           button(class='btn-default btn btn-sm fa fa-print' @click='exportContractToPdf(contract)')
         td(class='text-right') {{ contractPerformances[contract.id] | round }} hours
 
-      tr(v-if='monthInfo')
+      tr(v-if='rangeInfo')
         th Total performed
         td
-        td(class='text-right') {{ monthInfo.performed_hours | round }} hours
+        td(class='text-right') {{ rangeInfo.performed_hours | round }} hours
 
-      tr(v-if='monthInfo')
+      tr(v-if='rangeInfo')
         td Leave taken
         td
-        td(class='text-right') {{ monthInfo.leave_hours | round }} hours
+        td(class='text-right') {{ rangeInfo.leave_hours | round }} hours
 
-      tr(v-if='monthInfo')
+      tr(v-if='rangeInfo')
         td Holidays
         td
-        td(class='text-right') {{ monthInfo.holiday_hours | round }} hours
+        td(class='text-right') {{ rangeInfo.holiday_hours | round }} hours
 
-      tr(v-if='monthInfo')
+      tr(v-if='rangeInfo')
         th Remaining
         td
-        td(class='text-right') {{ monthInfo.remaining_hours | round }} hours
+        td(class='text-right') {{ rangeInfo.remaining_hours | round }} hours
 
   b-modal(
-    v-if='monthInfo'
+    v-if='rangeInfo'
     :ref="'timesheet-submission-modal-' + timesheet.id"
     hide-footer=true
     title='Verify submission!'
   )
     p You have&nbsp;
-      strong {{ monthInfo.remaining_hours }}
+      strong {{ rangeInfo.remaining_hours }}
       | &nbsp;remaining hours.
     p Are you sure you want to submit this timesheet?
     div(class='row')
@@ -83,7 +83,7 @@ export default {
   data: function() {
     return {
       loaded: null,
-      monthInfo: null,
+      rangeInfo: null,
       contractPerformances: {},
     }
   },
@@ -103,34 +103,7 @@ export default {
       }
     })
 
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/services/month_info/',
-      params: {
-        'year': this.timesheet.year,
-        'month': this.timesheet.month,
-      }
-    }).then(res => {
-      this.monthInfo = res.data
-    })
-
-    store.dispatch(types.NINETOFIVER_API_REQUEST, {
-      path: '/my_performances/activity/',
-      params: {
-        timesheet: this.timesheet.id
-      }
-    }).then(res => {
-      res.data.results.forEach(perf => {
-        if (!perf.contract) return
-
-        if (!this.contractPerformances[perf.contract.id]) {
-          this.contractPerformances[perf.contract.id] = 0
-        }
-
-        this.contractPerformances[perf.contract.id] += parseFloat(perf.duration)
-        this.loaded = null
-        this.loaded = true
-      })
-    })
+    this.reloadData()
   },
 
   filters: {
@@ -144,6 +117,40 @@ export default {
   },
 
   methods: {
+    reloadData: function() {
+      let start = moment().year(this.timesheet.year).month(this.timesheet.month).startOf('month')
+      let end = moment().year(this.timesheet.year).month(this.timesheet.month).endOf('month')
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/services/range_info/',
+        params: {
+          'from': start.format('YYYY-MM-DD'),
+          'until': end.format('YYYY-MM-DD')
+        }
+      }).then(res => {
+        this.rangeInfo = res.data
+      })
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_performances/activity/',
+        params: {
+          timesheet: this.timesheet.id
+        }
+      }).then(res => {
+        res.data.results.forEach(perf => {
+          if (!perf.contract) return
+
+          if (!this.contractPerformances[perf.contract.id]) {
+            this.contractPerformances[perf.contract.id] = 0
+          }
+
+          this.contractPerformances[perf.contract.id] += parseFloat(perf.duration)
+          this.loaded = null
+          this.loaded = true
+        })
+      })
+    },
+
     exportContractToPdf: function (contract) {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: `/services/my_timesheet_contract_pdf_export/${this.timesheet.id}/${contract.id}/`,
@@ -184,7 +191,7 @@ export default {
     },
 
     submitTimesheet: function() {
-      if (this.monthInfo && (this.monthInfo.remaining_hours <= 0)) {
+      if (this.rangeInfo && (this.rangeInfo.remaining_hours <= 0)) {
         this.confirmSubmissionModal()
       } else {
         let confirmRef = `timesheet-submission-modal-${this.timesheet.id}`
