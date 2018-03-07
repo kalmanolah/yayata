@@ -262,11 +262,14 @@ export default {
     },
 
     reloadAvailability: function() {
+      let start = moment(this.date).startOf('month')
+      let end = moment(this.date).endOf('month')
+
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/monthly_availability/',
+        path: '/services/range_availability/',
         params: {
-          month: this.date.format('MM'),
-          year: this.date.format('YYYY')
+          from: start.format('YYYY-MM-DD'),
+          until: end.format('YYYY-MM-DD')
         }
       }).then(res => {
         this.availability = res.data
@@ -282,41 +285,37 @@ export default {
     },
 
     determineCellColor: function(user, day) {
-      if(this.availability) {
+      let date = moment(this.date).date(day).format('YYYY-MM-DD')
+
+      if (this.availability) {
         if (this.showSickness) {
-          let userSickness = this.availability['sickness'][user.id];
-          if(userSickness && userSickness.find(d => d == day))
-            return 'cell-sickness';
+          if (this.availability['sickness'][user.id].find(d => d == date))
+            return 'cell-sickness'
         }
 
-        if(this.showLeave) {
-          let userLeaves = this.availability['leave'][user.id];
-          if(userLeaves && userLeaves.find(d => d == day))
-            return 'cell-leave';
+        if (this.showLeave) {
+          if (this.availability['leave'][user.id].find(d => d == date))
+            return 'cell-leave'
         }
 
-        if(this.showHomeWork) {
-          let userHomeWork = this.availability['home_work'][user.id];
-          if(userHomeWork && userHomeWork.find(d => d == day))
-            return 'cell-homework';
+        if (this.showHomeWork) {
+          if (this.availability['home_work'][user.id].find(d => d == date))
+            return 'cell-homework'
         }
 
-        if(this.showHoliday) {
-          let userHolidays = this.availability['holiday'][user.id];
-          if(userHolidays && userHolidays.find(d => d == day))
-            return 'cell-holiday';
+        if (this.showHoliday) {
+          if (this.availability['holiday'][user.id].find(d => d == date))
+            return 'cell-holiday'
         }
 
-        if(this.showNoWork) {
-          let userNonWorkingday = this.availability['no_work'][user.id];
-          if(userNonWorkingday && userNonWorkingday.find(d => d == day))
-            return 'cell-nowork';
+        if (this.showNoWork) {
+          if (this.availability['no_work'][user.id].find(d => d == date))
+            return 'cell-nowork'
         }
 
-        return '';
+        return ''
       }
     },
-
   },
 }
 </script>
