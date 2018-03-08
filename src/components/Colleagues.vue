@@ -49,6 +49,65 @@ export default {
         orderBy: {
           column: 'display_label',
           ascending: true
+        },
+        customSorting: {
+          country: function (ascending) {
+            return function (a, b) {
+              let res = 0
+
+              if (!a.userinfo || !a.userinfo.country) {
+                res = -1
+              } else if (!b.userinfo || !b.userinfo.country) {
+                res = 1
+              } else {
+                res = a.userinfo.country < b.userinfo.country ? -1 : 1
+              }
+
+              if (!ascending) {
+                res = res * -1
+              }
+
+              return res
+            }
+          },
+          join_date: function (ascending) {
+            return function (a, b) {
+              let res = 0
+
+              if (!a.userinfo || !a.userinfo.birth_date) {
+                res = -1
+              } else if (!b.userinfo || !b.userinfo.birth_date) {
+                res = 1
+              } else {
+                res = moment(a.userinfo.birth_date).isBefore(b.userinfo.birth_date) ? -1 : 1
+              }
+
+              if (!ascending) {
+                res = res * -1
+              }
+
+              return res
+            }
+          },
+          join_date: function (ascending) {
+            return function (a, b) {
+              let res = 0
+
+              if (!a.userinfo || !a.userinfo.join_date) {
+                res = -1
+              } else if (!b.userinfo || !b.userinfo.join_date) {
+                res = 1
+              } else {
+                res = moment(a.userinfo.join_date).isBefore(b.userinfo.join_date) ? -1 : 1
+              }
+
+              if (!ascending) {
+                res = res * -1
+              }
+
+              return res
+            }
+          }
         }
       }
     }
