@@ -133,7 +133,7 @@ export default {
       // Process duration
       if (
         !this.model.duration ||
-        !(/^([0-9](?:(?::[0-9]{2})?(?:[\.,][0-9]{1,2})?)?)$/gm.test(this.model.duration))
+        !(/^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\.,][0-9]{1,2})?)?)$/gm.test(this.model.duration))
       ) {
         this.showDangerToast('Invalid duration provided.')
         return false
@@ -264,7 +264,7 @@ export default {
             label: "Duration",
             model: "duration",
             required: true,
-            pattern: '^([0-9](?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
+            pattern: '^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
             validator: VueFormGenerator.validators.string,
             styleClasses: ['half-width'],
           },
