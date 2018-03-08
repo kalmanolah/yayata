@@ -266,7 +266,7 @@ export default {
     selectDay: function(date) {
       this.selectedTimesheet = this.getTimesheetForDay(date)
       this.selectedDay = moment(date).date()
-      this.selectedDuration = Math.round(this.rangeInfo.details[date].remaining_hours, 2)
+      this.selectedDuration = Math.round(this.rangeInfo.details[date].remaining_hours * 100) / 100
     },
 
     editStandby: function(date) {
@@ -288,6 +288,7 @@ export default {
 
     addPerformance: function(date) {
       this.selectDay(date)
+      this.selectedPerformance = null
       this.$refs.performanceModal.show()
     },
 

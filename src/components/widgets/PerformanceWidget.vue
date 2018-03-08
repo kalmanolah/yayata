@@ -94,7 +94,7 @@ export default {
         this.model.contract = this.performance.contract.id
         this.model.timesheet = this.performance.timesheet
         this.model.day = this.performance.day
-        this.model.duration = Number(this.performance.duration)
+        this.model.duration = this.performance.duration
         this.model.description = this.performance.description
       } else {
         this.model.id = null
@@ -103,10 +103,11 @@ export default {
         this.model.contract = store.getters.my_active_contracts[0].id
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.day = this.day ? this.day : moment().date()
-        this.model.duration = this.duration ? Number(this.duration) : 1
+        this.model.duration = this.duration ? this.duration : 1
         this.model.description = null
       }
 
+      this.model.duration = (Math.round(this.model.duration * 100) / 100).toString()
     },
 
     remove: function() {
@@ -128,14 +129,48 @@ export default {
       });
     },
 
+    validate: function() {
+      // Process duration
+      if (
+        !this.model.duration ||
+        !(/^([0-9](?:(?::[0-9]{2})?(?:[\.,][0-9]{1,2})?)?)$/gm.test(this.model.duration))
+      ) {
+        this.showDangerToast('Invalid duration provided.')
+        return false
+      }
+
+      return true
+    },
+
+    transformDuration: function(duration) {
+      // Replace all commas with decimal points
+      duration = duration.replace(',', '.')
+
+      // If the duration contains a colon, split the duration on the colon and convert the minute part from base60
+      if (duration.indexOf(':') > -1) {
+        let duration_parts = duration.split(':')
+        duration = `${duration_parts[0]}.${Math.round(duration_parts[1] / 0.6)}`
+      }
+
+      // Parse duration as a number
+      duration = Number(duration)
+
+      // Round duration to two decimals
+      duration = Math.round(duration * 100) / 100
+
+      return duration
+    },
+
     submit: function() {
       if (this.loading) return
+      if (!this.validate()) return
+
       this.loading = true
 
       let body = {
         timesheet: this.model.timesheet,
         day: this.model.day,
-        duration: this.model.duration,
+        duration: this.transformDuration(this.model.duration),
         description: this.model.description,
         performance_type: this.model.performance_type,
         contract: this.model.contract,
@@ -225,14 +260,13 @@ export default {
           },
           {
             type: "input",
-            inputType: "number",
+            inputType: "text",
             label: "Duration",
             model: "duration",
             required: true,
-            min: 0,
-            max: 24,
-            validator: VueFormGenerator.validators.number,
-            styleClasses: ['half-width']
+            pattern: '^([0-9](?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
+            validator: VueFormGenerator.validators.string,
+            styleClasses: ['half-width'],
           },
           {
             type: "select",

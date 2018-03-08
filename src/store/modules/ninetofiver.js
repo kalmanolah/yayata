@@ -466,9 +466,9 @@ const actions = {
             options.params = {}
         }
 
-        if (!options.params.page_size) {
-            options.params.page_size = 250
-        }
+        // if (!options.params.page_size) {
+        //     options.params.page_size = 250
+        // }
 
         if (options.full === undefined) {
             options.full = true
