@@ -7,10 +7,10 @@ div(class='row')
     div(v-if='tableData')
       v-client-table(:columns="tableColumns" :data="tableData" :options="tableOptions")
         template(slot='birth_date' slot-scope='props')
-          span(v-if='props.row.userinfo && props.row.userinfo.birth_date') {{ props.row.userinfo.birth_date | moment('DD/MM/YYYY') }}
+          span(v-if='props.row.userinfo && props.row.userinfo.birth_date') {{ props.row.userinfo.birth_date | moment('YYYY-MM-DD') }}
 
         template(slot='join_date' slot-scope='props')
-          span(v-if='props.row.userinfo && props.row.userinfo.join_date') {{ props.row.userinfo.join_date | moment('DD/MM/YYYY') }}
+          span(v-if='props.row.userinfo && props.row.userinfo.join_date') {{ props.row.userinfo.join_date | moment('YYYY-MM-DD') }}
 
         template(slot='country' slot-scope='props')
           span(v-if='props.row.userinfo && props.row.userinfo.country') {{ props.row.userinfo.country }}
