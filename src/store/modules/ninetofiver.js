@@ -447,7 +447,6 @@ const getters = {
 // actions
 const actions = {
     [types.NINETOFIVER_API_REQUEST](store, options = {}) {
-
         var oauth2State = store.rootState.oauth2
         var url = `${oauth2State.config.baseUrl}/api/v1${options.path}`
         var opts = {
@@ -467,6 +466,9 @@ const actions = {
             options.params = {}
         }
 
+        if (!options.params.page_size) {
+            options.params.page_size = 250
+        }
 
         // If we are authenticated, add the correct authorization header
         // if required
@@ -527,7 +529,6 @@ const actions = {
                     resolve(response);
                 }
             }, (response) => {
-
                 // If we get a 401, assume this is due an expired token which
                 // we should refresh before trying again
                 if (response.status == 401) {
@@ -543,9 +544,7 @@ const actions = {
                 } else {
                     reject(response)
                 }
-
             })
-
         })
     },
 
