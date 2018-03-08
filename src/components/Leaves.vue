@@ -48,7 +48,8 @@ div
             li(class='list-group-item p-2' v-for='leave in filteredLeave')
               div(class='d-flex justify-content-between')
                 div {{ leave.leave_type.display_label }}
-                div 🏖️
+                div
+                  span(class='badge' v-bind:class='{"bg-danger": leave.status == "rejected", "bg-warning": leave.status == "pending", "bg-success": leave.status == "approved"}') {{ leave.status }}
               div(v-for='leave_date in leave.leavedate_set' class='text-muted')
                 small {{ leave_date.starts_at | moment('YYYY-MM-DD, HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
               div(v-if='leave.description' class='text-muted')
