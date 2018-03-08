@@ -81,14 +81,6 @@ div
       div(class='btn-group' role='group')
         div(class='btn-group' role='group')
           button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span(v-if='filterContract') {{ filterContract.display_label }}
-            span(v-else) Contract
-          div(class='dropdown-menu')
-            a(class='dropdown-item' @click='filterByContract()') All
-            a(v-for='contract in contracts' class='dropdown-item' @click='filterByContract(contract)') {{ contract.display_label }}
-
-        div(class='btn-group' role='group')
-          button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span(v-if='filterCountry') {{ filterCountry }}
             span(v-else) Country
           div(class='dropdown-menu dropdown-menu-right')
@@ -133,7 +125,6 @@ export default {
   data() {
     return {
       filterCountry: null,
-      filterContract: null,
       showHoliday: true,
       showLeave: true,
       showNoWork: true,
@@ -164,22 +155,6 @@ export default {
 
       this.countries.sort()
     })
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.contract_users) {
-        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    })
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    })
   },
 
   computed: {
@@ -193,27 +168,7 @@ export default {
           })
         }
 
-        if (this.filterContract) {
-          if (store.getters.contract_users) {
-            let contract_users = store.getters.contract_users.filter(contract_user => {
-              return contract_user.contract.id = this.filterContract.id
-            })
-
-            users = users.filter(user => {
-              return contract_users.find(contract_user => {
-                return contract_user.user.id == user.id
-              })
-            })
-          }
-        }
-
         return users
-      }
-    },
-
-    contracts: function() {
-      if (store.getters.contracts) {
-        return store.getters.contracts
       }
     },
 
@@ -221,11 +176,6 @@ export default {
       if (this.date) {
         return parseInt(moment(this.date).endOf('month').format('DD'))
       }
-    },
-
-    leaveOverview: function() {
-      if(store.getters.leave_overview)
-        return store.getters.leave_overview;
     },
   },
 
@@ -278,10 +228,6 @@ export default {
 
     filterByCountry: function(country) {
       this.filterCountry = country
-    },
-
-    filterByContract: function(contract) {
-      this.filterContract = contract
     },
 
     determineCellColor: function(user, day) {
