@@ -1,21 +1,22 @@
-var path = require('path')
-var webpack = require('webpack')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
-var CopyWebpackPlugin = require('copy-webpack-plugin')
-var DashboardPlugin = require('webpack-dashboard/plugin')
+const path = require('path')
+const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-var environment = process.env.NODE_ENV
+const environment = process.env.NODE_ENV
+const isProd = environment === 'production'
+
 
 module.exports = {
   entry: {
     main: [
       './src/main.js'
+    ],
+    vendor: [
+      'lodash',
+      'moment',
+      'moment-timezone',
     ]
-  },
-  output: {
-    path: path.resolve(__dirname, './dist'),
-    // publicPath: '/dist/',
-    filename: 'build.js'
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -27,8 +28,19 @@ module.exports = {
       {
         from: './src/static'
       }
-    ])
+    ]),
+    new webpack.HashedModuleIdsPlugin(),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor'
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'manifest'
+    })
   ],
+  output: {
+    path: path.resolve(__dirname, './dist'),
+    filename: isProd ? '[name].[chunkhash].js' : '[name].[hash].js'
+  },
   module: {
     rules: [
       {
@@ -87,12 +99,6 @@ module.exports = {
     noInfo: true
   },
   devtool: '#eval-source-map'
-}
-
-if (environment !== 'production') {
-  module.exports.plugins = (module.exports.plugins || []).concat([
-    new DashboardPlugin()
-  ])
 }
 
 if (environment === 'production') {

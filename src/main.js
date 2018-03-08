@@ -6,9 +6,7 @@ import store from './store'
 import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
-import VueChartJs from 'vue-chartjs'
 import VueMarkdown from 'vue-markdown'
-import jspdf from 'jspdf'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
@@ -25,9 +23,7 @@ import Month from './components/Month.vue'
 import Week from './components/Week.vue'
 import Leaves from './components/Leaves.vue'
 import Timesheets from './components/Timesheets.vue'
-import Companies from './components/Companies.vue'
 import Colleagues from './components/Colleagues.vue'
-import Contracts from './components/Contracts.vue'
 import Import from './components/Import.vue'
 import Availability from './components/Availability.vue'
 
@@ -39,8 +35,6 @@ Vue.use(VueRouter)
 Vue.use(VueResource)
 Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
-Vue.use(VueChartJs)
-Vue.use(jspdf)
 Vue.use(ClientTable, null, null, 'bootstrap4')
 Vue.use(VueMarkdown)
 
@@ -116,16 +110,6 @@ export const router = new VueRouter({
                     name: 'timesheets',
                     path: '/timesheets',
                     component: Timesheets,
-                },
-                {
-                    name: 'companies',
-                    path: '/companies',
-                    component: Companies,
-                },
-                {
-                    name: 'contracts',
-                    path: '/contracts',
-                    component: Contracts,
                 },
                 {
                     name: 'import',

@@ -20,12 +20,13 @@ import store from '../store';
 
 export default {
   name: 'app',
+
   components: {
     navbar: Navbar,
     sidebar: Sidebar
   },
-  created: () => {
 
+  created: () => {
     //Initialize constants
     if (!store.getters.user)
       store.dispatch(types.NINETOFIVER_RELOAD_USER).then(() => {

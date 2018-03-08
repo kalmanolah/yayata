@@ -49,13 +49,14 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import _ from 'lodash';
-import RequiredPerformedDayMixin from './mixins/RequiredPerformedDayMixin.vue';
 import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'Month',
 
-  mixins: [RequiredPerformedDayMixin, ToastMixin],
+  mixins: [
+    ToastMixin,
+  ],
 
   data () {
     return {

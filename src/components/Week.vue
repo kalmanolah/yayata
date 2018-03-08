@@ -256,9 +256,11 @@ export default {
     },
 
     getTimesheetForDay: function(date) {
-      return store.getters.my_open_timesheets.filter(timesheet => {
-        return (timesheet.status == 'active') && (timesheet.year == moment(date).format('YYYY')) && (timesheet.month == moment(date).format('MM'))
-      })[0]
+      if (store.getters.my_open_timesheets) {
+        return store.getters.my_open_timesheets.filter(timesheet => {
+          return (timesheet.status == 'active') && (timesheet.year == moment(date).format('YYYY')) && (timesheet.month == moment(date).format('MM'))
+        })[0]
+      }
     },
 
     selectDay: function(date) {

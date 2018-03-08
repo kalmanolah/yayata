@@ -470,6 +470,10 @@ const actions = {
             options.params.page_size = 250
         }
 
+        if (options.full === undefined) {
+            options.full = true
+        }
+
         // If we are authenticated, add the correct authorization header
         // if required
         if (!options.anonymous) {
@@ -501,7 +505,7 @@ const actions = {
         return new Promise((resolve, reject) => {
             Vue.http(opts).then((response) => {
                 // If the results are paginated; get all pages.
-                var next = response.body.next;
+                var next = options.full && response.body.next;
                 var results = response.data.results;
 
                 function getNext(next) {

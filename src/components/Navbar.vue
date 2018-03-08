@@ -15,8 +15,6 @@ div(class='navbar navbar-light bg-light navbar-expand')
           h2 Dashboard
         router-link(:to='{ name: "timesheets" }' class='list-group-item list-group-item-action')
           h2 Timesheets
-        router-link(:to='{ name: "contracts" }' class='list-group-item list-group-item-action')
-          h2 Contracts
         router-link(:to='{ name: "leaves" }' class='list-group-item list-group-item-action')
           h2 Leaves
         router-link(:to='{ name: "colleagues_redirect" }' class='list-group-item list-group-item-action')
