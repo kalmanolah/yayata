@@ -1306,7 +1306,9 @@ const actions = {
 
     // ng
     [types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS](store, options = {}) {
-        options.path = '/my_contracts/';
+        options.path = '/my_contracts/'
+        options.params = {}
+        options.params['active'] = true
 
         return new Promise((resolve, reject) => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
