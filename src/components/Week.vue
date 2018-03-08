@@ -266,7 +266,7 @@ export default {
     selectDay: function(date) {
       this.selectedTimesheet = this.getTimesheetForDay(date)
       this.selectedDay = moment(date).date()
-      this.selectedDuration = this.rangeInfo.details[date].remaining_hours
+      this.selectedDuration = Math.round(this.rangeInfo.details[date].remaining_hours, 2)
     },
 
     editStandby: function(date) {
