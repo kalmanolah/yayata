@@ -67,8 +67,8 @@ export default {
         }
       }),
       new Promise((resolve, reject) => {
-        if (!store.getters.my_contracts) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
+        if (!store.getters.my_active_contracts) {
+          store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
         } else{
           resolve()
         }
@@ -100,7 +100,7 @@ export default {
         this.model.id = null
         this.model.performance_type = store.getters.performance_types[0].id
         this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
-        this.model.contract = store.getters.my_contracts[0].id
+        this.model.contract = store.getters.my_active_contracts[0].id
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.day = this.day ? this.day : moment().date()
         this.model.duration = this.duration ? Number(this.duration) : 1
@@ -193,8 +193,8 @@ export default {
               name: "display_label"
             },
             values: () => {
-              if (store.getters.my_contracts) {
-                return store.getters.my_contracts
+              if (store.getters.my_active_contracts) {
+                return store.getters.my_active_contracts
               }
 
               return []
@@ -245,7 +245,7 @@ export default {
             },
             values: function() {
               if (this.model.contract) {
-                let contract = store.getters.my_contracts.filter((x) => x.id == this.model.contract)[0]
+                let contract = store.getters.my_active_contracts.filter((x) => x.id == this.model.contract)[0]
 
                 if (contract.performance_types && contract.performance_types.length) {
                   return contract.performance_types

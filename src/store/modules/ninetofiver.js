@@ -92,7 +92,7 @@ const state = {
     },
 
     // ng
-    my_contracts: null,
+    my_active_contracts: null,
     my_contract_users: null,
     my_current_timesheet: null,
     my_current_month_info: null,
@@ -205,8 +205,8 @@ const mutations = {
     },
 
     // ng
-    [types.NINETOFIVER_SET_MY_CONTRACTS](state, { my_contracts }) {
-        state.my_contracts = my_contracts;
+    [types.NINETOFIVER_SET_MY_ACTIVE_CONTRACTS](state, { my_active_contracts }) {
+        state.my_active_contracts = my_active_contracts;
     },
     [types.NINETOFIVER_SET_MY_CONTRACT_USERS](state, { my_contract_users }) {
         state.my_contract_users = my_contract_users;
@@ -436,7 +436,7 @@ const getters = {
     },
 
     // ng
-    my_contracts: state => state.my_contracts,
+    my_active_contracts: state => state.my_active_contracts,
     my_contract_users: state => state.my_contract_users,
     my_current_timesheet: state => state.my_current_timesheet,
     my_current_month_info: state => state.my_current_month_info,
@@ -1305,13 +1305,13 @@ const actions = {
     },
 
     // ng
-    [types.NINETOFIVER_RELOAD_MY_CONTRACTS](store, options = {}) {
+    [types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS](store, options = {}) {
         options.path = '/my_contracts/';
 
         return new Promise((resolve, reject) => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
-                store.commit(types.NINETOFIVER_SET_MY_CONTRACTS, {
-                    my_contracts: res.data.results
+                store.commit(types.NINETOFIVER_SET_MY_ACTIVE_CONTRACTS, {
+                    my_active_contracts: res.data.results
                 });
                 resolve(res);
             }, (res) => {

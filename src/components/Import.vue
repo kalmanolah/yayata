@@ -87,8 +87,8 @@ export default {
 
   created: function() {
     new Promise((resolve, reject) => {
-      if (!store.getters.my_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
+      if (!store.getters.my_active_contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
       } else {
         resolve()
       }
@@ -125,10 +125,10 @@ export default {
     },
 
     contracts: function() {
-      if (store.getters.my_contracts) {
+      if (store.getters.my_active_contracts) {
         let contracts = {}
 
-        store.getters.my_contracts.forEach(contract => {
+        store.getters.my_active_contracts.forEach(contract => {
           contracts[contract.id] = contract
         })
 

@@ -162,8 +162,8 @@ export default {
     })
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACTS).then(() => resolve())
+      if (!store.getters.my_active_contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
       } else{
         resolve()
       }
@@ -172,8 +172,8 @@ export default {
 
   computed: {
     supportContracts: function() {
-      if (store.getters.my_contracts) {
-        return store.getters.my_contracts.filter(contract => {
+      if (store.getters.my_active_contracts) {
+        return store.getters.my_active_contracts.filter(contract => {
           return contract.type == 'SupportContract'
         })
       }
