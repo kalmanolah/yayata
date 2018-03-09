@@ -1,16 +1,16 @@
 <template lang="pug">
-div(class='card card-top-blue mb-3')
+div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
   div(class='card-header text-center') ⏳&nbsp;
     span(v-if='!model.id') Log performance
     span(v-else) Update performance
 
   div(class='card-body')
-    vue-form-generator(:schema="schema" :model="model" :options="formOptions")
+    vue-form-generator(:schema="schema" :model="model" :options="formOptions" ref='form')
 
     div(class='form-group my-0')
       div(class='row justify-content-between')
         div(class='col')
-          input(class='btn btn-primary' type="submit" value="Save" @click="submit()")
+          input(class='btn btn-primary' type="submit" value="Save" @click="submit()" ref='submitButton')
         div(class='col-auto' v-if='model.id')
           input(class='btn btn-danger' type="submit" value="Delete" @click="remove()")
 </template>
@@ -85,8 +85,17 @@ export default {
     })
   },
 
+  mounted: function() {
+    setTimeout(() => {
+      this.$refs.submitButton.focus()
+    })
+  },
+
   methods: {
     resetForm: function() {
+      let contract_field = this.schema.fields.find(f => f.model == 'contract')
+      contract_field.set = contract_field.set.bind(this)
+
       if (this.performance) {
         this.model.id = this.performance.id
         this.model.performance_type = this.performance.performance_type.id
@@ -98,9 +107,7 @@ export default {
         this.model.description = this.performance.description
       } else {
         this.model.id = null
-        this.model.performance_type = store.getters.performance_types[0].id
-        this.model.contract_role = store.getters.my_contract_users[0].contract_role.id
-        this.model.contract = store.getters.my_active_contracts[0].id
+        contract_field.set(this.model, contract_field.values.call(this)[0].id)
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.day = this.day ? this.day : moment().date()
         this.model.duration = this.duration ? this.duration : 1
@@ -161,9 +168,10 @@ export default {
       return duration
     },
 
-    submit: function() {
+    submit: function(event) {
       if (this.loading) return
       if (!this.validate()) return
+      if (event && (event.target.tagName !== 'INPUT')) return
 
       this.loading = true
 
@@ -227,7 +235,7 @@ export default {
               value: "id",
               name: "display_label"
             },
-            values: () => {
+            values: function() {
               if (store.getters.my_active_contracts) {
                 return store.getters.my_active_contracts
               }
@@ -235,7 +243,12 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['half-width']
+            styleClasses: ['half-width'],
+            set: function(model, value) {
+              this.model.contract = value
+              this.model.performance_type = this.schema.fields.find(f => f.model == 'performance_type').values.call(this)[0].id
+              this.model.contract_role = this.schema.fields.find(f => f.model == 'contract_role').values.call(this)[0].id
+            }
           },
           {
             type: "select",
@@ -247,10 +260,10 @@ export default {
               name: "display_label"
             },
             values: function() {
-              if (store.getters.my_contract_users) {
+              if (store.getters.my_contract_users && this.model.contract) {
                 return store.getters.my_contract_users
-                  .filter((x) => x.contract.id == this.model.contract)
-                  .map((x) => x.contract_role)
+                  .filter(contract_user => contract_user.contract.id == this.model.contract)
+                  .map(contract_user => contract_user.contract_role)
               }
 
               return []
@@ -278,14 +291,14 @@ export default {
               name: "display_label"
             },
             values: function() {
-              if (this.model.contract) {
-                let contract = store.getters.my_active_contracts.filter((x) => x.id == this.model.contract)[0]
+              if (store.getters.my_active_contracts && store.getters.performance_types && this.model.contract) {
+                let contract = store.getters.my_active_contracts.find(contract => contract.id == this.model.contract)
 
-                if (contract.performance_types && contract.performance_types.length) {
-                  return contract.performance_types
-                }
+                if (contract) {
+                  if (contract.performance_types && contract.performance_types.length) {
+                    return contract.performance_types
+                  }
 
-                if (store.getters.performance_types) {
                   return store.getters.performance_types
                 }
               }
