@@ -7,13 +7,6 @@ div
     div(class='col')
       div(class='btn-group' role='group')
         div(class='btn-group')
-          button(class='btn btn-outline-dark dropdown-toggle' id='btnGroupDropContract' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
-            span(v-if='contract') {{ contract.display_label }}
-            span(v-else) All contracts
-          div(class='dropdown-menu' aria-labelledby='btnGroupDropContract')
-            a(class='dropdown-item' @click='selectContract(null)') All contracts
-            a(class='dropdown-item' v-for='contract in contracts' @click='selectContract(contract)') {{ contract.display_label }}
-        div(class='btn-group')
           button(class='btn btn-outline-dark dropdown-toggle' id='btnGroupDropTimesheet' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
             span(v-if='timesheet') Timesheet: {{ timesheet.display_label }}
           div(class='dropdown-menu' aria-labelledby='btnGroupDropTimesheet')
@@ -77,7 +70,6 @@ export default {
 
   data() {
     return {
-      contract: null,
       timesheet: null,
       selectAll: false,
       performances: [],
@@ -150,13 +142,13 @@ export default {
 
         return contractUsers
       }
-    }
+    },
   },
 
   watch: {
     selectAll: function(state) {
-      this.performancesToImport.forEach((value, idx) => {
-        this.performancesToImport[idx] = state
+      this.performances.forEach((value, idx) => {
+        this.performancesToImport[idx] = !value.id ? state : false
       })
     },
 
@@ -166,10 +158,6 @@ export default {
   },
 
   methods: {
-    selectContract: function(contract) {
-      this.contract = contract
-    },
-
     selectTimesheet: function(timesheet) {
       this.timesheet = timesheet
     },
@@ -186,12 +174,6 @@ export default {
         }
       }).then((res) => {
         let performances = res.data
-
-        if (this.filterContract) {
-          performances = performances.filter(performance => {
-            return performance.contract === this.filterContract.id
-          })
-        }
 
         performances.forEach(performance => {
           performance.performance_type = this.contracts[performance.contract].performance_types[0].id
