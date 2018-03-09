@@ -436,6 +436,50 @@ const getters = {
     },
 
     // ng
+    navbar_items: state => [
+        {
+            label: 'Dashboard',
+            route: {
+                name: 'dashboard'
+            }
+        },
+        {
+            label: 'Timesheets',
+            route: {
+                name: 'timesheets'
+            }
+        },
+        {
+            label: 'Leave',
+            route: {
+                name: 'leave'
+            }
+        },
+        {
+            label: 'Colleagues',
+            route: {
+                name: 'colleagues_redirect'
+            }
+        },
+        {
+            label: 'Calendar',
+            route: {
+                name: 'calendar_redirect'
+            }
+        },
+        {
+            label: 'Availability',
+            route: {
+                name: 'availability_redirect'
+            }
+        },
+        {
+            label: 'Import',
+            route: {
+                name: 'import'
+            }
+        }
+    ],
     my_active_contracts: state => state.my_active_contracts,
     my_contract_users: state => state.my_contract_users,
     my_current_timesheet: state => state.my_current_timesheet,

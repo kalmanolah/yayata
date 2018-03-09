@@ -21,7 +21,7 @@ import AuthLogout from './components/AuthLogout.vue'
 import Dashboard from './components/Dashboard.vue'
 import Month from './components/Month.vue'
 import Week from './components/Week.vue'
-import Leaves from './components/Leaves.vue'
+import Leave from './components/Leave.vue'
 import Timesheets from './components/Timesheets.vue'
 import Colleagues from './components/Colleagues.vue'
 import Import from './components/Import.vue'
@@ -87,9 +87,9 @@ export const router = new VueRouter({
                     component: Colleagues,
                 },
                 {
-                    name: 'leaves',
-                    path: '/leaves',
-                    component: Leaves,
+                    name: 'leave',
+                    path: '/leave',
+                    component: Leave,
                 },
                 {
                     name: 'availability_redirect',

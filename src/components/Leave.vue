@@ -84,7 +84,7 @@ import ToastMixin from './mixins/ToastMixin.vue';
 
 
 export default {
-  name: 'leaves',
+  name: 'leave',
 
   mixins: [
     ToastMixin,

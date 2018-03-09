@@ -6,18 +6,8 @@ div
         img(class='img-fluid mb-4' src='../assets/img/logo_text.svg')
 
       nav(class='nav flex-column nav-pills')
-        router-link(class='nav-item nav-link' :to='{ name: "timesheets" }')
-          | Timesheets
-        router-link(class='nav-item nav-link' :to='{ name: "leaves" }')
-          | Leaves
-        router-link(class='nav-item nav-link' :to='{ name: "colleagues_redirect" }')
-          | Colleagues
-        router-link(class='nav-item nav-link' :to='{ name: "calendar_redirect" }')
-          | Calendar
-        router-link(class='nav-item nav-link' :to='{ name: "availability_redirect" }')
-          | Availability
-        router-link(class='nav-item nav-link' :to='{ name: "import" }')
-          | Import
+        router-link(v-for='navbarItem in navbarItems' :to='navbarItem.route' class='nav-item nav-link')
+          | {{ navbarItem.label }}
 
       div(class='sidebar-datepicker')
         input(type='hidden' ref='sidebar-datepicker')
@@ -60,6 +50,14 @@ export default {
   data () {
     return {
       picker: '',
+    }
+  },
+
+  computed: {
+    navbarItems: function() {
+      if (store.getters.navbar_items) {
+        return store.getters.navbar_items
+      }
     }
   }
 }
