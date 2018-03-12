@@ -70,7 +70,7 @@ export default {
               return res
             }
           },
-          join_date: function (ascending) {
+          birth_date: function (ascending) {
             return function (a, b) {
               let res = 0
 
