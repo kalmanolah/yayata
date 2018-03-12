@@ -23,25 +23,26 @@ div
       div(class='calendar-day d-none d-md-block' v-for='weekDay in weekDays') {{ weekDay }}
       div(class='calendar-day d-none d-md-block' v-for='n in dayOffset')
 
-      div(
-        class='calendar-day'
-        v-for='(dayDetails, date) in sortByKey(rangeInfo.details)'
-        v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
-      )
-        router-link(:to='{name: "calendar_week", params: { year: getYear(date), week: getWeek(date) } }')
-          div(class='card' :id='"calendar-day-" + date')
-            div(class='card-body')
-              h5(class='card-title row justify-content-between')
-                span(class='col') {{ date | moment('D') }}
+      template(v-for='(dayDetails, date) in sortByKey(rangeInfo.details)')
+        div(v-bind:class='{"clearfix": getDayOfWeek(date) == 0}')
+          div(
+            class='calendar-day'
+            v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
+          )
+            router-link(:to='{name: "calendar_week", params: { year: getYear(date), week: getWeek(date) } }')
+              div(class='card' :id='"calendar-day-" + date')
+                div(class='card-body')
+                  h5(class='card-title row justify-content-between')
+                    span(class='col') {{ date | moment('D') }}
 
-                span(class='col-auto')
-                  small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
-                  small(v-if='dayDetails.leave_hours' v-b-tooltip title="Leave") 🏖️
+                    span(class='col-auto')
+                      small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
+                      small(v-if='dayDetails.leave_hours' v-b-tooltip title="Leave") 🏖️
 
-              div(class='card-text text-right')
-                small
-                  strong {{ dayDetails.total_hours | round }}
-                  | &nbsp;/ {{ dayDetails.work_hours | round }} hours
+                  div(class='card-text text-right')
+                    small
+                      strong {{ dayDetails.total_hours | round }}
+                      | &nbsp;/ {{ dayDetails.work_hours | round }} hours
 </template>
 
 <script>
@@ -137,8 +138,8 @@ export default {
       })
     },
 
-    getDayOfWeek: function(day) {
-      return (this.dayOffset + day) % 7
+    getDayOfWeek: function(val) {
+      return moment(val).format('d')
     },
 
     isCurrentDay: function(val) {
