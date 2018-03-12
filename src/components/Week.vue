@@ -67,6 +67,7 @@ div
                 div 🌐
 
           ul(class='list-group list-group-flush')
+            //- Approved leave for range info details
             li(class='list-group-item p-2' v-for='leave in dayDetails.leaves')
               div(class='d-flex justify-content-between')
                 div {{ leave.leave_type.display_label }}
@@ -75,6 +76,17 @@ div
                 small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
               div(v-if='leave.description' class='text-muted')
                 small {{ leave.description }}
+
+            //- Pending leave, fetched separately
+            template(v-for='leave in pendingLeave' v-if='pendingLeave')
+              li(class='list-group-item p-2' v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)')
+                div(class='d-flex justify-content-between')
+                  div {{ leave.leave_type.display_label }}
+                  div(v-b-tooltip title='Pending approval') ❓🏖️
+                div(class='text-muted')
+                  small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+                div(v-if='leave.description' class='text-muted')
+                  small {{ leave.description }}
 
           ul(class='list-group list-group-flush')
             li(
@@ -134,6 +146,7 @@ export default {
       date: null,
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
       rangeInfo: null,
+      pendingLeave: null,
       selectedPerformance: null,
       selectedStandby: null,
       selectedTimesheet: null,
@@ -236,6 +249,17 @@ export default {
         }
       }).then(res => {
         this.rangeInfo = res.data
+      })
+
+      // Reload pending leave
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_leaves/',
+        params: {
+          'leavedate__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`,
+          'status': 'pending'
+        }
+      }).then(res => {
+        this.pendingLeave = res.data.results
       })
     },
 
