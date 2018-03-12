@@ -55,7 +55,8 @@ export default {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/users/',
         params: {
-          userinfo__birth_date: this.selectedDay.format('YYYY-MM-DD')
+          userinfo__birth_date__month: this.selectedDay.format('MM'),
+          userinfo__birth_date__day: this.selectedDay.format('DD')
         }
       }).then((res) => {
         this.birthdays = res.data.results
