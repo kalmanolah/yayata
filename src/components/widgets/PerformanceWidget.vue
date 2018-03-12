@@ -274,7 +274,7 @@ export default {
           {
             type: "input",
             inputType: "text",
-            label: "Duration",
+            label: "Duration (hours)",
             model: "duration",
             required: true,
             pattern: '^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
