@@ -3,12 +3,12 @@ div(
   id='app'
   class='container-fluid p-0'
 )
-  div(class='row no-gutters application-wrapper')
-    sidebar(class='col-auto d-none d-md-block')
+  div(class='application-wrapper')
+    sidebar(class='application-sidebar d-none d-md-block')
 
-    div(class='col')
+    div(class='application-main')
       navbar
-      div(class='container-fluid main-app')
+      div(class='container-fluid application-content')
         router-view(class='py-3' v-if='user')
 </template>
 
@@ -68,7 +68,6 @@ export default {
 </script>
 
 <style lang="less">
-@datepickerHeight: 228px;
 @sidebar-width: 250px;
 @background-color: #FFF;
 @primary-color: #0aa6c9;
@@ -82,24 +81,22 @@ export default {
 }
 
 .application-wrapper {
-    height: 100vh;
-}
+  height: 100vh;
 
-.main-app {
-}
+  @media all and (min-width: 768px) {
+    .application-main {
+      margin-left: @sidebar-width;
+    }
+  }
 
-.logo{
-  margin: 0 auto;
-  display: block;
-  max-width: 150px;
-  overflow: hidden;
-  padding-bottom: 30px;
+  .application-sidebar {
+    width: @sidebar-width;
+  }
 }
 
 .card-top-blue{
   border-top: solid 3px @primary-color;
 }
-
 .card-top-red{
   border-top: solid 3px #FA5858;
 }
@@ -107,61 +104,14 @@ export default {
   border-top: solid 3px #60C200;
 }
 
-.card-columns {
-  margin-top: 1rem;
-}
-.navbar-yayata{
-  border-radius: 0;
-  background: #f3f0f0;
-}
-
-.card-shadow{
-  box-shadow: rgba(0,0,0,.29) 0 0 4px 0;
-}
-
-.fixed {
-  position: fixed;
-}
-
-.wrapper{
-  position: relative;
-}
-
-.bottom {
-  position: absolute;
-  bottom: 0;
-}
-
-#container {
-  margin-left: .5rem;
-}
-
-.pika-single {
-  height: @datepickerHeight;
-  border: 0;
-}
-
-#container>.pika-single>.pika-lendar {
-  width: 100%;
-}
-
-.sidebar-wrapper {
-    z-index: 1000;
-    position: fixed;
-    left: @sidebar-width;
-    width: @sidebar-width;
-    height: 100%;
-    margin-left: -@sidebar-width;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 a {
   color: @primary-color;
-}
-a:hover {
-  color: @primary-color;
 
+  &:hover {
+    color: darken(@primary-color, 5%);
+  }
 }
+
 .dropdown-menu {
   max-height: 70vh;
   overflow: auto;

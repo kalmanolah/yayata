@@ -65,6 +65,7 @@ export default {
 
 <style lang="less">
 @sidebar-width: 230px;
+@datepicker-height: 228px;
 
 .sidebar {
   width: @sidebar-width;
@@ -89,6 +90,11 @@ export default {
 
     .pika-lendar {
       width: auto;
+    }
+
+    .pika-single {
+      height: @datepicker-height;
+      border: 0;
     }
   }
 }
