@@ -3,6 +3,7 @@ div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
   div(class='card-header text-center') ⏳&nbsp;
     span(v-if='!model.id') Log performance
     span(v-else) Update performance
+    span(v-if='date') &nbsp;for {{ date | moment('MMMM Do') }}
 
   div(class='card-body')
     vue-form-generator(:schema="schema" :model="model" :options="formOptions" ref='form')
@@ -115,6 +116,7 @@ export default {
       }
 
       this.model.duration = (Math.round(this.model.duration * 100) / 100).toString()
+      this.date = this.timesheet ? moment().year(this.timesheet.year).month(this.timesheet.month - 1).date(this.model.day) : null
     },
 
     remove: function() {
@@ -221,6 +223,7 @@ export default {
   data: () => {
     return {
       loading: false,
+      date: null,
 
       model: model,
 

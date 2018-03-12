@@ -6,7 +6,7 @@ div
 
   div(class='row')
     div(class='col-xl-6')
-      PerformanceWidget
+      PerformanceWidget(v-if='timesheet' :timesheet='timesheet')
       TimesheetWidget(v-if='timesheet' :timesheet='timesheet' v-on:submit='reloadCurrentTimesheet')
 
     div(class='col-xl-6')
