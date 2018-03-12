@@ -94,7 +94,7 @@ div
       thead
         tr
           th Name
-          th(class='cell text-center' v-for='day in daysInMonth') {{ day }}
+          th(class='cell text-center' v-for='day in daysInMonth' v-bind:class='determineCellColor(day)') {{ day }}
           th(class='cell cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
       tbody
         tr(v-for='user in users')
@@ -102,7 +102,7 @@ div
             router-link(:to='{ name: "colleagues", params: { userId: user.id }}')
               | {{ user.display_label }}
               small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
-          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(user, day)') &nbsp;
+          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(day, user)') &nbsp;
           td(class='cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
 </template>
 
@@ -132,6 +132,7 @@ export default {
       showSickness: true,
       countries: [],
       date: null,
+      today: moment(),
       availability: null
     }
   },
@@ -230,67 +231,72 @@ export default {
       this.filterCountry = country
     },
 
-    determineCellColor: function(user, day) {
+    determineCellColor: function(day, user) {
       let date = moment(this.date).date(day).format('YYYY-MM-DD')
+      let cls = []
 
-      if (this.availability) {
-        if (this.showSickness) {
-          if (this.availability['sickness'][user.id].find(d => d == date))
-            return 'cell-sickness'
-        }
-
-        if (this.showLeave) {
-          if (this.availability['leave'][user.id].find(d => d == date))
-            return 'cell-leave'
-        }
-
-        if (this.showHomeWork) {
-          if (this.availability['home_work'][user.id].find(d => d == date))
-            return 'cell-homework'
-        }
-
-        if (this.showHoliday) {
-          if (this.availability['holiday'][user.id].find(d => d == date))
-            return 'cell-holiday'
-        }
-
-        if (this.showNoWork) {
-          if (this.availability['no_work'][user.id].find(d => d == date))
-            return 'cell-nowork'
-        }
-
-        return ''
+      if (date == this.today.format('YYYY-MM-DD')) {
+        cls.push('cell-today')
       }
+
+      if (user && this.availability) {
+        if (this.showSickness && this.availability['sickness'][user.id].find(d => d == date)) {
+          cls.push('cell-sickness')
+        } else if (this.showLeave && this.availability['leave'][user.id].find(d => d == date)) {
+          cls.push('cell-leave')
+        } else if (this.showHomeWork && this.availability['home_work'][user.id].find(d => d == date)) {
+          cls.push('cell-homework')
+        } else if (this.showHoliday && this.availability['holiday'][user.id].find(d => d == date)) {
+          cls.push('cell-holiday')
+        } else if (this.showNoWork && this.availability['no_work'][user.id].find(d => d == date)) {
+          cls.push('cell-nowork')
+        }
+      }
+
+      return cls.join(' ')
     },
   },
 }
 </script>
 
 <style lang='less' scoped>
-@danger: #ff4444;
-@warning: #ffbb33;
-@info: #59b8e6;
-@success: #00c851;
-@neutral: #9e9d9d;
-@invalid: #222222;
+@today: #333333;
+@sickness: #ff4444;
+@holiday: #59b8e6;
+@leave: #00c851;
+@nowork: #9e9d9d;
+@homework: #ffbb33;
 
 .cell {
   width: 2.5%
 }
+.cell-today {
+  border-left: 2px solid @today;
+  border-right: 2px solid @today;
+}
+thead tr .cell-today {
+  border-top: 2px solid @today;
+  border-bottom: 2px solid @today;
+  background-color: @today;
+  color: #f9f9f9;
+}
+tbody tr:last-child .cell-today {
+  border-bottom: 2px solid @today;
+}
 .cell-homework {
-  background-color: @warning;
+  background-color: @homework;
 }
 .cell-holiday {
-  background-color: @info;
+  background-color: @holiday;
 }
 .cell-sickness {
-  background-color: @danger;
+  background-color: @sickness;
 }
 .cell-leave {
-  background-color: @success;
+  background-color: @leave;
 }
 .cell-nowork {
-  background-color: @neutral;
+  background-color: @nowork;
 }
 .cell-na {
   background: repeating-linear-gradient(
