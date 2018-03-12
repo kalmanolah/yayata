@@ -67,8 +67,8 @@ export default {
         }
       }),
       new Promise((resolve, reject) => {
-        if (!store.getters.user_work_schedule) {
-          store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE).then(() => resolve())
+        if (!store.getters.my_current_work_schedule) {
+          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_WORK_SCHEDULE).then(() => resolve())
         } else{
           resolve()
         }
@@ -96,9 +96,9 @@ export default {
       this.model.attachments = []
       this.model.multiple_days = false
 
-      if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.user_work_schedule) {
+      if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.my_current_work_schedule) {
         let dow_prop = this.model.date.format('dddd').toLowerCase()
-        let dow_work = store.getters.user_work_schedule[dow_prop]
+        let dow_work = store.getters.my_current_work_schedule[dow_prop]
 
         let hours = Math.floor(dow_work)
         let minutes = Math.round((dow_work % 1) * 60)

@@ -223,6 +223,9 @@ const mutations = {
     [types.NINETOFIVER_SET_MY_IMPORTABLE_PERFORMANCES](state, { my_importable_performances }) {
         state.my_importable_performances = my_importable_performances;
     },
+    [types.NINETOFIVER_SET_MY_CURRENT_WORK_SCHEDULE](state, { my_current_work_schedule }) {
+        state.my_current_work_schedule = my_current_work_schedule;
+    },
 }
 
 // getters
@@ -486,6 +489,7 @@ const getters = {
     my_current_month_info: state => state.my_current_month_info,
     my_open_timesheets: state => state.my_open_timesheets,
     my_importable_performances: state => state.my_importable_performances,
+    my_current_work_schedule: state => state.my_current_work_schedule,
 }
 
 // actions
@@ -623,20 +627,13 @@ const actions = {
         })
     },
     [types.NINETOFIVER_RELOAD_USER](store, options = {}) {
-
         options.path = '/services/my_user/';
 
         return new Promise((resolve, reject) => {
-            store.dispatch(
-                types.NINETOFIVER_API_REQUEST,
-                options
-            ).then((res) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
                 store.commit(types.NINETOFIVER_SET_USER, {
                     user: res.data
-                });
-                store.dispatch(types.NINETOFIVER_RELOAD_USER_WORK_SCHEDULE, {
-                    user: res.data.id
-                });
+                })
                 resolve(res)
             }, (res) => {
                 reject(res)
@@ -1443,6 +1440,23 @@ const actions = {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
                 store.commit(types.NINETOFIVER_SET_MY_IMPORTABLE_PERFORMANCES, {
                     my_importable_performances: res.data
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
+
+    [types.NINETOFIVER_RELOAD_MY_CURRENT_WORK_SCHEDULE](store, options = {}) {
+        options.path = '/my_work_schedules/'
+        options.params = {}
+        options.params.current = true
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_MY_CURRENT_WORK_SCHEDULE, {
+                    my_current_work_schedule: res.data.results[0]
                 })
                 resolve(res)
             }, (res) => {

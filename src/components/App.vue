@@ -42,10 +42,6 @@ export default {
           store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
         if (!store.getters.employment_contract_types)
           store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
-        if (!store.getters.companies)
-          store.dispatch(types.NINETOFIVER_RELOAD_COMPANIES);
-        if(!store.getters.work_schedules)
-          store.dispatch(types.NINETOFIVER_RELOAD_WORK_SCHEDULES);
         date: moment()
       });
   },
