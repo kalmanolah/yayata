@@ -266,13 +266,13 @@ export default {
               position: "top left",
               firstDay: 1,
               onDraw: function(pikaday) {
+                if (!pikaday._o.minDate || (moment(pikaday._o.minDate).format('YYYY-MM-DD') != moment(model.start_date).format('YYYY-MM-DD'))) {
+                  pikaday.setMinDate(moment(model.start_date).toDate())
+                }
+
                 if ((typeof model.end_date === 'object') && !endDateSet) {
                   endDateSet = true
                   pikaday.setDate(moment(model.end_date).toDate(), true)
-                }
-
-                if (!pikaday._o.minDate || (moment(pikaday._o.minDate).format('YYYY-MM-DD') != moment(model.start_date).format('YYYY-MM-DD'))) {
-                  pikaday.setMinDate(moment(model.start_date).toDate())
                 }
               },
               onSelect: function(value) {
