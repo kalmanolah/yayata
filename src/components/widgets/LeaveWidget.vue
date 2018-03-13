@@ -240,6 +240,14 @@ export default {
                   pikaday.setDate(moment(model.start_date).toDate(), true)
                 }
               },
+              onSelect: function(value) {
+                model.start_date = moment(value)
+
+                if (moment(value).isAfter(moment(model.end_date))) {
+                  model.end_date = moment(value)
+                  endDateSet = false
+                }
+              },
             },
             // visible: function(model) {
             //   return model.multiple_days
@@ -261,6 +269,18 @@ export default {
                 if ((typeof model.end_date === 'object') && !endDateSet) {
                   endDateSet = true
                   pikaday.setDate(moment(model.end_date).toDate(), true)
+                }
+
+                if (!pikaday._o.minDate || (moment(pikaday._o.minDate).format('YYYY-MM-DD') != moment(model.start_date).format('YYYY-MM-DD'))) {
+                  pikaday.setMinDate(moment(model.start_date).toDate())
+                }
+              },
+              onSelect: function(value) {
+                model.end_date = moment(value)
+
+                if (moment(value).isBefore(moment(model.start_date))) {
+                  model.start_date = moment(value)
+                  startDateSet = false
                 }
               },
             },
