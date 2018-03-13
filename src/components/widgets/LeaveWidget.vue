@@ -47,6 +47,9 @@ var model = {
   multiple_days: false
 }
 var submit = null
+var dateSet = false
+var startDateSet = false
+var endDateSet = false
 
 export default {
   name: 'LeaveWidget',
@@ -110,6 +113,10 @@ export default {
       } else {
         this.model.until_time = '17:00'
       }
+
+      dateSet = false
+      startDateSet = false
+      endDateSet = false
     },
 
     submit: function() {
@@ -226,7 +233,13 @@ export default {
             ],
             pikadayOptions: {
               position: "top left",
-              firstDay: 1
+              firstDay: 1,
+              onDraw: function(pikaday) {
+                if ((typeof model.start_date === 'object') && !startDateSet) {
+                  startDateSet = true
+                  pikaday.setDate(moment(model.start_date).toDate(), true)
+                }
+              },
             },
             // visible: function(model) {
             //   return model.multiple_days
@@ -243,7 +256,13 @@ export default {
             ],
             pikadayOptions: {
               position: "top left",
-              firstDay: 1
+              firstDay: 1,
+              onDraw: function(pikaday) {
+                if ((typeof model.end_date === 'object') && !endDateSet) {
+                  endDateSet = true
+                  pikaday.setDate(moment(model.end_date).toDate(), true)
+                }
+              },
             },
             // visible: function(model) {
             //   return model.multiple_days
@@ -260,7 +279,13 @@ export default {
             ],
             pikadayOptions: {
               position: "top left",
-              firstDay: 1
+              firstDay: 1,
+              onDraw: function(pikaday) {
+                if ((typeof model.date === 'object') && !dateSet) {
+                  dateSet = true
+                  pikaday.setDate(moment(model.date).toDate(), true)
+                }
+              },
             },
             // visible: function(model) {
             //   return !model.multiple_days
