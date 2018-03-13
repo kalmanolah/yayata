@@ -230,13 +230,16 @@ export default {
       schema: {
         fields: [
           {
-            type: "select",
+            type: "vueMultiSelect",
             label: "Contract",
             model: "contract",
             required: true,
             selectOptions: {
-              value: "id",
-              name: "display_label"
+              key: "id",
+              label: "display_label",
+              trackBy: 'id',
+              showLabels: false,
+              allowEmpty: false
             },
             values: function() {
               if (store.getters.my_active_contracts) {
@@ -247,8 +250,13 @@ export default {
             },
             validator: VueFormGenerator.validators.required,
             styleClasses: ['half-width'],
+            get: function() {
+              if (store.getters.my_active_contracts) {
+                return store.getters.my_active_contracts.find(contract => contract.id == model.contract)
+              }
+            },
             set: function(model, value) {
-              this.model.contract = value
+              this.model.contract = value.id ? value.id : value
               this.model.performance_type = this.schema.fields.find(f => f.model == 'performance_type').values.call(this)[0].id
               this.model.contract_role = this.schema.fields.find(f => f.model == 'contract_role').values.call(this)[0].id
             }

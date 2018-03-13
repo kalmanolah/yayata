@@ -17,6 +17,7 @@ module.exports = {
       'lodash',
       'moment',
       'moment-timezone',
+      'vue-multiselect',
     ]
   },
   plugins: [

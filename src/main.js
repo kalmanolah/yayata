@@ -14,6 +14,11 @@ import Toast from 'vue-easy-toast'
 // import {ServerTable, ClientTable, Event} from 'vue-tables-2'
 import { ClientTable } from 'vue-tables-2'
 
+// VueMultiSelect
+import 'vue-multiselect/dist/vue-multiselect.min.css'
+import './assets/less/vue-multiselect.less'
+import VueMultiselect from 'vue-multiselect'
+
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
 import AuthLogin from './components/AuthLogin.vue'
@@ -37,6 +42,7 @@ Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
 Vue.use(ClientTable, null, null, 'bootstrap4')
 Vue.use(VueMarkdown)
+Vue.component('multiselect', VueMultiselect)
 
 export const cfg_file_path = '/cfg/config.json'
 
