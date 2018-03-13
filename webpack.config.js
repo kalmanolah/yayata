@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 const environment = process.env.NODE_ENV
 const isProd = environment === 'production'
@@ -17,7 +18,21 @@ module.exports = {
       'lodash',
       'moment',
       'moment-timezone',
+      'file-saver',
+      'toastr',
+      'vue',
+      'vue-router',
+      'vue-resource',
+      'vue-moment',
+      'vue-markdown',
       'vue-multiselect',
+      'vue-form-generator',
+      'vue-tables-2',
+      'vue-js-toggle-button',
+      'vuex',
+      'vuex-persistedstate',
+      'vuex-router-sync',
+      'bootstrap-vue',
     ]
   },
   plugins: [
@@ -102,6 +117,14 @@ module.exports = {
     noInfo: true
   },
   devtool: '#eval-source-map'
+}
+
+if (environment !== 'production') {
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new BundleAnalyzerPlugin({
+      openAnalyzer: false
+    })
+  ])
 }
 
 if (environment === 'production') {

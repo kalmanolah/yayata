@@ -10,7 +10,6 @@ import VueMarkdown from 'vue-markdown'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
-import Toast from 'vue-easy-toast'
 // import {ServerTable, ClientTable, Event} from 'vue-tables-2'
 import { ClientTable } from 'vue-tables-2'
 
@@ -18,6 +17,10 @@ import { ClientTable } from 'vue-tables-2'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import './assets/less/vue-multiselect.less'
 import VueMultiselect from 'vue-multiselect'
+
+// toastr
+import toastr from 'toastr'
+import 'toastr/build/toastr.min.css'
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -33,7 +36,6 @@ import Import from './components/Import.vue'
 import Availability from './components/Availability.vue'
 
 // Vue.use(Vuex)
-Vue.use(Toast)
 Vue.use(ToggleButton)
 Vue.use(BootstrapVue)
 Vue.use(VueRouter)
@@ -43,6 +45,13 @@ Vue.use(VueFormGenerator)
 Vue.use(ClientTable, null, null, 'bootstrap4')
 Vue.use(VueMarkdown)
 Vue.component('multiselect', VueMultiselect)
+
+// Global toast options
+toastr.options = {
+  closeButton: true,
+  progressBar: true,
+  positionClass: "toast-bottom-right",
+}
 
 export const cfg_file_path = '/cfg/config.json'
 

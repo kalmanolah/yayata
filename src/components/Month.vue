@@ -50,13 +50,11 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import _ from 'lodash';
-import ToastMixin from './mixins/ToastMixin.vue';
 
 export default {
   name: 'Month',
 
   mixins: [
-    ToastMixin,
   ],
 
   data () {

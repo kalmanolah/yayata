@@ -19,9 +19,9 @@ div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
+import toastr from 'toastr';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
-import ToastMixin from '../mixins/ToastMixin.vue';
 
 var model = {
   id: null,
@@ -39,7 +39,6 @@ export default {
   name: 'PerformanceWidget',
 
   mixins: [
-    ToastMixin
   ],
 
   props: [
@@ -128,12 +127,12 @@ export default {
           method: 'DELETE',
       }).then((response) => {
         this.$emit('success', response)
-        this.showSuccessToast('Performance deleted.')
+        toastr.success('Performance deleted.')
         this.loading = false
         this.resetForm()
       }).catch((error) => {
         this.$emit('error', error)
-        this.showDangerToast('Error deleting performance.')
+        toastr.error('Error deleting performance.')
         this.loading = false
       });
     },
@@ -144,7 +143,7 @@ export default {
         !this.model.duration ||
         !(/^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\.,][0-9]{1,2})?)?)$/gm.test(this.model.duration))
       ) {
-        this.showDangerToast('Invalid duration provided.')
+        toastr.error('Invalid duration provided.')
         return false
       }
 
@@ -194,12 +193,12 @@ export default {
             body: body,
         }).then((response) => {
           this.$emit('success', response)
-          this.showSuccessToast('Performance logged.')
+          toastr.success('Performance logged.')
           this.loading = false
           this.resetForm()
         }).catch((error) => {
           this.$emit('error', error)
-          this.showDangerToast('Error saving performance.')
+          toastr.errro('Error saving performance.')
           this.loading = false
         });
       } else {
@@ -209,11 +208,11 @@ export default {
             body: body,
         }).then((response) => {
           this.$emit('success', response)
-          this.showSuccessToast('Performance updated.')
+          toastr.success('Performance updated.')
           this.loading = false
         }).catch((error) => {
           this.$emit('error', error)
-          this.showDangerToast('Error updating performance.')
+          toastr.errro('Error updating performance.')
           this.loading = false
         });
       }

@@ -80,14 +80,13 @@ div
 import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment-timezone';
-import ToastMixin from './mixins/ToastMixin.vue';
+import toastr from 'toastr';
 
 
 export default {
   name: 'leave',
 
   mixins: [
-    ToastMixin,
   ],
 
   data () {
@@ -179,7 +178,7 @@ export default {
         path: `/my_leaves/${leave.id}/`,
         method: 'DELETE'
       }).then((res) => {
-        this.showSuccessToast('Leave deleted.')
+        toastr.success('Leave deleted.')
         this.reloadData()
       })
     },

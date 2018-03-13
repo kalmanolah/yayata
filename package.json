@@ -30,8 +30,8 @@
         "pug": "^2.0.0-rc.3",
         "pug-loader": "^2.3.0",
         "style-loader": "^0.20.2",
+        "toastr": "^2.1.4",
         "vue-clickaway": "^2.1.0",
-        "vue-easy-toast": "^1.0.1",
         "vue-form-generator": "^2.0.0-beta6",
         "vue-js-toggle-button": "^1.0.5",
         "vue-loader": "^9.9.5",
@@ -45,6 +45,7 @@
         "vuex-persistedstate": "^0.3.0",
         "vuex-router-sync": "^3.0.0",
         "webpack": "^2.1.0-beta.28",
+        "webpack-bundle-analyzer": "^2.11.1",
         "webpack-dev-server": "^2.7.1"
     }
 }

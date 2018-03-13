@@ -30,9 +30,9 @@ div(class='card card-top-blue mb-3')
 <script>
 import moment from 'moment-timezone';
 import VueFormGenerator from 'vue-form-generator';
+import toastr from 'toastr';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
-import ToastMixin from '../mixins/ToastMixin.vue';
 
 var model = {
   id: null,
@@ -55,7 +55,6 @@ export default {
   name: 'LeaveWidget',
 
   mixins: [
-    ToastMixin
   ],
 
   created: function() {
@@ -191,18 +190,18 @@ export default {
             }
           }).then(() => {
             this.$emit('success', response)
-            this.showSuccessToast('Leave requested.')
+            toastr.success('Leave requested.')
             this.loading = false
             this.resetForm()
           })
         }).catch((error) => {
           this.$emit('error', error)
-          this.showDangerToast('Error requesting leave.')
+          toastr.error('Error requesting leave.')
 
           try {
             for (var key in error.data) {
               error.data[key].forEach((err) => {
-                this.showDangerToast(err.message)
+                toastr.error(err.message)
               })
             }
           } catch(err) {}

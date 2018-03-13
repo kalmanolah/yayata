@@ -15,9 +15,9 @@ div(class='card card-top-blue mb-3')
 <script>
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
+import toastr from 'toastr';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
-import ToastMixin from '../mixins/ToastMixin.vue';
 
 var model = {
   day: null,
@@ -31,7 +31,6 @@ export default {
   name: 'StandbyWidget',
 
   mixins: [
-    ToastMixin
   ],
 
   props: [
@@ -123,13 +122,13 @@ export default {
           })
         })).then(response => {
           this.$emit('success', response)
-          this.showSuccessToast('Performances updated.')
+          toastr.success('Performances updated.')
           this.loading = false
           this.resetForm()
         })
       }).catch((error) => {
         this.$emit('error', error)
-        this.showDangerToast('Error updating performances.')
+        toastr.error('Error updating performances.')
         this.loading = false
       })
     },

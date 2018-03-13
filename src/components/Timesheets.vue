@@ -9,48 +9,42 @@ div(class='row')
 </template>
 
 <script>
-  import { mapState } from 'vuex';
-  import * as FileSaver from 'file-saver';
-  import store from '../store';
-  import * as types from '../store/mutation-types';
-  import ToastMixin from './mixins/ToastMixin.vue';
-  import TimesheetWidget from './widgets/TimesheetWidget.vue';
+import * as FileSaver from 'file-saver';
+import store from '../store';
+import * as types from '../store/mutation-types';
+import TimesheetWidget from './widgets/TimesheetWidget.vue';
 
-  export default {
-    name: 'timesheets',
+export default {
+  name: 'timesheets',
 
-    mixins: [
-      ToastMixin,
-    ],
+  mixins: [
+  ],
 
-    components: {
-      TimesheetWidget,
-    },
+  components: {
+    TimesheetWidget,
+  },
 
-    created: function() {
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_open_timesheets) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
-        } else{
-          resolve()
-        }
-      })
-    },
-
-    computed: {
-      timesheets: () => store.getters.my_open_timesheets,
-    },
-
-    methods: {
-      reloadTimesheets: () => {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS)
+  created: function() {
+    new Promise((resolve, reject) => {
+      if (!store.getters.my_open_timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
+      } else{
+        resolve()
       }
+    })
+  },
+
+  computed: {
+    timesheets: () => store.getters.my_open_timesheets,
+  },
+
+  methods: {
+    reloadTimesheets: () => {
+      store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS)
     }
   }
+}
 </script>
 
 <style>
-/* .month-link {
-  cursor: pointer;
-} */
 </style>

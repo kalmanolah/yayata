@@ -54,14 +54,12 @@ div
 import store from '../store';
 import moment from 'moment';
 import * as types from '../store/mutation-types'
-import ToastMixin from './mixins/ToastMixin.vue';
 import VueMarkdown from 'vue-markdown'
 
 export default {
   name: 'import',
 
   mixins: [
-    ToastMixin,
   ],
 
   components: {
