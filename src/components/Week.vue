@@ -27,7 +27,7 @@ div
 
   hr
 
-  b-modal(ref='performanceModal' hide-header=true hide-footer=true lazy=true)
+  b-modal(ref='performanceModal' hide-header=true hide-footer=true lazy=true size='lg')
     PerformanceWidget(
       :performance='selectedPerformance'
       :day='selectedDay'
@@ -36,7 +36,7 @@ div
       v-on:success='onPerformanceModified()'
     )
 
-  b-modal(ref='standbyModal' hide-header=true hide-footer=true lazy=true)
+  b-modal(ref='standbyModal' hide-header=true hide-footer=true lazy=true size='lg')
     StandbyWidget(
       :day='selectedDay'
       :timesheet='selectedTimesheet'
