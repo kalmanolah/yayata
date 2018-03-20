@@ -5,7 +5,6 @@ import * as types from '../mutation-types'
 const state = {
   config: {
     clientId: null,
-    clientSecret: null,
     baseUrl: null,
   },
   token: {
@@ -19,10 +18,9 @@ const state = {
 
 // mutations
 const mutations = {
-  [types.OAUTH2_CONFIGURE] (state, { baseUrl, clientId, clientSecret }) {
+  [types.OAUTH2_CONFIGURE] (state, { baseUrl, clientId }) {
     state.config.baseUrl = baseUrl
     state.config.clientId = clientId
-    state.config.clientSecret = clientSecret
   },
 
   [types.OAUTH2_SET_TOKEN] (state, { accessToken, refreshToken, tokenType, expiresIn }) {
@@ -54,7 +52,6 @@ const actions = {
       Vue.http.post(store.state.config.baseUrl + '/oauth/v2/token/', {
         grant_type: 'password',
         client_id: store.state.config.clientId,
-        client_secret: store.state.config.clientSecret,
         username: username,
         password: password,
       }, {
@@ -79,7 +76,6 @@ const actions = {
       Vue.http.post(store.state.config.baseUrl + '/oauth/v2/token/', {
         grant_type: 'refresh_token',
         client_id: store.state.config.clientId,
-        client_secret: store.state.config.clientSecret,
         refresh_token: store.state.token.refreshToken,
       }, {
         emulateJSON: true,
