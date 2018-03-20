@@ -869,15 +869,12 @@ const actions = {
     },
 
     [types.NINETOFIVER_RELOAD_USERS](store, options = {}) {
-
         options.path = '/users/';
-        if (!options.params) {
-            options.params = {
-                order_by: 'first_name',
-                is_active: true
-            }
+        options.params = {
+            order_by: 'first_name,last_name',
+            is_active: true,
+            page_size: 250
         }
-        options.params.is_active = true;
 
         return new Promise((resolve, reject) => {
             store.dispatch(
@@ -888,7 +885,6 @@ const actions = {
                     users: res.data.results
                 });
                 resolve(res);
-
             }, (res) => {
                 reject(res);
             })
