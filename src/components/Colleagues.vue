@@ -14,6 +14,9 @@ div(class='row')
 
         template(slot='country' slot-scope='props')
           span(v-if='props.row.userinfo && props.row.userinfo.country') {{ props.row.userinfo.country }}
+
+        template(slot='phone_number' slot-scope='props')
+          span(v-if='props.row.userinfo && props.row.userinfo.phone_number') {{ props.row.userinfo.phone_number }}
 </template>
 
 <script>
@@ -35,6 +38,7 @@ export default {
         'birth_date',
         'country',
         'join_date',
+        'phone_number',
       ],
       tableOptions: {
         headings: {
@@ -107,7 +111,26 @@ export default {
 
               return res
             }
-          }
+          },
+          phone_number: function (ascending) {
+            return function (a, b) {
+              let res = 0
+
+              if (!a.userinfo || !a.userinfo.phone_number) {
+                res = -1
+              } else if (!b.userinfo || !b.userinfo.phone_number) {
+                res = 1
+              } else {
+                res = a.userinfo.phone_number < b.userinfo.phone_number ? -1 : 1
+              }
+
+              if (!ascending) {
+                res = res * -1
+              }
+
+              return res
+            }
+          },
         }
       }
     }
