@@ -248,7 +248,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['half-width'],
+            // styleClasses: ['half-width'],
             get: function() {
               if (store.getters.my_active_contracts) {
                 return store.getters.my_active_contracts.find(contract => contract.id == model.contract)
@@ -261,27 +261,6 @@ export default {
             }
           },
           {
-            type: "select",
-            label: "Role",
-            model: "contract_role",
-            required: true,
-            selectOptions: {
-              value: "id",
-              name: "display_label"
-            },
-            values: function() {
-              if (store.getters.my_contract_users && this.model.contract) {
-                return store.getters.my_contract_users
-                  .filter(contract_user => contract_user.contract.id == this.model.contract)
-                  .map(contract_user => contract_user.contract_role)
-              }
-
-              return []
-            },
-            validator: VueFormGenerator.validators.required,
-            styleClasses: ['half-width']
-          },
-          {
             type: "input",
             inputType: "text",
             label: "Duration (hours)",
@@ -289,7 +268,7 @@ export default {
             required: true,
             pattern: '^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
             validator: VueFormGenerator.validators.string,
-            styleClasses: ['half-width'],
+            styleClasses: ['third-width'],
           },
           {
             type: "select",
@@ -316,7 +295,28 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['half-width']
+            styleClasses: ['third-width']
+          },
+          {
+            type: "select",
+            label: "Role",
+            model: "contract_role",
+            required: true,
+            selectOptions: {
+              value: "id",
+              name: "display_label"
+            },
+            values: function() {
+              if (store.getters.my_contract_users && this.model.contract) {
+                return store.getters.my_contract_users
+                  .filter(contract_user => contract_user.contract.id == this.model.contract)
+                  .map(contract_user => contract_user.contract_role)
+              }
+
+              return []
+            },
+            validator: VueFormGenerator.validators.required,
+            styleClasses: ['third-width']
           },
           {
             type: "textArea",
