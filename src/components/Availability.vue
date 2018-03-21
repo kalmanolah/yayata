@@ -260,7 +260,7 @@ export default {
 </script>
 
 <style lang='less' scoped>
-@today: #333333;
+@highlight: #333333;
 @sickness: #ff4444;
 @holiday: #59b8e6;
 @leave: #00c851;
@@ -268,20 +268,35 @@ export default {
 @homework: #ffbb33;
 
 .cell {
-  width: 2.5%
+  width: 2.5%;
 }
 .cell-today {
-  border-left: 2px solid @today;
-  border-right: 2px solid @today;
+  border-left: 2px solid @highlight;
+  border-right: 2px solid @highlight;
 }
 thead tr .cell-today {
-  border-top: 2px solid @today;
-  border-bottom: 2px solid @today;
-  background-color: @today;
+  border-top: 2px solid @highlight;
+  border-bottom: 2px solid @highlight;
+  background-color: @highlight;
   color: #f9f9f9;
 }
+thead th {
+  border-bottom: none;
+}
 tbody tr:last-child .cell-today {
-  border-bottom: 2px solid @today;
+  border-bottom: 2px solid @highlight;
+}
+tbody tr:hover td {
+  border-top: 2px solid @highlight;
+  border-bottom: 2px solid @highlight;
+
+  &:first-child {
+    border-left: 2px solid @highlight;
+  }
+
+  &:last-child {
+    border-right: 2px solid @highlight;
+  }
 }
 .cell-homework {
   background-color: @homework;
