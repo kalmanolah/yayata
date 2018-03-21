@@ -2,6 +2,25 @@
 div
   div(class='row')
     div(class='col-md-6')
+      LeaveWidget
+    div(class='col-md-6')
+      div(class='card card-top-blue mb-3')
+        div(class='card-header text-center') Leave pending approval
+
+        div(class='list-group list-group-flush' v-if='pendingLeave && pendingLeave.length')
+          li(class='list-group-item p-2' v-for='leave in pendingLeave')
+            div(class='d-flex justify-content-between')
+              div {{ leave.leave_type.display_label }}
+              div
+                a(class='btn btn-sm btn-danger' @click='deleteLeave(leave)')
+                  i(class='fa fa-trash')
+            div(v-for='leave_date in leave.leavedate_set' class='text-muted')
+              small {{ leave_date.starts_at | moment('YYYY-MM-DD, HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+            div(v-if='leave.description' class='text-muted')
+              small {{ leave.description }}
+        div(class='card-body' v-else)
+          | No leave pending. Are you sure you don't need a break from all that hard work?
+
       div(class='card card-top-blue mb-3')
         div(class='card-header text-center') Upcoming leave
 
@@ -17,7 +36,6 @@ div
         div(class='card-body' v-else)
           | No leave coming up. Are you sure you don't need a break from all that hard work?
 
-    div(class='col-md-6')
       div(class='card card-top-blue mb-3')
         div(class='card-header text-center') Upcoming holidays
 
@@ -56,24 +74,6 @@ div
                 small {{ leave.description }}
         div(class='card-body' v-else)
           | You have requested no leave as of today. Only robots never take a break!
-
-    div(class='col-md-6')
-      div(class='card card-top-blue mb-3')
-        div(class='card-header text-center') Leave pending approval
-
-        div(class='list-group list-group-flush' v-if='pendingLeave && pendingLeave.length')
-          li(class='list-group-item p-2' v-for='leave in pendingLeave')
-            div(class='d-flex justify-content-between')
-              div {{ leave.leave_type.display_label }}
-              div
-                a(class='btn btn-sm btn-danger' @click='deleteLeave(leave)')
-                  i(class='fa fa-trash')
-            div(v-for='leave_date in leave.leavedate_set' class='text-muted')
-              small {{ leave_date.starts_at | moment('YYYY-MM-DD, HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
-            div(v-if='leave.description' class='text-muted')
-              small {{ leave.description }}
-        div(class='card-body' v-else)
-          | No leave pending. Are you sure you don't need a break from all that hard work?
 </template>
 
 <script>
@@ -81,13 +81,15 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment-timezone';
 import toastr from 'toastr';
+import LeaveWidget from './widgets/LeaveWidget.vue';
 
 
 export default {
   name: 'leave',
 
-  mixins: [
-  ],
+  components: {
+    LeaveWidget,
+  },
 
   data () {
     return {
@@ -98,9 +100,6 @@ export default {
       upcomingLeave: null,
       pendingLeave: null,
     }
-  },
-
-  components: {
   },
 
   created: function () {
