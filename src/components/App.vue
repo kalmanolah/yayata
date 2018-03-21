@@ -4,6 +4,7 @@ div(
   class='container-fluid p-0'
 )
   div(class='application-wrapper')
+    vue-progress-bar
     sidebar(class='application-sidebar d-none d-md-block')
 
     div(class='application-main')

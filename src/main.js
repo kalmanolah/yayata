@@ -7,6 +7,7 @@ import * as types from './store/mutation-types'
 import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 import VueMarkdown from 'vue-markdown'
+import VueProgressBar from 'vue-progressbar'
 
 import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
@@ -44,6 +45,7 @@ Vue.use(VueMoment)
 Vue.use(VueFormGenerator)
 Vue.use(ClientTable, null, null, 'bootstrap4')
 Vue.use(VueMarkdown)
+Vue.use(VueProgressBar)
 Vue.component('multiselect', VueMultiselect)
 
 // Global toast options
@@ -171,6 +173,20 @@ router.beforeEach((to, from, next) => {
     } else {
         next()
     }
+})
+
+// Add a HTTP interceptor for showing/hiding progress bars
+Vue.http.interceptors.push((request, next) => {
+  Vue.prototype.$Progress._requests = (Vue.prototype.$Progress._requests || 0) + 1
+  if (Vue.prototype.$Progress._requests === 1) {
+    Vue.prototype.$Progress.start()
+  }
+  next((response) => {
+    Vue.prototype.$Progress._requests -= 1
+    if (Vue.prototype.$Progress._requests === 0) {
+      Vue.prototype.$Progress.finish()
+    }
+  })
 })
 
 console.debug(`Loading configuration file at ${cfg_file_path}`)

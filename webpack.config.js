@@ -29,6 +29,7 @@ module.exports = {
       'vue-form-generator',
       'vue-tables-2',
       'vue-js-toggle-button',
+      'vue-progressbar',
       'vuex',
       'vuex-persistedstate',
       'vuex-router-sync',
