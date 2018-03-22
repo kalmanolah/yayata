@@ -75,11 +75,14 @@ div
         },
         :width='115'
       )
-    div(class='col-lg-auto text-center')
+    div(class='col-lg-auto')
       hr(class='d-lg-none')
 
-      div(class='btn-group' role='group')
-        div(class='btn-group' role='group')
+      div(class='btn-toolbar justify-content-center')
+        div(class='input-group input-group-sm mr-2')
+          b-form-input(:type='text' :placeholder='"Filter (eg. " + user.username + ")"' v-model="filterQuery")
+
+        div(class='btn-group btn-group-sm' role='group')
           button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span(v-if='filterCountry') {{ filterCountry }}
             span(v-else) Country
@@ -124,6 +127,7 @@ export default {
 
   data() {
     return {
+      filterQuery: null,
       filterCountry: null,
       showHoliday: true,
       showLeave: true,
@@ -159,6 +163,8 @@ export default {
   },
 
   computed: {
+    user: () => store.getters.user,
+
     users: function() {
       if (store.getters.users) {
         let users = store.getters.users.slice(0)
@@ -166,6 +172,14 @@ export default {
         if (this.filterCountry) {
           users = users.filter(user => {
             return user.userinfo && user.userinfo.country === this.filterCountry
+          })
+        }
+
+        if (this.filterQuery) {
+          let query = this.filterQuery.toLowerCase()
+          users = users.filter(user => {
+            return (user.username.toLowerCase().indexOf(query) > -1)
+              || (user.display_label.toLowerCase().indexOf(query) > -1)
           })
         }
 
