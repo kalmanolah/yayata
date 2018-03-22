@@ -283,6 +283,13 @@ export default {
 
 .cell {
   width: 2.5%;
+
+  &:nth-child(-n+10) {
+    &:before {
+      content: '0';
+      color: rgba(0, 0, 0, 0.1);
+    }
+  }
 }
 .cell-today {
   border-left: 2px solid @highlight;
