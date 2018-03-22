@@ -30,6 +30,9 @@ import 'toastr/build/toastr.min.css'
 import moment from 'moment-timezone'
 import VueMoment from 'vue-moment'
 
+// fontawesome
+import 'font-awesome/css/font-awesome.min.css'
+
 // Pikaday
 import Pikaday from 'pikaday'
 import 'pikaday/css/pikaday.css'
