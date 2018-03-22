@@ -1,14 +1,16 @@
 <template lang="pug">
 div
-  div(class='btn-group' role='group')
-    button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousMonth()')
-      i(class='fa fa-angle-double-left')
-      | &nbsp;Previous
-    button(class='btn btn-sm btn-outline-dark disabled' type='button')
-      | {{ date | moment('MMMM YYYY') }}
-    button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextMonth()')
-      | Next&nbsp;
-      i(class='fa fa-angle-double-right')
+  div(class='row justify-content-between align-items-center')
+    div(class='col-lg-auto text-center')
+      div(class='btn-group' role='group')
+        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousMonth()')
+          i(class='fa fa-angle-double-left')
+          | &nbsp;Previous
+        button(class='btn btn-sm btn-outline-dark disabled' type='button')
+          | {{ date | moment('MMMM YYYY') }}
+        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextMonth()')
+          | Next&nbsp;
+          i(class='fa fa-angle-double-right')
 
   hr
 
@@ -19,30 +21,33 @@ div
 
     hr
 
-    div(class='weekdays')
-      div(class='calendar-day d-none d-md-block' v-for='weekDay in weekDays') {{ weekDay }}
-      div(class='calendar-day d-none d-md-block' v-for='n in dayOffset')
+    div(class='weekdays calendar-row row')
+      div(class='calendar-day col-md d-none d-md-block' v-for='weekDay in weekDays') {{ weekDay }}
+      div(class="w-100")
+      div(class='calendar-day col-md' v-for='n in startDayOffset')
 
       template(v-for='(dayDetails, date) in sortByKey(rangeInfo.details)')
-        div(v-bind:class='{"clearfix": getDayOfWeek(date) == 0}')
-          div(
-            class='calendar-day'
-            v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
-          )
-            router-link(:to='{name: "calendar_week", params: { year: getYear(date), week: getWeek(date) } }')
-              div(class='card' :id='"calendar-day-" + date')
-                div(class='card-body')
-                  h5(class='card-title row justify-content-between')
-                    span(class='col') {{ date | moment('D') }}
+        div(
+          class='calendar-day col-md'
+          v-bind:class="getCalendarDayClasses(date)"
+        )
+          router-link(:to='{name: "calendar_week", params: { year: getYear(date), week: getWeek(date) } }')
+            div(class='card' :id='"calendar-day-" + date')
+              div(class='card-body')
+                h5(class='card-title row justify-content-between')
+                  span(class='col') {{ date | moment('D') }}
 
-                    span(class='col-auto')
-                      small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
-                      small(v-if='dayDetails.leave_hours' v-b-tooltip title="Leave") 🏖️
+                  span(class='col-auto')
+                    small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
+                    small(v-if='dayDetails.leave_hours' v-b-tooltip title="Leave") 🏖️
 
-                  div(class='card-text text-right')
-                    small
-                      strong {{ dayDetails.total_hours | round }}
-                      | &nbsp;/ {{ dayDetails.work_hours | round }} hours
+                div(class='card-text text-right')
+                  small
+                    strong {{ dayDetails.total_hours | round }}
+                    | &nbsp;/ {{ dayDetails.work_hours | round }} hours
+
+        div(v-if='getDayOfWeek(date) == 0' class='w-100')
+      div(class='calendar-day col-md' v-for='n in endDayOffset')
 </template>
 
 <script>
@@ -152,6 +157,19 @@ export default {
       return this.rangeInfo.details[val].remaining_hours === 0
     },
 
+    getCalendarDayClasses: function(date) {
+      let isComplete = this.isDayComplete(date)
+      let isCurrent = this.isCurrentDay(date)
+      let isWorking = this.isWorkingDay(date)
+
+      return {
+        'calendar-day-current': isCurrent,
+        'calendar-day-nowork': !isWorking,
+        'calendar-day-complete': isComplete,
+        'calendar-day-incomplete': !isComplete,
+      }
+    },
+
     getYear: function(val) {
       return moment(val).isoWeekYear()
     },
@@ -162,7 +180,7 @@ export default {
   },
 
   computed: {
-    dayOffset: function() {
+    startDayOffset: function() {
       let dow = moment(this.date).date(1).day()
 
       if (dow == 0) {
@@ -170,6 +188,16 @@ export default {
       }
 
       return dow - 1
+    },
+
+    endDayOffset: function() {
+      let dow = moment(this.date).endOf('month').day()
+
+      if (dow == 0) {
+        dow = 7
+      }
+
+      return 6 - (dow - 1)
     },
   },
 
@@ -182,19 +210,36 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@calendar-day-padding: 5px;
+
+.calendar-row {
+  margin-left: -(@calendar-day-padding);
+  margin-right: -(@calendar-day-padding);
+}
+
 .calendar-day {
-  padding: 0 5px 5px;
+  padding-bottom: @calendar-day-padding;
+  padding-left: @calendar-day-padding;
+  padding-right: @calendar-day-padding;
 
   @media all and (min-width: 768px) {
-    width: 14.2857%;
-    float: left;
+    // width: 14.2857%;
+    // float: left;
     min-height: 3rem;
-    display: block;
+    // display: block;
+
+    .card {
+      min-height: 3rem;
+    }
   }
 
   > a {
     color: inherit;
     text-decoration: initial;
+  }
+
+  &.calendar-day-hidden {
+    display: none;
   }
 }
 

@@ -1,7 +1,7 @@
 <template lang="pug">
 div
-  div(class='row justify-content-between')
-    div(class='col')
+  div(class='row justify-content-between align-items-center')
+    div(class='col-lg-auto text-center')
       div(class='btn-group' role='group')
         button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousWeek()')
           i(class='fa fa-angle-double-left')
@@ -13,8 +13,12 @@ div
           i(class='fa fa-angle-double-right')
 
 
-    div(class='col-auto')
+    div(class='col-lg-auto text-center')
+      hr(class='d-lg-none')
+
       div(class='btn-group' role='group')
+        b-button(size='sm' variant='outline-dark' :pressed='showNoWork' v-on:click='setShowNoWork(true)') All days
+        b-button(size='sm' variant='outline-dark' :pressed='!showNoWork' v-on:click='setShowNoWork(false)') Working days
         router-link(
           class="btn btn-sm btn-outline-dark"
           :to='{name: "calendar_month", params: { year: date.format("YYYY"), month: date.format("MM") } }'
@@ -51,11 +55,11 @@ div
 
     hr
 
-    div
+    div(class='calendar-row row')
       div(
-        class='calendar-day'
+        class='calendar-day col-md'
         v-for='(dayDetails, date) in sortByKey(rangeInfo.details)'
-        v-bind:class="{ 'calendar-day-current': isCurrentDay(date), 'calendar-day-nowork': !isWorkingDay(date), 'calendar-day-complete': isDayComplete(date), 'calendar-day-incomplete': !isDayComplete(date) }"
+        v-bind:class="getCalendarDayClasses(date)"
       )
         div(class='card' :id='"calendar-day-" + date')
           div(class='card-header text-center') {{ date | moment('ddd, MMMM Do') }}
@@ -125,6 +129,7 @@ div
 <script>
 import * as types from '../store/mutation-types';
 import store from '../store';
+import preferences from '../preferences'
 import moment from 'moment';
 import VueMarkdown from 'vue-markdown';
 import PerformanceWidget from './widgets/PerformanceWidget.vue';
@@ -184,16 +189,22 @@ export default {
   },
 
   computed: {
+    showNoWork: () => preferences.get(preferences.key.CALENDAR_SHOW_NO_WORK, false),
+
     supportContracts: function() {
       if (store.getters.my_active_contracts) {
         return store.getters.my_active_contracts.filter(contract => {
           return contract.type == 'SupportContract'
         })
       }
-    }
+    },
   },
 
   methods: {
+    setShowNoWork: function(state) {
+      preferences.set(preferences.key.CALENDAR_SHOW_NO_WORK, state)
+    },
+
     moment: function(args) {
       return moment(args)
     },
@@ -279,6 +290,20 @@ export default {
       return this.rangeInfo.details[val].remaining_hours === 0
     },
 
+    getCalendarDayClasses: function(date) {
+      let isComplete = this.isDayComplete(date)
+      let isCurrent = this.isCurrentDay(date)
+      let isWorking = this.isWorkingDay(date)
+
+      return {
+        'calendar-day-current': isCurrent,
+        'calendar-day-nowork': !isWorking,
+        'calendar-day-complete': isComplete,
+        'calendar-day-incomplete': !isComplete,
+        'calendar-day-hidden': (!isWorking && !this.showNoWork),
+      }
+    },
+
     getTimesheetForDay: function(date) {
       if (store.getters.my_open_timesheets) {
         return store.getters.my_open_timesheets.filter(timesheet => {
@@ -332,18 +357,31 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@calendar-day-padding: 5px;
+
+.calendar-row {
+  margin-left: -(@calendar-day-padding);
+  margin-right: -(@calendar-day-padding);
+}
+
 .calendar-day {
-  padding: 0 5px 5px;
+  padding-bottom: @calendar-day-padding;
+  padding-left: @calendar-day-padding;
+  padding-right: @calendar-day-padding;
 
   @media all and (min-width: 768px) {
-    width: 14.2857%;
-    float: left;
+    // width: 14.2857%;
+    // float: left;
     min-height: 3rem;
-    display: block;
+    // display: block;
 
     .card {
       min-height: 30rem;
     }
+  }
+
+  &.calendar-day-hidden {
+    display: none;
   }
 }
 

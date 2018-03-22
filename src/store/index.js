@@ -4,6 +4,7 @@ import createPersistedState from 'vuex-persistedstate'
 import * as actions from './actions'
 import * as getters from './getters'
 import oauth2 from './modules/oauth2'
+import preferences from './modules/preferences'
 import ninetofiver from './modules/ninetofiver'
 
 Vue.use(Vuex)
@@ -16,6 +17,7 @@ export default new Vuex.Store({
   modules: {
     oauth2,
     ninetofiver,
+    preferences,
   },
   strict: debug,
   plugins: [
@@ -23,6 +25,7 @@ export default new Vuex.Store({
       key: 'yayata-state',
       paths: [
         'oauth2',
+        'preferences',
       ],
     }),
   ],
