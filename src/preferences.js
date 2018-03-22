@@ -14,7 +14,11 @@ const set = (key, value) => {
 }
 
 const get = (key, defaultValue = null) => {
-    return store.getters.preferences[key] || defaultValue
+    if (store.getters.preferences[key] === undefined) {
+        return defaultValue
+    }
+
+    return store.getters.preferences[key]
 }
 
 

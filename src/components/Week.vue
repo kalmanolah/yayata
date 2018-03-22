@@ -189,7 +189,7 @@ export default {
   },
 
   computed: {
-    showNoWork: () => preferences.get(preferences.key.CALENDAR_SHOW_NO_WORK, false),
+    showNoWork: () => preferences.get(preferences.key.CALENDAR_SHOW_NO_WORK, true),
 
     supportContracts: function() {
       if (store.getters.my_active_contracts) {

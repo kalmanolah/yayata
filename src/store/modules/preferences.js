@@ -14,7 +14,7 @@ const getters = {
 // mutations
 const mutations = {
   [types.PREFERENCES_SET_KEY] (state, { key, value }) {
-    state.preferences[key] = value
+    Vue.set(state.preferences, key, value)
   },
 }
 
