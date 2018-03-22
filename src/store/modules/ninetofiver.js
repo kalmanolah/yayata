@@ -1414,7 +1414,7 @@ const actions = {
         options.path = '/my_timesheets/'
         options.params = {}
         options.params['status!'] = 'closed'
-        options.params['order_by'] = '-year,-month'
+        options.params['order_by'] = 'year,month'
 
         return new Promise((resolve, reject) => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
