@@ -83,12 +83,9 @@ div
           b-form-input(:type='text' :placeholder='"Filter (eg. " + user.username + ")"' v-model="filterQuery")
 
         div(class='btn-group btn-group-sm' role='group')
-          button(class='btn btn-outline-dark btn-sm dropdown-toggle' type='button' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span(v-if='filterCountry') {{ filterCountry }}
-            span(v-else) Country
-          div(class='dropdown-menu dropdown-menu-right')
-            a(class='dropdown-item' @click='filterByCountry()') All
-            a(class='dropdown-item' v-for='country in countries' @click='filterByCountry(country)') {{ country }}
+          b-dropdown(variant='outline-dark' size='sm' right :text='filterCountry ? filterCountry : "Country"')
+            b-dropdown-item(@click='filterByCountry()') All
+            b-dropdown-item(v-for='country in countries' @click='filterByCountry(country)') {{ country }}
 
   hr
 
@@ -302,7 +299,7 @@ thead tr .cell-today {
   color: #f9f9f9;
 }
 thead th {
-  border-bottom: none;
+  border-bottom-width: 1px;
 }
 tbody tr:last-child .cell-today {
   border-bottom: 2px solid @highlight;

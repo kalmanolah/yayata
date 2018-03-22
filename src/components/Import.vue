@@ -6,11 +6,8 @@ div
   div(class='row')
     div(class='col')
       div(class='btn-group' role='group')
-        div(class='btn-group')
-          button(class='btn btn-outline-dark dropdown-toggle' id='btnGroupDropTimesheet' type='button' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false')
-            span(v-if='timesheet') Timesheet: {{ timesheet.display_label }}
-          div(class='dropdown-menu' aria-labelledby='btnGroupDropTimesheet')
-            a(class='dropdown-item' v-for='timesheet in timesheets' @click='selectTimesheet(timesheet)') {{ timesheet.display_label }}
+        b-dropdown(variant='outline-dark' v-if='timesheet' :text='"Timesheet: " + timesheet.display_label')
+          b-dropdown-item(v-for='timesheet in timesheets' @click='selectTimesheet(timesheet)') {{ timesheet.display_label }}
 
     div(class='col-auto btn-group' v-if='performances && performances.length')
         button(class='btn btn-outline-primary' @click='executeImport()') Import

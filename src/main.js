@@ -4,15 +4,18 @@ import VueResource from 'vue-resource'
 import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
-import VueMoment from 'vue-moment'
 import VueFormGenerator from 'vue-form-generator'
 import VueMarkdown from 'vue-markdown'
 import VueProgressBar from 'vue-progressbar'
 
-import BootstrapVue from 'bootstrap-vue'
 import ToggleButton from 'vue-js-toggle-button'
 // import {ServerTable, ClientTable, Event} from 'vue-tables-2'
 import { ClientTable } from 'vue-tables-2'
+
+// Bootstrap
+import BootstrapVue from 'bootstrap-vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 
 // VueMultiSelect
 import 'vue-multiselect/dist/vue-multiselect.min.css'
@@ -22,6 +25,16 @@ import VueMultiselect from 'vue-multiselect'
 // toastr
 import toastr from 'toastr'
 import 'toastr/build/toastr.min.css'
+
+// moment
+import moment from 'moment-timezone'
+import VueMoment from 'vue-moment'
+
+// Pikaday
+import Pikaday from 'pikaday'
+import 'pikaday/css/pikaday.css'
+window.moment = moment // Required because vue-form-generator sucks
+window.Pikaday = Pikaday // Required before vue-form-generator sucks
 
 import App from './components/App.vue'
 import Auth from './components/Auth.vue'
@@ -35,6 +48,7 @@ import Timesheets from './components/Timesheets.vue'
 import Colleagues from './components/Colleagues.vue'
 import Import from './components/Import.vue'
 import Availability from './components/Availability.vue'
+
 
 // Vue.use(Vuex)
 Vue.use(ToggleButton)

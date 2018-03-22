@@ -20,6 +20,7 @@ import * as types from '../store/mutation-types'
 
 export default {
   name: 'sidebar',
+
   mounted: function() {
     var vm = this;
     this.picker = new Pikaday({

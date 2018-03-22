@@ -20,6 +20,7 @@ module.exports = {
       'moment-timezone',
       'file-saver',
       'toastr',
+      'pikaday',
       'vue',
       'vue-router',
       'vue-resource',

@@ -373,6 +373,7 @@ export default {
     // width: 14.2857%;
     // float: left;
     min-height: 3rem;
+    overflow: auto;
     // display: block;
 
     .card {
