@@ -12,7 +12,20 @@ div
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
 
+    div(class='col-lg-auto text-center')
+      hr(class='d-lg-none')
+
+      div(class='btn-group' role='group')
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='bulkAdd()')
+          | Bulk add
   hr
+
+  b-modal(ref='bulkAddModal' hide-header=true hide-footer=true lazy=true size='lg')
+    BulkAddWidget(
+      :timesheet='timesheet'
+      :range-info='rangeInfo'
+      v-on:success='onBulkAdded()'
+    )
 
   div(v-if='rangeInfo')
     div
@@ -55,6 +68,7 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import _ from 'lodash';
+import BulkAddWidget from './widgets/BulkAddWidget.vue';
 
 export default {
   name: 'Month',
@@ -71,6 +85,7 @@ export default {
   },
 
   components: {
+    BulkAddWidget,
   },
 
   watch: {
@@ -83,6 +98,14 @@ export default {
   created: function () {
     this.setDate()
     this.reloadData()
+
+    new Promise((resolve, reject) => {
+      if (!store.getters.my_open_timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    })
   },
 
   methods: {
@@ -177,6 +200,15 @@ export default {
     getWeek: function(val) {
       return moment(val).isoWeek()
     },
+
+    bulkAdd: function() {
+      this.$refs.bulkAddModal.show()
+    },
+
+    onBulkAdded: function() {
+      this.$refs.bulkAddModal.hide()
+      this.reloadData()
+    }
   },
 
   computed: {
@@ -199,6 +231,14 @@ export default {
 
       return 6 - (dow - 1)
     },
+
+    timesheet: function() {
+      if (store.getters.my_open_timesheets) {
+        return store.getters.my_open_timesheets.filter(timesheet => {
+          return (timesheet.status == 'active') && (timesheet.year == moment(this.date).format('YYYY')) && (timesheet.month == moment(this.date).format('MM'))
+        })[0]
+      }
+    }
   },
 
   filters: {

@@ -49,8 +49,8 @@ import Week from './components/Week.vue'
 import Leave from './components/Leave.vue'
 import Timesheets from './components/Timesheets.vue'
 import Colleagues from './components/Colleagues.vue'
-import Import from './components/Import.vue'
 import Availability from './components/Availability.vue'
+import Import from './components/Import.vue'
 
 
 // Vue.use(Vuex)
@@ -149,7 +149,7 @@ export const router = new VueRouter({
                     name: 'import',
                     path: '/import',
                     component: Import,
-                }
+                },
             ],
         },
         {
