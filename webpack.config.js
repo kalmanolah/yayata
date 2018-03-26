@@ -111,7 +111,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'vue$': environment === 'production' ? 'vue/dist/vue.min' : 'vue/dist/vue'
+      'vue$': isProd ? 'vue/dist/vue.min' : 'vue/dist/vue'
     }
   },
   devServer: {
@@ -121,15 +121,13 @@ module.exports = {
   devtool: '#eval-source-map'
 }
 
-if (environment !== 'production') {
+if (!isProd) {
   module.exports.plugins = (module.exports.plugins || []).concat([
     new BundleAnalyzerPlugin({
       openAnalyzer: false
     })
   ])
-}
-
-if (environment === 'production') {
+} else {
   module.exports.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
