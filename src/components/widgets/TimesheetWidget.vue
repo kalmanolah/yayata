@@ -15,7 +15,7 @@ div(class='card card-top-blue mb-3')
       },
       :width='70',
       :disabled='timesheet.status === "pending"',
-      :ref="'timesheet-submission-toggle-' + timesheet.id"
+      ref='timesheetSubmissionToggle'
     )
 
   table(class='table my-0')
@@ -51,20 +51,11 @@ div(class='card card-top-blue mb-3')
         td
         td(class='text-right') {{ rangeInfo.remaining_hours | round }} hours
 
-  b-modal(
-    v-if='rangeInfo'
-    :ref="'timesheet-submission-modal-' + timesheet.id"
-    hide-footer=true
-    title='Verify submission!'
-  )
-    p You have&nbsp;
-      strong {{ rangeInfo.remaining_hours }}
-      | &nbsp;remaining hours.
-    p Are you sure you want to submit this timesheet?
-    div(class='row')
-      div(class='col')
-        button(class='btn btn-danger mr-2' @click='closeSubmissionModal') Cancel
-        button(class='btn btn-success' @click='confirmSubmissionModal') Submit timesheet
+  b-modal(ref='timesheetSubmissionModal' hide-header=true hide-footer=true lazy=true size='lg')
+    TimesheetSubmissionWidget(
+      :timesheet='timesheet'
+      v-on:success='onTimesheetSubmitted()'
+    )
 </template>
 
 <script>
@@ -72,9 +63,14 @@ import moment from 'moment';
 import * as FileSaver from 'file-saver';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import TimesheetSubmissionWidget from './TimesheetSubmissionWidget.vue';
 
 export default {
   name: 'TimesheetWidget',
+
+  components: {
+    TimesheetSubmissionWidget,
+  },
 
   props: [
     'timesheet',
@@ -137,38 +133,15 @@ export default {
       })
     },
 
-    closeSubmissionModal: function() {
-      let modalRef = `timesheet-submission-modal-${this.timesheet.id}`
-      this.$refs[modalRef].hide()
-    },
-
-    confirmSubmissionModal: function() {
-      var body = {
-        month: this.timesheet.month,
-        year: this.timesheet.year,
-        status: 'pending'
-      };
-
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: `/my_timesheets/${this.timesheet.id}/`,
-        method: 'PATCH',
-        body: body
-      }).then(res => {
-        this.closeSubmissionModal()
-        this.$emit('submit')
-      })
-    },
-
     submitTimesheet: function() {
-      if (this.rangeInfo && (this.rangeInfo.remaining_hours <= 0)) {
-        this.confirmSubmissionModal()
-      } else {
-        let confirmRef = `timesheet-submission-modal-${this.timesheet.id}`
-        this.$refs[confirmRef].show()
-        let ref = `timesheet-submission-toggle-${this.timesheet.id}`
-        this.$refs[ref].toggled = false
-      }
+      this.$refs.timesheetSubmissionModal.show()
+      this.$refs.timesheetSubmissionToggle.toggled = false
     },
+
+    onTimesheetSubmitted: function() {
+      this.$refs.timesheetSubmissionModal.hide()
+      this.$emit('submit')
+    }
   }
 }
 </script>

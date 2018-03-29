@@ -16,8 +16,8 @@ div
       hr(class='d-lg-none')
 
       div(class='btn-group' role='group')
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='bulkAdd()')
-          | Bulk add
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='submitTimesheet()') Submit
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='bulkAdd()') Bulk add
   hr
 
   b-modal(ref='bulkAddModal' hide-header=true hide-footer=true lazy=true size='lg')
@@ -25,6 +25,12 @@ div
       :timesheet='timesheet'
       :range-info='rangeInfo'
       v-on:success='onBulkAdded()'
+    )
+
+  b-modal(ref='timesheetSubmissionModal' hide-header=true hide-footer=true lazy=true size='lg')
+    TimesheetSubmissionWidget(
+      :timesheet='timesheet'
+      v-on:success='onTimesheetSubmitted()'
     )
 
   div(v-if='rangeInfo')
@@ -69,6 +75,7 @@ import store from '../store';
 import moment from 'moment';
 import _ from 'lodash';
 import BulkAddWidget from './widgets/BulkAddWidget.vue';
+import TimesheetSubmissionWidget from './widgets/TimesheetSubmissionWidget.vue';
 
 export default {
   name: 'Month',
@@ -86,6 +93,7 @@ export default {
 
   components: {
     BulkAddWidget,
+    TimesheetSubmissionWidget,
   },
 
   watch: {
@@ -208,6 +216,15 @@ export default {
     onBulkAdded: function() {
       this.$refs.bulkAddModal.hide()
       this.reloadData()
+    },
+
+    submitTimesheet: function() {
+      this.$refs.timesheetSubmissionModal.show()
+    },
+
+    onTimesheetSubmitted: function() {
+      this.$refs.timesheetSubmissionModal.hide()
+      store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS)
     }
   },
 
