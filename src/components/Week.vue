@@ -94,8 +94,16 @@ div
 
           ul(class='list-group list-group-flush')
             li(
+              class='list-group-item p-2'
+              v-for='performance in dayDetails.standby_performances'
+            )
+              div(class='d-flex justify-content-between')
+                div {{ performance.contract.display_label }}
+                div(v-b-tooltip title='Standby / On-call') 💤
+
+            li(
               class='list-group-item list-group-item-action p-2 cursor-pointer'
-              v-for='performance in dayDetails.performances'
+              v-for='performance in dayDetails.activity_performances'
               v-on:click.prevent='getTimesheetForDay(date) ? editPerformance(date, performance) : null'
             )
               div(class='d-flex justify-content-between')
@@ -327,6 +335,7 @@ export default {
     onStandbyModified: function() {
       this.$refs.standbyModal.hide()
       this.selectedStandby = null
+      this.reloadData()
     },
 
     editPerformance: function(date, performance) {
