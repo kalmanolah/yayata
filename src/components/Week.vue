@@ -64,13 +64,13 @@ div
         div(class='card' :id='"calendar-day-" + date')
           div(class='card-header text-center') {{ date | moment('ddd, MMMM Do') }}
 
-          ul(class='list-group list-group-flush' )
+          ul(class='list-group list-group-flush')
+            //- Holidays
             li(class='list-group-item p-2' v-for='holiday in dayDetails.holidays')
               div(class='d-flex mb-0 justify-content-between')
                 div {{ holiday.display_label }}
                 div 🌐
 
-          ul(class='list-group list-group-flush')
             //- Approved leave for range info details
             li(class='list-group-item p-2' v-for='leave in dayDetails.leaves')
               div(class='d-flex justify-content-between')
@@ -92,7 +92,7 @@ div
                 div(v-if='leave.description' class='text-muted')
                   small {{ leave.description }}
 
-          ul(class='list-group list-group-flush')
+            //- Standby performance
             li(
               class='list-group-item p-2'
               v-for='performance in dayDetails.standby_performances'
@@ -101,6 +101,7 @@ div
                 div {{ performance.contract.display_label }}
                 div(v-b-tooltip title='Standby / On-call') 💤
 
+            //- Activity performance
             li(
               class='list-group-item list-group-item-action p-2 cursor-pointer'
               v-for='performance in dayDetails.activity_performances'
