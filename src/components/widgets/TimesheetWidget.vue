@@ -5,18 +5,20 @@ div(class='card card-top-blue mb-3')
       router-link(:to='{ name: "calendar_month", params: { year: timesheet.year, month: timesheet.month } }')
         | {{ timesheet | timesheetDate | moment('MMMM YYYY') }}
     toggle-button(
+      v-if='timesheet.status !== "closed"'
       @change='submitTimesheet',
       :color={checked: '#f0ad4e', unchecked: '#5cb85c'},
-      :value='timesheet.status === "pending"',
+      :value='timesheet.status !== "active"',
       :sync='true',
       :labels={
         checked: 'Pending',
         unchecked: 'Active'
       },
       :width='70',
-      :disabled='timesheet.status === "pending"',
+      :disabled='timesheet.status !== "active"',
       ref='timesheetSubmissionToggle'
     )
+    b-badge(v-else variant='secondary') Closed
 
   table(class='table my-0')
     tbody(v-if='rangeInfo')
