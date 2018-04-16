@@ -20,6 +20,7 @@ div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
 import moment from 'moment';
 import VueFormGenerator from 'vue-form-generator';
 import toastr from 'toastr';
+import utils from '../../utils';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
 
@@ -138,35 +139,12 @@ export default {
     },
 
     validate: function() {
-      // Process duration
-      if (
-        !this.model.duration ||
-        !(/^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\.,][0-9]{1,2})?)?)$/gm.test(this.model.duration))
-      ) {
+      if (!utils.validateDuration(this.model.duration)) {
         toastr.error('Invalid duration provided.')
         return false
       }
 
       return true
-    },
-
-    transformDuration: function(duration) {
-      // Replace all commas with decimal points
-      duration = duration.replace(',', '.')
-
-      // If the duration contains a colon, split the duration on the colon and convert the minute part from base60
-      if (duration.indexOf(':') > -1) {
-        let duration_parts = duration.split(':')
-        duration = `${duration_parts[0]}.${Math.round(duration_parts[1] / 0.6)}`
-      }
-
-      // Parse duration as a number
-      duration = Number(duration)
-
-      // Round duration to two decimals
-      duration = Math.round(duration * 100) / 100
-
-      return duration
     },
 
     submit: function(event) {
@@ -179,7 +157,7 @@ export default {
       let body = {
         timesheet: this.model.timesheet,
         day: this.model.day,
-        duration: this.transformDuration(this.model.duration),
+        duration: utils.transformDuration(this.model.duration),
         description: this.model.description,
         performance_type: this.model.performance_type,
         contract: this.model.contract,
