@@ -30,7 +30,9 @@ const transformDuration = (val) => {
     // If the duration contains a colon, split the duration on the colon and convert the minute part from base60
     if (duration.indexOf(':') > -1) {
         let duration_parts = duration.split(':')
-        duration = `${duration_parts[0]}.${Math.round(duration_parts[1] / 0.6)}`
+        let integer_part = duration_parts[0]
+        let fractional_part = ("00" + Math.round(duration_parts[1] / 0.6)).slice(-2)
+        duration = `${integer_part}.${fractional_part}`
     }
 
     // Parse duration as a number
