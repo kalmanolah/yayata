@@ -253,8 +253,12 @@ export default {
       if (user && this.availability) {
         if (this.showSickness && this.availability['sickness'][user.id].find(d => d == date)) {
           cls.push('cell-sickness')
+        } else if (this.showSickness && this.availability['sickness_pending'][user.id].find(d => d == date)) {
+          cls.push('cell-sickness-pending')
         } else if (this.showLeave && this.availability['leave'][user.id].find(d => d == date)) {
           cls.push('cell-leave')
+        } else if (this.showLeave && this.availability['leave_pending'][user.id].find(d => d == date)) {
+          cls.push('cell-leave-pending')
         } else if (this.showHomeWork && this.availability['home_work'][user.id].find(d => d == date)) {
           cls.push('cell-homework')
         } else if (this.showHoliday && this.availability['holiday'][user.id].find(d => d == date)) {
@@ -273,8 +277,10 @@ export default {
 <style lang='less' scoped>
 @highlight: #333333;
 @sickness: #ff4444;
-@holiday: #59b8e6;
+@sicknessPending: #f58585;
 @leave: #00c851;
+@leavePending: #48f490;
+@holiday: #59b8e6;
 @nowork: #9e9d9d;
 @homework: #ffbb33;
 
@@ -325,8 +331,14 @@ tbody tr:hover td {
 .cell-sickness {
   background-color: @sickness;
 }
+.cell-sickness-pending {
+  background-color: @sicknessPending;
+}
 .cell-leave {
   background-color: @leave;
+}
+.cell-leave-pending {
+  background-color: @leavePending;
 }
 .cell-nowork {
   background-color: @nowork;
