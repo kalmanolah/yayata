@@ -13,7 +13,7 @@ div(class='card card-top-blue mb-3')
           th
             b-form-checkbox(v-model='selectAll' class='my-0') Add?
       tbody
-        tr(v-for='performance in performances')
+        tr(v-for='performance in performances' v-bind:class='{"table-secondary": performance.secondary}')
           td {{ performance.date | moment('ddd, MMMM Do') }}
           td
             b-form-input(size='sm' v-model='performance.duration' type='text' required)
@@ -199,13 +199,14 @@ export default {
     let performances = []
     Object.keys(utils.sortByKey(this.rangeInfo.details)).forEach(date => {
       let day_detail = this.rangeInfo.details[date]
-      if (day_detail.work_hours && (day_detail.work_hours == day_detail.remaining_hours)) {
-        performances.push({
-          'date': date,
-          'duration': day_detail.remaining_hours,
-          'add': false,
-        })
-      }
+      let duration = (day_detail.work_hours && (day_detail.work_hours == day_detail.remaining_hours)) ? day_detail.remaining_hours : '0'
+
+      performances.push({
+        'date': date,
+        'duration': duration,
+        'add': false,
+        'secondary': !Number(duration),
+      })
     })
     this.performances = performances
   },
@@ -239,23 +240,32 @@ export default {
 
       this.loading = true
 
-      let promises = this.performances.filter(performance => performance.add).map(performance => {
-        let body = {
-          timesheet: this.timesheet.id,
-          day: moment(performance.date).format('DD'),
-          duration: utils.transformDuration(performance.duration),
-          description: this.model.description,
-          performance_type: this.model.performance_type,
-          contract: this.model.contract,
-          contract_role: this.model.contract_role
-        };
+      let promises = this.performances
+        .filter(performance => performance.add)
+        .map(performance => {
+          let duration = utils.transformDuration(performance.duration)
 
-        return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/my_performances/activity/',
-          method: 'POST',
-          body: body,
+          if (!duration) {
+            return null
+          }
+
+          let body = {
+            timesheet: this.timesheet.id,
+            day: moment(performance.date).format('DD'),
+            duration: duration,
+            description: this.model.description,
+            performance_type: this.model.performance_type,
+            contract: this.model.contract,
+            contract_role: this.model.contract_role
+          };
+
+          return store.dispatch(types.NINETOFIVER_API_REQUEST, {
+            path: '/my_performances/activity/',
+            method: 'POST',
+            body: body,
+          })
         })
-      })
+        .filter(promise => !!promise)
 
       Promise.all(promises).then((response) => {
         this.$emit('success', response)
