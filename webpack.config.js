@@ -67,7 +67,7 @@ module.exports = {
       name: 'YAYATA',
       short_name: 'YAYATA',
       description: 'Yet Another Timesheet Application... Yet Again',
-      background_color: '#f9f9f9',
+      background_color: '#9de2d2',
       theme_color: '#50e3c2',
       icons: [
         {
