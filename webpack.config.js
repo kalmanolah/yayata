@@ -3,7 +3,10 @@ const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const WorkboxPlugin = require('workbox-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const WebpackPwaManifestPlugin = require('webpack-pwa-manifest')
+
 
 const environment = process.env.NODE_ENV
 const isProd = environment === 'production'
@@ -55,6 +58,23 @@ module.exports = {
     }),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'manifest'
+    }),
+    new WorkboxPlugin.GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
+    }),
+    new WebpackPwaManifestPlugin({
+      name: 'YAYATA',
+      short_name: 'YAYATA',
+      description: 'Yet Another Timesheet Application... Yet Again',
+      background_color: '#f9f9f9',
+      theme_color: '#50e3c2',
+      icons: [
+        {
+          src: path.resolve('src/assets/img/logo_blue.svg'),
+          sizes: [96, 128, 192, 256, 384, 512, 1024]
+        }
+      ]
     })
   ],
   output: {
