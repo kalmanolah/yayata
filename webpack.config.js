@@ -71,8 +71,8 @@ module.exports = {
       theme_color: '#50e3c2',
       icons: [
         {
-          src: path.resolve('src/assets/img/logo_blue.svg'),
-          sizes: [96, 128, 192, 256, 384, 512, 1024]
+          src: path.resolve('src/assets/img/logo_pwa.png'),
+          sizes: [96, 128, 192, 256, 384, 512]
         }
       ]
     })
