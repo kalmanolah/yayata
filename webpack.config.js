@@ -69,6 +69,7 @@ module.exports = {
       description: 'Yet Another Timesheet Application... Yet Again',
       background_color: '#9de2d2',
       theme_color: '#50e3c2',
+      ios: true,
       icons: [
         {
           src: path.resolve('src/assets/img/logo_pwa.png'),
