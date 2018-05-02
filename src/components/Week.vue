@@ -48,6 +48,14 @@ div
       v-on:success='onStandbyModified()'
     )
 
+  b-modal(ref='whereaboutModal' hide-header=true hide-footer=true lazy=true size='lg')
+    WhereaboutWidget(
+      :day='selectedDay'
+      :timesheet='selectedTimesheet'
+      :whereabout='selectedWhereabout'
+      v-on:success='onWhereaboutModified()'
+    )
+
   div(v-if='rangeInfo')
     div
       strong Total:&nbsp;
@@ -92,6 +100,21 @@ div
                 div(v-if='leave.description' class='text-muted')
                   small {{ leave.description }}
 
+            //- Whereabouts
+            template(v-for='whereabout in whereabouts' v-if='whereabouts')
+              li(
+                class='list-group-item list-group-item-action p-2 cursor-pointer'
+                v-if='isSameDay(whereabout.starts_at, date)'
+                v-on:click.prevent='getTimesheetForDay(date) ? editWhereabout(date, whereabout) : null'
+              )
+                div(class='d-flex justify-content-between')
+                  div {{ whereabout.location.display_label }}
+                  div(v-b-tooltip title='Whereabout') 📍
+                div(class='text-muted')
+                  small {{ whereabout.starts_at | moment('HH:mm') }} - {{ whereabout.ends_at | moment('HH:mm') }}
+                div(v-if='whereabout.description' class='text-muted')
+                  small {{ whereabout.description }}
+
             //- Standby performance
             li(
               class='list-group-item p-2'
@@ -128,6 +151,8 @@ div
                 @click='editStandby(date)'
               )
                 | 💤
+              button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip title='Log whereabout')
+                | 📍
 
           div(class='card-footer text-center')
             small
@@ -143,6 +168,7 @@ import moment from 'moment';
 import VueMarkdown from 'vue-markdown';
 import PerformanceWidget from './widgets/PerformanceWidget.vue';
 import StandbyWidget from './widgets/StandbyWidget.vue';
+import WhereaboutWidget from './widgets/WhereaboutWidget.vue';
 
 export default {
   name: 'Week',
@@ -153,6 +179,7 @@ export default {
     VueMarkdown,
     PerformanceWidget,
     StandbyWidget,
+    WhereaboutWidget,
   },
 
   data () {
@@ -161,10 +188,12 @@ export default {
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
       rangeInfo: null,
       pendingLeave: null,
+      whereabouts: null,
       selectedPerformance: null,
       selectedStandby: null,
       selectedTimesheet: null,
       selectedDuration: null,
+      selectedWhereabout: null,
       selectedDay: null,
     }
   },
@@ -281,6 +310,16 @@ export default {
       }).then(res => {
         this.pendingLeave = res.data.results
       })
+
+      // Reload whereabouts
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+        path: '/my_whereabouts/',
+        params: {
+          'starts_at__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`
+        }
+      }).then(res => {
+        this.whereabouts = res.data.results
+      })
     },
 
     isCurrentDay: function(val) {
@@ -354,6 +393,24 @@ export default {
     onPerformanceModified: function() {
       this.$refs.performanceModal.hide()
       this.selectedPerformance = null
+      this.reloadData()
+    },
+
+    editWhereabout: function(date, whereabout) {
+      this.selectDay(date)
+      this.selectedWhereabout = whereabout
+      this.$refs.whereaboutModal.show()
+    },
+
+    addWhereabout: function(date) {
+      this.selectDay(date)
+      this.selectedWhereabout = null
+      this.$refs.whereaboutModal.show()
+    },
+
+    onWhereaboutModified: function() {
+      this.$refs.whereaboutModal.hide()
+      this.selectedWhereabout = null
       this.reloadData()
     }
   },

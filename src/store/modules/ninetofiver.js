@@ -49,7 +49,6 @@ const state = {
     leave_statuses: ['PENDING', 'REJECTED', 'APPROVED', 'DRAFT'],
     group_names: ['Developer', 'Consultant', 'Project Manager', 'Support'],
     contract_types: ['ConsultancyContract', 'ProjectContract', 'SupportContract'],
-    whereabout_locations: ['Brasschaat', 'Gent', 'Home'],
     colleagues_filter: 'all',
     week_formatting: {
         'workweek': {
@@ -98,6 +97,8 @@ const state = {
     my_current_month_info: null,
     my_open_timesheets: null,
     my_importable_performances: null,
+    my_current_work_schedule: null,
+    locations: null,
 }
 
 // mutations
@@ -225,6 +226,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_MY_CURRENT_WORK_SCHEDULE](state, { my_current_work_schedule }) {
         state.my_current_work_schedule = my_current_work_schedule;
+    },
+    [types.NINETOFIVER_SET_LOCATIONS](state, { locations }) {
+        state.locations = locations;
     },
 }
 
@@ -405,7 +409,6 @@ const getters = {
     redmine_time_entries: state => state.redmine_time_entries,
 
     //Predefined
-    whereabout_locations: state => state.whereabout_locations,
     leave_statuses: state => state.leave_statuses,
     timesheet_statuses: state => state.timesheet_statuses,
     week_formatting: state => state.week_formatting,
@@ -490,6 +493,7 @@ const getters = {
     my_open_timesheets: state => state.my_open_timesheets,
     my_importable_performances: state => state.my_importable_performances,
     my_current_work_schedule: state => state.my_current_work_schedule,
+    locations: state => state.locations,
 }
 
 // actions
@@ -1453,6 +1457,22 @@ const actions = {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
                 store.commit(types.NINETOFIVER_SET_MY_CURRENT_WORK_SCHEDULE, {
                     my_current_work_schedule: res.data.results[0]
+                })
+                resolve(res)
+            }, (res) => {
+                reject(res)
+            })
+        })
+    },
+
+    [types.NINETOFIVER_RELOAD_LOCATIONS](store, options = {}) {
+        options.path = '/locations/'
+        options.params = {}
+
+        return new Promise((resolve, reject) => {
+            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
+                store.commit(types.NINETOFIVER_SET_LOCATIONS, {
+                    locations: res.data.results
                 })
                 resolve(res)
             }, (res) => {

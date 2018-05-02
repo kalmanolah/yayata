@@ -17,18 +17,6 @@ div
 
       toggle-button(
         class='my-0'
-        @change='showHomeWork = !showHomeWork',
-        :value='showHomeWork',
-        color='#ffbb33',
-        :sync='true',
-        :labels={
-          checked: 'Home',
-          unchecked: 'Home'
-        },
-        :width='65'
-      )
-      toggle-button(
-        class='my-0'
         @change='showSickness = !showSickness',
         :value='showSickness',
         color='#ff4444',
@@ -75,6 +63,14 @@ div
         },
         :width='115'
       )
+      b-form-checkbox-group(
+        v-if='locations'
+        v-model='shownLocations'
+        :options='locations'
+        text-field='display_label',
+        value-field='tag'
+      )
+
     div(class='col-lg-auto')
       hr(class='d-lg-none')
 
@@ -102,7 +98,7 @@ div
             router-link(:to='{ name: "colleagues", params: { userId: user.id }}')
               | {{ user.display_label }}
               small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
-          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(day, user)') &nbsp;
+          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(day, user)' v-bind:style='determineCellStyle(day, user)') &nbsp;
           td(class='cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
 </template>
 
@@ -110,6 +106,7 @@ div
 import Vue from 'vue';
 import store from '../store';
 import * as types from '../store/mutation-types';
+import utils from '../utils';
 import moment from 'moment';
 
 export default {
@@ -129,8 +126,8 @@ export default {
       showHoliday: true,
       showLeave: true,
       showNoWork: true,
-      showHomeWork: true,
       showSickness: true,
+      shownLocations: [],
       countries: [],
       date: null,
       today: moment(),
@@ -141,6 +138,16 @@ export default {
  created: function() {
     this.setDate()
     this.reloadAvailability()
+
+    new Promise((resolve, reject) => {
+      if (!store.getters.locations) {
+        store.dispatch(types.NINETOFIVER_RELOAD_LOCATIONS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    }).then(() => {
+      this.shownLocations = store.getters.locations.map(location => `whereabout_${location.name.toLowerCase().replace(/ /g, '_')}`)
+    })
 
     new Promise((resolve, reject) => {
       if (!store.getters.users) {
@@ -161,6 +168,23 @@ export default {
 
   computed: {
     user: () => store.getters.user,
+
+    locations: function() {
+      if (store.getters.locations) {
+        return store.getters.locations.map(location => {
+          let colour = utils.stringToColour(location.display_label)
+          let display_label = `<span class="badge" style="background:${colour}">${location.display_label}</span>`
+          let tag = `whereabout_${location.name.toLowerCase().replace(/ /g, '_')}`
+
+          return {
+            'display_label': display_label,
+            'name': location.name,
+            'colour': colour,
+            'tag': tag,
+          }
+        })
+      }
+    },
 
     users: function() {
       if (store.getters.users) {
@@ -242,6 +266,26 @@ export default {
       this.filterCountry = country
     },
 
+    determineCellStyle: function(day, user) {
+      let date = moment(this.date).date(day).format('YYYY-MM-DD')
+      let style = {
+        background: null,
+      }
+
+      if (user && this.availability && this.availability['users'][user.id]['days'][date]) {
+        let tags = this.availability['users'][user.id]['days'][date]['tags']
+
+        this.shownLocations.forEach(tag => {
+          if (tags.includes(tag)) {
+            let location = this.locations.find(x => x.tag == tag)
+            style.background = location.colour
+          }
+        })
+      }
+
+      return style
+    },
+
     determineCellColor: function(day, user) {
       let date = moment(this.date).date(day).format('YYYY-MM-DD')
       let cls = []
@@ -250,21 +294,27 @@ export default {
         cls.push('cell-today')
       }
 
-      if (user && this.availability) {
-        if (this.showSickness && this.availability['sickness'][user.id].find(d => d == date)) {
+      if (user && this.availability && this.availability['users'][user.id]['days'][date]) {
+        let tags = this.availability['users'][user.id]['days'][date]['tags']
+
+        if (this.showSickness && tags.includes('sickness')) {
           cls.push('cell-sickness')
-        } else if (this.showSickness && this.availability['sickness_pending'][user.id].find(d => d == date)) {
+        } else if (this.showSickness && tags.includes('sickness_pending')) {
           cls.push('cell-sickness-pending')
-        } else if (this.showLeave && this.availability['leave'][user.id].find(d => d == date)) {
+        } else if (this.showLeave && tags.includes('leave')) {
           cls.push('cell-leave')
-        } else if (this.showLeave && this.availability['leave_pending'][user.id].find(d => d == date)) {
+        } else if (this.showLeave && tags.includes('leave_pending')) {
           cls.push('cell-leave-pending')
-        } else if (this.showHomeWork && this.availability['home_work'][user.id].find(d => d == date)) {
-          cls.push('cell-homework')
-        } else if (this.showHoliday && this.availability['holiday'][user.id].find(d => d == date)) {
+        } else if (this.showHoliday && tags.includes('holiday')) {
           cls.push('cell-holiday')
-        } else if (this.showNoWork && this.availability['no_work'][user.id].find(d => d == date)) {
+        } else if (this.showNoWork && tags.includes('no_work')) {
           cls.push('cell-nowork')
+        } else {
+          this.shownLocations.forEach(tag => {
+            if (tags.includes(tag)) {
+              cls.push(`cell-${tag}`)
+            }
+          })
         }
       }
 
@@ -342,6 +392,8 @@ tbody tr:hover td {
 }
 .cell-nowork {
   background-color: @nowork;
+}
+[class^='cell-whereabout_']:before, div[class*=' cell-whereabout_']:before {
 }
 .cell-na {
   background: repeating-linear-gradient(
