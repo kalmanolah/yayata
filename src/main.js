@@ -73,7 +73,6 @@ toastr.options = {
 }
 
 export const cfg_file_path = '/cfg/config.json'
-export const sw_file_path = '/service-worker.js'
 
 export const router = new VueRouter({
     routes: [{
@@ -220,14 +219,3 @@ Vue.http.get(cfg_file_path).then((response) => {
 }, (error) => {
     console.error(`Could not load configuration file!`)
 })
-
-console.debug(`Loading service worker file at ${sw_file_path}`)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(sw_file_path).then(res => {
-      console.debug('Service Worker registered', res)
-  }).catch(err => {
-      console.error('Service worker registration failed', err)
-    });
-  });
-}
