@@ -44,7 +44,8 @@ export default {
         status: 'closed',
         page_size: 2,
         order_by: '-year,-month',
-      }
+      },
+      full: false
     }).then(res => {
       this.recentlyClosedTimesheets = res.data.results.reverse()
     })
