@@ -274,8 +274,8 @@ export default {
         background: null,
       }
 
-      if (user && this.availability && this.availability['users'][user.id]['days'][date]) {
-        let tags = this.availability['users'][user.id]['days'][date]['tags']
+      if (user && this.availability && this.availability[user.id][date]) {
+        let tags = this.availability[user.id][date]
 
         this.shownLocations.forEach(tag => {
           if (tags.includes(tag)) {
@@ -296,8 +296,8 @@ export default {
         cls.push('cell-today')
       }
 
-      if (user && this.availability && this.availability['users'][user.id]['days'][date]) {
-        let tags = this.availability['users'][user.id]['days'][date]['tags']
+      if (user && this.availability && this.availability[user.id][date]) {
+        let tags = this.availability[user.id][date]
 
         if (this.showSickness && tags.includes('sickness')) {
           cls.push('cell-sickness')
