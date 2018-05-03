@@ -171,6 +171,8 @@ export default {
 
     locations: function() {
       if (store.getters.locations) {
+        let colours = new utils.ColorSequencer()
+
         return store.getters.locations.map(location => {
           let colour = utils.stringToColour(location.display_label)
           let display_label = `<span class="badge" style="background:${colour}">${location.display_label}</span>`
