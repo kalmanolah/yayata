@@ -226,7 +226,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            // styleClasses: ['half-width'],
+            // styleClasses: ['half-width-md'],
             get: function() {
               if (store.getters.my_active_contracts) {
                 return store.getters.my_active_contracts.find(contract => contract.id == model.contract)
@@ -246,7 +246,7 @@ export default {
             required: true,
             pattern: '^([0-9]{1,2}(?:(?::[0-9]{2})?(?:[\\.,][0-9]{1,2})?)?)$',
             validator: VueFormGenerator.validators.string,
-            styleClasses: ['third-width'],
+            styleClasses: ['third-width-md'],
           },
           {
             type: "select",
@@ -273,7 +273,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['third-width']
+            styleClasses: ['third-width-md']
           },
           {
             type: "select",
@@ -294,7 +294,7 @@ export default {
               return []
             },
             validator: VueFormGenerator.validators.required,
-            styleClasses: ['third-width']
+            styleClasses: ['third-width-md']
           },
           {
             type: "textArea",
@@ -326,21 +326,4 @@ export default {
 </script>
 
 <style lang="less">
-.half-width {
-  width: 50%;
-  float: left;
-
-  &+ .half-width {
-    padding-left: 5px;
-  }
-}
-
-.third-width {
-  width: 33%;
-  float: left;
-
-  &+ .third-width {
-    padding-left: 5px;
-  }
-}
 </style>

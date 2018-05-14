@@ -122,4 +122,24 @@ a {
     margin-bottom: 0
   }
 }
+
+@media all and (min-width: 768px) {
+  .half-width-md {
+    width: 50%;
+    float: left;
+
+    &+ .half-width-md {
+      padding-left: 5px;
+    }
+  }
+
+  .third-width-md {
+    width: 33%;
+    float: left;
+
+    &+ .third-width-md {
+      padding-left: 5px;
+    }
+  }
+}
 </style>

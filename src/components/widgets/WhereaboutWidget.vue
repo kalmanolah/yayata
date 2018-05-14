@@ -230,7 +230,7 @@ export default {
                 }
               },
             },
-            styleClasses: ['third-width']
+            styleClasses: ['third-width-md']
           },
           {
             type: "input",
@@ -240,7 +240,7 @@ export default {
             step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            styleClasses: ['third-width']
+            styleClasses: ['third-width-md']
           },
           {
             type: "input",
@@ -250,7 +250,7 @@ export default {
             step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            styleClasses: ['third-width']
+            styleClasses: ['third-width-md']
           },
           {
             type: "select",
@@ -300,21 +300,4 @@ export default {
 </script>
 
 <style lang="less">
-.half-width {
-  width: 50%;
-  float: left;
-
-  &+ .half-width {
-    padding-left: 5px;
-  }
-}
-
-.third-width {
-  width: 33%;
-  float: left;
-
-  &+ .third-width {
-    padding-left: 5px;
-  }
-}
 </style>

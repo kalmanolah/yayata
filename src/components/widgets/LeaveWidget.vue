@@ -251,7 +251,7 @@ export default {
             // visible: function(model) {
             //   return model.multiple_days
             // },
-            styleClasses: ['half-width', 'multiple-days-input']
+            styleClasses: ['half-width-md', 'multiple-days-input']
           },
           {
             type: "pikaday",
@@ -286,7 +286,7 @@ export default {
             // visible: function(model) {
             //   return model.multiple_days
             // },
-            styleClasses: ['half-width', 'multiple-days-input']
+            styleClasses: ['half-width-md', 'multiple-days-input']
           },
           {
             type: "pikaday",
@@ -309,7 +309,7 @@ export default {
             // visible: function(model) {
             //   return !model.multiple_days
             // },
-            styleClasses: ['third-width', 'single-day-input']
+            styleClasses: ['third-width-md', 'single-day-input']
           },
           {
             type: "input",
@@ -322,7 +322,7 @@ export default {
             // visible: function(model) {
             //   return !model.multiple_days
             // },
-            styleClasses: ['third-width', 'single-day-input']
+            styleClasses: ['third-width-md', 'single-day-input']
           },
           {
             type: "input",
@@ -335,7 +335,7 @@ export default {
             // visible: function(model) {
             //   return !model.multiple_days
             // },
-            styleClasses: ['third-width', 'single-day-input']
+            styleClasses: ['third-width-md', 'single-day-input']
           },
           {
             type: "select",
@@ -385,24 +385,6 @@ export default {
 </script>
 
 <style lang="less">
-.half-width {
-  width: 50%;
-  float: left;
-
-  &+ .half-width {
-    padding-left: 5px;
-  }
-}
-
-.third-width {
-  width: 33%;
-  float: left;
-
-  &+ .third-width {
-    padding-left: 5px;
-  }
-}
-
 .multiple-days {
   .single-day-input {
     display: none;
