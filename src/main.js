@@ -51,6 +51,7 @@ import Timesheets from './components/Timesheets.vue'
 import Colleagues from './components/Colleagues.vue'
 import Availability from './components/Availability.vue'
 import Import from './components/Import.vue'
+import FAQ from './components/FAQ.vue'
 
 
 // Vue.use(Vuex)
@@ -149,6 +150,11 @@ export const router = new VueRouter({
                     name: 'import',
                     path: '/import',
                     component: Import,
+                },
+                {
+                    name: 'faq',
+                    path: '/faq',
+                    component: FAQ,
                 },
             ],
         },

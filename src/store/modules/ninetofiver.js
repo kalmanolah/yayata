@@ -484,6 +484,12 @@ const getters = {
             route: {
                 name: 'import'
             }
+        },
+        {
+            label: 'FAQ',
+            route: {
+                name: 'faq'
+            }
         }
     ],
     my_active_contracts: state => state.my_active_contracts,
