@@ -61,7 +61,7 @@ module.exports = {
     }),
     new WorkboxPlugin.GenerateSW({
       clientsClaim: true,
-      skipWaiting: true,
+      skipWaiting: false,
     }),
     new WebpackPwaManifestPlugin({
       name: 'YAYATA',
