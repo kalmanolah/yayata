@@ -13,6 +13,7 @@ export default {
     next(vm => {
       vm.$store.commit(types.OAUTH2_SET_TOKEN, {})
       vm.$router.push({ name: 'home' })
+      window.location.reload()
     })
   }
 }

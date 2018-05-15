@@ -32,7 +32,7 @@ const mutations = {
     expiresAt.setTime(expiresAt.getTime() + (expiresIn * 1000))
     state.token.expiresAt = expiresAt
 
-    state.authenticated = (
+    state.authenticated = !!(
       state.token.accessToken &&
       state.token.refreshToken &&
       state.token.tokenType &&
