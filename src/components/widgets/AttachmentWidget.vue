@@ -144,6 +144,10 @@ export default {
           toastr.success('Attachments updated.')
           // this.$emit('success')
         })
+      }).catch(error => {
+        this.loading = false
+        toastr.error('Error updating attachments.')
+        this.$emit('error', error)
       })
     }
   }
