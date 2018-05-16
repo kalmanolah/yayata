@@ -19,6 +19,7 @@ div
           href='#'
           v-b-toggle='item.id'
           variant='info'
+          class='white-space-normal'
         )
           | {{ item.title }}
       b-collapse(

@@ -142,4 +142,8 @@ a {
     }
   }
 }
+
+.white-space-normal {
+    white-space: normal;
+}
 </style>
