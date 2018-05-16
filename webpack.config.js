@@ -59,10 +59,7 @@ module.exports = {
     new webpack.optimize.CommonsChunkPlugin({
       name: 'manifest'
     }),
-    new WorkboxPlugin.GenerateSW({
-      clientsClaim: true,
-      skipWaiting: false,
-    }),
+    new WorkboxPlugin.GenerateSW(),
     new WebpackPwaManifestPlugin({
       name: 'YAYATA',
       short_name: 'YAYATA',
