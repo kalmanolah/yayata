@@ -4,7 +4,7 @@ div(class='card card-top-blue mb-3')
   div(class='card-body')
     div(class='list-group mb-3')
       div(class='list-group-item d-flex justify-content-between align-items-center' v-for='(attachment, k) in existingAttachments')
-        | {{ attachment.name }}
+        | {{ attachment.display_label }}
 
         div(class='btn-group btn-group-sm')
           b-btn(
