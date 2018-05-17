@@ -176,7 +176,7 @@ export default {
           this.resetForm()
         }).catch((error) => {
           this.$emit('error', error)
-          toastr.errro('Error saving performance.')
+          toastr.error('Error saving performance.')
           this.loading = false
         });
       } else {
@@ -190,7 +190,7 @@ export default {
           this.loading = false
         }).catch((error) => {
           this.$emit('error', error)
-          toastr.errro('Error updating performance.')
+          toastr.error('Error updating performance.')
           this.loading = false
         });
       }

@@ -9,9 +9,3 @@ html(lang='en')
     div(id='app')
       router-view
     noscript Javascript support is required for this application.
-    script
-      | if ('serviceWorker' in navigator) {
-      |   window.addEventListener('load', () => {
-      |     navigator.serviceWorker.register('/service-worker.js')
-      |   })
-      | }

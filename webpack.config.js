@@ -59,9 +59,9 @@ module.exports = {
     new webpack.optimize.CommonsChunkPlugin({
       name: 'manifest'
     }),
-    new WorkboxPlugin.GenerateSW({
-      clientsClaim: false,
-      skipWaiting: false,
+    new WorkboxPlugin.InjectManifest({
+      swSrc: path.resolve('src/service-worker.js'),
+      swDest: 'service-worker.js'
     }),
     new WebpackPwaManifestPlugin({
       name: 'YAYATA',
@@ -80,8 +80,8 @@ module.exports = {
   ],
   output: {
     path: path.resolve(__dirname, './dist'),
-    // filename: isProd ? '[name].[chunkhash].js' : '[name].[hash].js',
-    filename: isProd ? '[name].js' : '[name].[hash].js',
+    filename: isProd ? '[name].[chunkhash].js' : '[name].[hash].js',
+    // filename: isProd ? '[name].js' : '[name].[hash].js',
   },
   module: {
     rules: [
@@ -106,8 +106,8 @@ module.exports = {
         test: /\.(png|jpg|gif|svg|woff|woff2|eot|ttf|otf)$/,
         loader: 'file-loader',
         options: {
-          // name: '[name].[ext]?[hash]',
-          name: '[name].[ext]',
+          name: '[name].[ext]?[hash]',
+          // name: '[name].[ext]',
         }
       },
       {

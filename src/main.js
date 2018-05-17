@@ -212,6 +212,7 @@ Vue.http.interceptors.push((request, next) => {
   })
 })
 
+// Load configuration file and initialize Vue
 console.debug(`Loading configuration file at ${cfg_file_path}`)
 Vue.http.get(cfg_file_path).then((response) => {
     console.debug('Configuration loaded', response.data)
@@ -225,3 +226,51 @@ Vue.http.get(cfg_file_path).then((response) => {
 }, (error) => {
     console.error(`Could not load configuration file!`)
 })
+
+// Install service worker
+if ('serviceWorker' in navigator) {
+  let _updateReady = function(worker) {
+    toastr.info('A new version of YAYATA is available. Click here to update!', 'Update available', {
+      timeOut: 0,
+      extendedTimeOut: 0,
+      closeButton: true,
+      onclick: function() {
+        worker.postMessage({ cmd: 'skipWaiting' })
+      }
+    })
+  }
+
+  let _trackInstalling = function(worker) {
+    worker.addEventListener('statechange', function() {
+      if (worker.state == 'installed') {
+        _updateReady(worker)
+      }
+    })
+  }
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      window.location.reload()
+    })
+
+    navigator.serviceWorker.register('/service-worker.js').then((reg) => {
+      if (!navigator.serviceWorker.controller) {
+        return
+      }
+
+      if (reg.waiting) {
+        _updateReady(reg.waiting)
+        return
+      }
+
+      if (reg.installing) {
+        _trackInstalling(reg.installing)
+        return
+      }
+
+      reg.addEventListener('updatefound', function() {
+        _trackInstalling(reg.installing)
+      })
+    })
+  })
+}
