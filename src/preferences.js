@@ -3,6 +3,7 @@ import * as types from './store/mutation-types'
 
 const key = {
     CALENDAR_SHOW_NO_WORK: 'calendar_show_no_work',
+    PERFORMANCE_SELECTED_CONTRACT_ID: 'performance_selected_contract_id',
 }
 
 

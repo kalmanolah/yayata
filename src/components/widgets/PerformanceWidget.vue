@@ -23,6 +23,7 @@ import toastr from 'toastr';
 import utils from '../../utils';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import preferences from '../../preferences';
 
 var model = {
   id: null,
@@ -108,7 +109,13 @@ export default {
         this.model.description = this.performance.description
       } else {
         this.model.id = null
-        contract_field.set(this.model, contract_field.values.call(this)[0].id)
+
+        // Attempt to set saved selected contract as selected contract
+        let contractIds = contract_field.values.call(this).map(x => x.id)
+        let selectedContractId = preferences.get(preferences.key.PERFORMANCE_SELECTED_CONTRACT_ID)
+        let contractId = selectedContractId && (contractIds.indexOf(selectedContractId) !== -1) ? selectedContractId : contractIds[0]
+        contract_field.set(this.model, contractId)
+
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.day = this.day ? this.day : moment().date()
         this.model.duration = this.duration ? this.duration : 1
@@ -165,6 +172,9 @@ export default {
       };
 
       if (!this.model.id) {
+        // Save last selected contract ID so we can select it upon logging new performance
+        preferences.set(preferences.key.PERFORMANCE_SELECTED_CONTRACT_ID, body.contract)
+
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
             path: '/my_performances/activity/',
             method: 'POST',
