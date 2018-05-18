@@ -3,7 +3,7 @@ div(class='card card-top-blue mb-3')
   div(class='card-header text-center d-flex justify-content-between')
     span(title='Go to previous day')
       i(class='fa fa-chevron-left chevron' @click='dayEarlier')
-    | 🎂 Birthdays for {{ selectedDay | moment('MMMM Do') }}
+    | 🎂 Birthdays for {{ selectedDay | moment('ddd, MMMM Do') }}
     span(title='Go to next day')
       i(class='fa fa-chevron-right chevron' @click='dayLater')
   ul(class='list-group list-group-flush')

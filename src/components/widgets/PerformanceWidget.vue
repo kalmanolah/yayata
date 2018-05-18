@@ -3,7 +3,7 @@ div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
   div(class='card-header text-center') ⏳&nbsp;
     span(v-if='!model.id') Log performance
     span(v-else) Update performance
-    span(v-if='date') &nbsp;for {{ date | moment('MMMM Do') }}
+    span(v-if='date') &nbsp;for {{ date | moment('ddd, MMMM Do') }}
 
   div(class='card-body')
     vue-form-generator(:schema="schema" :model="model" :options="formOptions" ref='form')
