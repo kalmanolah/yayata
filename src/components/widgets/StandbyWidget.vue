@@ -143,14 +143,19 @@ export default {
       schema: {
         fields: [
           {
-            type: "checklist",
+            type: "vueMultiSelect",
             label: "Contracts",
             model: "contracts",
             required: true,
-            listBox: true,
-            checklistOptions: {
-              value: "id",
-              name: "display_label"
+            validator: VueFormGenerator.validators.required,
+            selectOptions: {
+              key: "id",
+              label: "display_label",
+              trackBy: 'id',
+              showLabels: false,
+              multiple: true,
+              closeOnSelect: false,
+              hideSelected: true,
             },
             values: () => {
               if (store.getters.my_active_contracts) {
@@ -161,7 +166,14 @@ export default {
 
               return []
             },
-            validator: VueFormGenerator.validators.required,
+            get: function() {
+              if (store.getters.my_active_contracts && model.contracts) {
+                return store.getters.my_active_contracts.filter(contract => model.contracts.includes(contract.id))
+              }
+            },
+            set: function(model, value) {
+              model.contracts = value.map(x => x.id)
+            },
           },
           {
             type: "submit",
