@@ -310,7 +310,7 @@ export default {
             type: "textArea",
             label: "Description",
             model: "description",
-            max: 255,
+            max: 2048,
             rows: 2,
             validator: VueFormGenerator.validators.string
           },
