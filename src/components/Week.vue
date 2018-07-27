@@ -72,6 +72,11 @@ div
         div(class='card' :id='"calendar-day-" + date')
           div(class='card-header text-center') {{ date | moment('ddd, MMMM Do') }}
 
+          div(class='card-text text-muted text-center')
+            small
+              strong {{ dayDetails.total_hours | round }}
+              | &nbsp;/ {{ dayDetails.work_hours | round }} hours
+
           ul(class='list-group list-group-flush')
             //- Holidays
             li(class='list-group-item p-2' v-for='holiday in dayDetails.holidays')
@@ -140,24 +145,21 @@ div
                 vue-markdown(class='rendered-markdown' :source='performance.description')
 
           div(class='card-body p-0')
-          div(class='card-text p-2 justify-content-center d-flex' v-if='getTimesheetForDay(date)')
-            div(class='btn-group')
-              button(class='btn btn-outline-dark btn-sm' @click='addPerformance(date)' v-b-tooltip title='Log performance')
-                | ⏳
-              button(
-                v-if='supportContracts && supportContracts.length'
-                class='btn btn-outline-dark btn-sm'
-                v-b-tooltip title='Standby / On-call'
-                @click='editStandby(date)'
-              )
-                | 💤
-              button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip title='Log whereabout')
-                | 📍
 
-          div(class='card-footer text-center')
-            small
-              strong {{ dayDetails.total_hours | round }}
-              | &nbsp;/ {{ dayDetails.work_hours | round }} hours
+          div(class='card-footer' v-if='getTimesheetForDay(date)')
+            div(class='text-center')
+              div(class='btn-group')
+                button(class='btn btn-outline-dark btn-sm' @click='addPerformance(date)' v-b-tooltip title='Log performance')
+                  | ⏳
+                button(
+                  v-if='supportContracts && supportContracts.length'
+                  class='btn btn-outline-dark btn-sm'
+                  v-b-tooltip title='Standby / On-call'
+                  @click='editStandby(date)'
+                )
+                  | 💤
+                button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip title='Log whereabout')
+                  | 📍
 </template>
 
 <script>
