@@ -56,15 +56,52 @@ export default {
   created: function() {
     this.items = [
       {
-        title: 'How do I access my leave as an iCal feed for use in Thunderbird, Google Calendar, Zimbra, etc.?',
+        title: 'How do I access leave or whereabouts as an iCal feed for use in Thunderbird, Google Calendar, Zimbra, etc.?',
         id: 'ical-feed',
         description: `
 In most applications, you can add an external calendar from a URL.
 To generate a feed URL which external applications can access, you will need an API key. You can generate one by visiting [this page](${this.baseUrl}/accounts/api_keys/create/).
-Use the following URL to access your personal leave feed, **making sure to replace "\`XXXXXXXX\`" with your API key**:
-\`\`\`
-${this.baseUrl}/api/v1/services/feeds/leave/me.ics?api_key=XXXXXXXX
-\`\`\`
+Use one of the URLs below (depending on your use case) to access a feed, **making sure to replace "\`XXXXXXXX\`" with your API key**.
+
+* Leave:
+
+  * Your own leave:
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/leave/me.ics?api_key=XXXXXXXX
+    \`\`\`
+
+  * All leave:
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/leave.ics?api_key=XXXXXXXX
+    \`\`\`
+
+  * A specific user's leave (replace \`USERNAME\` with their username):
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/leave/user/USERNAME.ics?api_key=XXXXXXXX
+    \`\`\`
+
+* Whereabouts:
+
+  * Your own whereabouts:
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/whereabouts/me.ics?api_key=XXXXXXXX
+    \`\`\`
+
+  * All whereabouts:
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/whereabouts.ics?api_key=XXXXXXXX
+    \`\`\`
+
+  * A specific user's whereabouts (replace \`USERNAME\` with their username):
+
+    \`\`\`
+    ${this.baseUrl}/api/v1/services/feeds/whereabouts/user/USERNAME.ics?api_key=XXXXXXXX
+    \`\`\`
         `,
       },
       {
