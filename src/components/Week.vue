@@ -43,6 +43,7 @@ div
   b-modal(ref='leaveModal' hide-header=true hide-footer=true lazy=true size='lg')
     LeaveWidget(
       :leave='selectedLeave'
+      :date='selectedDate'
       v-on:success='onLeaveModified()'
     )
 
@@ -185,6 +186,8 @@ div
                   | 💤
                 button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip title='Log whereabout')
                   | 📍
+                button(class='btn btn-outline-dark btn-sm' @click='addLeave(date)' v-b-tooltip title='Request leave')
+                  | 🏖️
 </template>
 
 <script>
@@ -227,6 +230,7 @@ export default {
       selectedWhereabout: null,
       selectedLeave: null,
       selectedDay: null,
+      selectedDate: null,
     }
   },
 
@@ -395,6 +399,7 @@ export default {
     selectDay: function(date) {
       this.selectedTimesheet = this.getTimesheetForDay(date)
       this.selectedDay = moment(date).date()
+      this.selectedDate = moment(date)
       this.selectedDuration = Math.round(this.rangeInfo.details[date].remaining_hours * 100) / 100
     },
 
@@ -444,6 +449,12 @@ export default {
       this.$refs.whereaboutModal.hide()
       this.selectedWhereabout = null
       this.reloadData()
+    },
+
+    addLeave: function(date) {
+      this.selectDay(date)
+      this.selectedLeave = null
+      this.$refs.leaveModal.show()
     },
 
     editLeave: function(date, leave) {
@@ -541,9 +552,5 @@ export default {
       rgba(0, 215, 0, 0.1) 20px
     );
   }
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>

@@ -146,4 +146,8 @@ a {
 .white-space-normal {
     white-space: normal;
 }
+
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>

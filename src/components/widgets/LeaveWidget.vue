@@ -57,7 +57,8 @@ export default {
   ],
 
   props: [
-    'leave'
+    'leave',
+    'date',
   ],
 
   created: function() {
@@ -104,9 +105,9 @@ export default {
         this.model.multiple_days = false
         this.model.leave_type = store.getters.leave_types[0].id
         this.model.description = null
-        this.model.start_date = moment()
-        this.model.end_date = moment()
-        this.model.date = moment()
+        this.model.start_date = moment(this.date)
+        this.model.end_date = moment(this.date)
+        this.model.date = moment(this.date)
         this.model.from_time = '09:00'
         this.model.until_time = null
 
