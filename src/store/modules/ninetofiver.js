@@ -1427,7 +1427,7 @@ const actions = {
     async [types.NINETOFIVER_RELOAD_MY_TIMESHEETS](store, options = {}) {
         options.path = '/my_timesheets/'
         options.params = {}
-        options.params['order_by'] = '-year,-month'
+        options.params['order_by'] = '-year,month'
 
         let res = await store.dispatch(types.NINETOFIVER_API_REQUEST, options)
         store.commit(types.NINETOFIVER_SET_MY_TIMESHEETS, {
