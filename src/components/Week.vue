@@ -40,6 +40,18 @@ div
       v-on:success='onPerformanceModified()'
     )
 
+  b-modal(ref='leaveModal' hide-header=true hide-footer=true lazy=true size='lg')
+    LeaveWidget(
+      :leave='selectedLeave'
+      v-on:success='onLeaveModified()'
+    )
+
+  b-modal(ref='attachmentModal' hide-header=true hide-footer=true lazy=true size='lg')
+    AttachmentWidget(
+      :leave='selectedLeave'
+      v-on:success='onAttachmentModified()'
+    )
+
   b-modal(ref='standbyModal' hide-header=true hide-footer=true lazy=true size='lg')
     StandbyWidget(
       :day='selectedDay'
@@ -85,25 +97,38 @@ div
                 div 🌐
 
             //- Approved leave for range info details
-            li(class='list-group-item p-2' v-for='leave in dayDetails.leaves')
+            li(
+              class='list-group-item p-2'
+              v-for='leave in dayDetails.leaves'
+            )
               div(class='d-flex justify-content-between')
                 div {{ leave.leave_type.display_label }}
                 div 🏖️
-              div(v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)' class='text-muted')
-                small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
-              div(v-if='leave.description' class='text-muted')
-                small {{ leave.description }}
+              div(class='d-flex justify-content-between')
+                div
+                  div(v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)' class='text-muted')
+                    small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+                  div(v-if='leave.description' class='text-muted')
+                    small {{ leave.description }}
+                div(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)') 📎
 
             //- Pending leave, fetched separately
             template(v-for='leave in pendingLeave' v-if='pendingLeave')
-              li(class='list-group-item p-2' v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)')
-                div(class='d-flex justify-content-between')
-                  div {{ leave.leave_type.display_label }}
-                  div(v-b-tooltip title='Pending approval') ❓🏖️
-                div(class='text-muted')
-                  small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
-                div(v-if='leave.description' class='text-muted')
-                  small {{ leave.description }}
+              template(v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)')
+                li(
+                  class='list-group-item list-group-item-action cursor-pointer p-2'
+                  v-on:click.prevent='getTimesheetForDay(date) ? editLeave(date, leave) : null'
+                )
+                  div(class='d-flex justify-content-between')
+                    div {{ leave.leave_type.display_label }}
+                    div(v-b-tooltip title='Pending approval') ❓🏖️
+                  div(class='d-flex justify-content-between')
+                    div
+                      div(class='text-muted')
+                        small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+                      div(v-if='leave.description' class='text-muted')
+                        small {{ leave.description }}
+                    div(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)') 📎
 
             //- Whereabouts
             template(v-for='whereabout in whereabouts' v-if='whereabouts')
@@ -171,6 +196,8 @@ import VueMarkdown from 'vue-markdown';
 import PerformanceWidget from './widgets/PerformanceWidget.vue';
 import StandbyWidget from './widgets/StandbyWidget.vue';
 import WhereaboutWidget from './widgets/WhereaboutWidget.vue';
+import LeaveWidget from './widgets/LeaveWidget.vue';
+import AttachmentWidget from './widgets/AttachmentWidget.vue';
 
 export default {
   name: 'Week',
@@ -182,6 +209,8 @@ export default {
     PerformanceWidget,
     StandbyWidget,
     WhereaboutWidget,
+    LeaveWidget,
+    AttachmentWidget,
   },
 
   data () {
@@ -196,6 +225,7 @@ export default {
       selectedTimesheet: null,
       selectedDuration: null,
       selectedWhereabout: null,
+      selectedLeave: null,
       selectedDay: null,
     }
   },
@@ -414,7 +444,31 @@ export default {
       this.$refs.whereaboutModal.hide()
       this.selectedWhereabout = null
       this.reloadData()
-    }
+    },
+
+    editLeave: function(date, leave) {
+      this.selectDay(date)
+      this.selectedLeave = leave
+      this.$refs.leaveModal.show()
+    },
+
+    onLeaveModified: function() {
+      this.$refs.leaveModal.hide()
+      this.selectedLeave = null
+      this.reloadData()
+    },
+
+    editAttachment: function(date, leave) {
+      this.selectDay(date)
+      this.selectedLeave = leave
+      this.$refs.attachmentModal.show()
+    },
+
+    onAttachmentModified: function() {
+      this.$refs.attachmentModal.hide()
+      this.selectedLeave = null
+      // this.reloadData()
+    },
   },
 
   filters: {

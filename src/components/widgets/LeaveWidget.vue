@@ -1,6 +1,8 @@
 <template lang="pug">
 div(class='card card-top-blue mb-3')
-  div(class='card-header text-center') 🏖️ Request leave
+  div(class='card-header text-center') 🏖️&nbsp;
+    span(v-if='!model.id') Request leave
+    span(v-else) Update leave
   div(class='card-body')
     div(class='text-center')
       toggle-button(
@@ -17,14 +19,12 @@ div(class='card card-top-blue mb-3')
 
     vue-form-generator(:schema="schema" :model="model" :options="formOptions" v-bind:class='{ "single-day": !model.multiple_days, "multiple-days": model.multiple_days }')
 
-    b-form-fieldset
-      label Attachments
-      b-form-file(v-model='model.attachments' :multiple='true' ref='attachments')
-
     div(class='form-group')
       div(class='row justify-content-between')
         div(class='col')
           input(class='btn btn-primary' type="submit" value="Save" @click="submit()")
+        div(class='col-auto' v-if='model.id')
+          input(class='btn btn-danger' type="submit" value="Delete" @click="remove()")
 </template>
 
 <script>
@@ -43,7 +43,6 @@ var model = {
   date: moment(),
   from_time: '09:00',
   until_time: null,
-  attachments: [],
   multiple_days: false
 }
 var submit = null
@@ -55,6 +54,10 @@ export default {
   name: 'LeaveWidget',
 
   mixins: [
+  ],
+
+  props: [
+    'leave'
   ],
 
   created: function() {
@@ -86,31 +89,41 @@ export default {
     },
 
     resetForm: function() {
-      this.model.leave_type = store.getters.leave_types[0].id
-      this.$refs.attachments.reset()
-
-      this.model.description = null
-      this.model.start_date = moment()
-      this.model.end_date = moment()
-      this.model.date = moment()
-      this.model.from_time = '09:00'
-      this.model.until_time = null
-      this.model.attachments = []
-      this.model.multiple_days = false
-
-      if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.my_current_work_schedule) {
-        let dow_prop = this.model.date.format('dddd').toLowerCase()
-        let dow_work = store.getters.my_current_work_schedule[dow_prop]
-
-        let hours = Math.floor(dow_work)
-        let minutes = Math.round((dow_work % 1) * 60)
-
-        let from_time = moment(this.model.from_time, 'HH:mm')
-        let until_time =  moment(from_time).hour(Number(from_time.format('HH')) + hours).minute(Number(from_time.format('mm')) + minutes)
-
-        this.model.until_time = until_time.format('HH:mm')
+      if (this.leave) {
+        this.model.id = this.leave.id
+        this.model.description = this.leave.description
+        this.model.leave_type = this.leave.leave_type.id
+        this.model.multiple_days = this.leave.leavedate_set.length > 1
+        this.model.date = moment(this.leave.leavedate_set[0].starts_at)
+        this.model.start_date = moment(this.leave.leavedate_set[0].starts_at)
+        this.model.end_date = moment(this.leave.leavedate_set[this.leave.leavedate_set.length - 1].ends_at)
+        this.model.from_time = moment(this.leave.leavedate_set[0].starts_at).format('HH:mm')
+        this.model.until_time = moment(this.leave.leavedate_set[this.leave.leavedate_set.length - 1].ends_at).format('HH:mm')
       } else {
-        this.model.until_time = '17:00'
+        this.model.id = null
+        this.model.multiple_days = false
+        this.model.leave_type = store.getters.leave_types[0].id
+        this.model.description = null
+        this.model.start_date = moment()
+        this.model.end_date = moment()
+        this.model.date = moment()
+        this.model.from_time = '09:00'
+        this.model.until_time = null
+
+        if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.my_current_work_schedule) {
+          let dow_prop = this.model.date.format('dddd').toLowerCase()
+          let dow_work = store.getters.my_current_work_schedule[dow_prop]
+
+          let hours = Math.floor(dow_work)
+          let minutes = Math.round((dow_work % 1) * 60)
+
+          let from_time = moment(this.model.from_time, 'HH:mm')
+          let until_time =  moment(from_time).hour(Number(from_time.format('HH')) + hours).minute(Number(from_time.format('mm')) + minutes)
+
+          this.model.until_time = until_time.format('HH:mm')
+        } else {
+          this.model.until_time = '17:00'
+        }
       }
 
       dateSet = false
@@ -148,69 +161,52 @@ export default {
         body.ends_at = end_date.format(dt_format)
       }
 
-      if (!this.model.id) {
-        store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/services/leave_request/',
-            method: 'POST',
-            body: body,
-        }).then((response) => {
-          new Promise((resolve, reject) => {
-            if (this.model.attachments.length) {
-              // Upload all attachments if required
-              let attachment_promises = this.model.attachments.map(attachment => {
-                let attachment_form = new FormData()
-                attachment_form.append('name', attachment.name)
-                attachment_form.append('file', attachment)
-
-                return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-                  path: '/my_attachments/',
-                  method: 'POST',
-                  body: attachment_form
-                })
-              })
-
-              Promise.all(attachment_promises).then(attachment_responses => {
-                // Link attachments to leave
-                let attachment_ids = attachment_responses.map(attachment_response => {
-                  return attachment_response.data.id
-                })
-
-                store.dispatch(types.NINETOFIVER_API_REQUEST, {
-                  path: '/my_leaves/' + response.data.id + '/',
-                  method: 'PATCH',
-                  body: {
-                    attachments: attachment_ids
-                  }
-                }).then(() => {
-                  resolve()
-                })
-              })
-            } else {
-              resolve()
-            }
-          }).then(() => {
-            this.$emit('success', response)
-            toastr.success('Leave requested.')
-            this.loading = false
-            this.resetForm()
-          })
-        }).catch((error) => {
-          this.$emit('error', error)
-          toastr.error('Error requesting leave.')
-
-          try {
-            for (var key in error.data) {
-              error.data[key].forEach((err) => {
-                toastr.error(err.message)
-              })
-            }
-          } catch(err) {}
-
-          this.loading = false
-        });
-      } else {
-        // @TODO Implement update?
+      if (this.model.id) {
+        body.leave = this.model.id
       }
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: '/services/leave_request/',
+          method: 'POST',
+          body: body,
+      }).then((response) => {
+        this.$emit('success', response)
+        toastr.success('Leave requested.')
+        this.loading = false
+        this.resetForm()
+      }).catch((error) => {
+        this.$emit('error', error)
+        toastr.error('Error requesting leave.')
+
+        try {
+          for (var key in error.data) {
+            error.data[key].forEach((err) => {
+              toastr.error(err.message)
+            })
+          }
+        } catch(err) {}
+
+        this.loading = false
+      });
+    },
+
+    remove: function() {
+      if (this.loading) return
+      this.loading = true
+
+      store.dispatch(types.NINETOFIVER_API_REQUEST, {
+          path: `/my_leaves/${this.model.id}/`,
+          method: 'DELETE',
+      }).then((response) => {
+        this.$emit('success', response)
+        toastr.success('Leave deleted.')
+        this.loading = false
+        this.resetForm()
+      }).catch((error) => {
+        this.$emit('error', error)
+        toastr.error('Error deleting leave.')
+        this.loading = false
+      });
     },
   },
 
