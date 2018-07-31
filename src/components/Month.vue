@@ -16,9 +16,9 @@ div
       hr(class='d-lg-none')
 
       div(class='btn-group' role='group')
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='submitTimesheet()') Submit
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active")' @click='submitTimesheet()') Submit
         button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='editAttachment()') Attachments
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='bulkAdd()') Bulk add
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active") && rangeInfo' @click='bulkAdd()') Bulk add
   hr
 
   b-modal(ref='bulkAddModal' hide-header=true hide-footer=true lazy=true size='lg')
@@ -117,8 +117,8 @@ export default {
     this.reloadData()
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_open_timesheets) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
+      if (!store.getters.my_timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS).then(() => resolve())
       } else{
         resolve()
       }
@@ -233,7 +233,7 @@ export default {
 
     onTimesheetSubmitted: function() {
       this.$refs.timesheetSubmissionModal.hide()
-      store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS)
+      store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
     },
 
     editAttachment: function() {
@@ -267,9 +267,9 @@ export default {
     },
 
     timesheet: function() {
-      if (store.getters.my_open_timesheets) {
-        return store.getters.my_open_timesheets.filter(timesheet => {
-          return (timesheet.status == 'active') && (timesheet.year == moment(this.date).format('YYYY')) && (timesheet.month == moment(this.date).format('MM'))
+      if (store.getters.my_timesheets) {
+        return store.getters.my_timesheets.filter(timesheet => {
+          return (timesheet.year == moment(this.date).format('YYYY')) && (timesheet.month == moment(this.date).format('MM'))
         })[0]
       }
     }

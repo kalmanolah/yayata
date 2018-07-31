@@ -96,6 +96,7 @@ const state = {
     my_current_timesheet: null,
     my_current_month_info: null,
     my_open_timesheets: null,
+    my_timesheets: null,
     my_importable_performances: null,
     my_current_work_schedule: null,
     locations: null,
@@ -214,6 +215,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_MY_CURRENT_TIMESHEET](state, { my_current_timesheet }) {
         state.my_current_timesheet = my_current_timesheet;
+    },
+    [types.NINETOFIVER_SET_MY_TIMESHEETS](state, { my_timesheets }) {
+        state.my_timesheets = my_timesheets;
     },
     [types.NINETOFIVER_SET_MY_CURRENT_MONTH_INFO](state, { my_current_month_info }) {
         state.my_current_month_info = my_current_month_info;
@@ -497,6 +501,7 @@ const getters = {
     my_current_timesheet: state => state.my_current_timesheet,
     my_current_month_info: state => state.my_current_month_info,
     my_open_timesheets: state => state.my_open_timesheets,
+    my_timesheets: state => state.my_timesheets,
     my_importable_performances: state => state.my_importable_performances,
     my_current_work_schedule: state => state.my_current_work_schedule,
     locations: state => state.locations,
@@ -1384,21 +1389,20 @@ const actions = {
         });
     },
 
-    [types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET](store, options = {}) {
-        options.path = '/my_timesheets/'
-        options.params = {}
-        options.params['year'] = new Date().getFullYear()
-        options.params['month'] = new Date().getMonth() + 1
+    async [types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET](store, options = {}) {
+        let year = new Date().getFullYear()
+        let month = new Date().getMonth() + 1
 
-        return new Promise((resolve, reject) => {
-            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
-                store.commit(types.NINETOFIVER_SET_MY_CURRENT_TIMESHEET, {
-                    my_current_timesheet: res.data.results.length ? res.data.results[0] : null
-                })
-                resolve(res)
-            }, (res) => {
-                reject(res)
-            })
+        if (!store.state.my_timesheets) {
+            await store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
+        }
+
+        let current_timesheet = store.state.my_timesheets.filter(ts => {
+            return (ts.year == year) && (ts.month == month)
+        })[0]
+
+        store.commit(types.NINETOFIVER_SET_MY_CURRENT_TIMESHEET, {
+            my_current_timesheet: current_timesheet
         })
     },
 
@@ -1420,21 +1424,28 @@ const actions = {
         })
     },
 
-    [types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS](store, options = {}) {
+    async [types.NINETOFIVER_RELOAD_MY_TIMESHEETS](store, options = {}) {
         options.path = '/my_timesheets/'
         options.params = {}
-        options.params['status!'] = 'closed'
-        options.params['order_by'] = 'year,month'
+        options.params['order_by'] = '-year,-month'
 
-        return new Promise((resolve, reject) => {
-            store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
-                store.commit(types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS, {
-                    my_open_timesheets: res.data.results
-                })
-                resolve(res)
-            }, (res) => {
-                reject(res)
-            })
+        let res = await store.dispatch(types.NINETOFIVER_API_REQUEST, options)
+        store.commit(types.NINETOFIVER_SET_MY_TIMESHEETS, {
+            my_timesheets: res.data.results
+        })
+    },
+
+    async [types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS](store, options = {}) {
+        if (!store.state.my_timesheets) {
+            await store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
+        }
+
+        let open_timesheets = store.state.my_timesheets.filter(ts => {
+            return ts.status !== 'closed';
+        })
+
+        store.commit(types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS, {
+            my_open_timesheets: open_timesheets
         })
     },
 

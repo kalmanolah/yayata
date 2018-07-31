@@ -16,6 +16,7 @@ module.exports = (env, argv) => {
   let cfg = {
     entry: {
       main: [
+        'babel-polyfill',
         './src/main.js'
       ],
     },
