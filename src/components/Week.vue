@@ -503,6 +503,10 @@ export default {
   padding-left: @calendar-day-padding;
   padding-right: @calendar-day-padding;
 
+  .card {
+    border-top-width: 3px;
+  }
+
   @media all and (min-width: 768px) {
     // width: 14.2857%;
     // float: left;
