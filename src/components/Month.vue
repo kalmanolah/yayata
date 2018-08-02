@@ -50,7 +50,7 @@ div
     div(class='weekdays calendar-row row')
       div(class='calendar-day col-md d-none d-md-block' v-for='weekDay in weekDays') {{ weekDay }}
       div(class="w-100")
-      div(class='calendar-day col-md' v-for='n in startDayOffset')
+      div(class='calendar-day calendar-day-filler col-md' v-for='n in startDayOffset')
 
       template(v-for='(dayDetails, date) in sortByKey(rangeInfo.details)')
         div(
@@ -300,6 +300,10 @@ export default {
     border-top-width: 3px;
   }
 
+  &.calendar-day-filler {
+    display: none;
+  }
+
   @media all and (min-width: 768px) {
     // width: 14.2857%;
     // float: left;
@@ -310,15 +314,15 @@ export default {
     .card {
       min-height: 3rem;
     }
+
+    &.calendar-day-filler {
+      display: inherit;
+    }
   }
 
   > a {
     color: inherit;
     text-decoration: initial;
-  }
-
-  &.calendar-day-hidden {
-    display: none;
   }
 }
 
