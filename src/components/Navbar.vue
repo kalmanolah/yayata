@@ -11,8 +11,9 @@ div(class='navbar navbar-light bg-light navbar-expand')
       ok-disabled=true
     )
       div(class='list-group list-group-flush text-center' @click='hideModal()')
-        router-link(v-for='navbarItem in navbarItems' :to='navbarItem.route' class='list-group-item list-group-item-action')
-          h2 {{ navbarItem.label }}
+        template(v-for='navbarItem in navbarItems')
+          router-link(v-if='!navbarItem.divider' :to='navbarItem.route' class='list-group-item list-group-item-action')
+            h2 {{ navbarItem.label }}
 
   div(class='navbar-collapse collapse' id='navbarSupportedContent')
     ul(class='navbar-nav ml-auto')

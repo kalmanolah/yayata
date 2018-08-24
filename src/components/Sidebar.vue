@@ -6,8 +6,11 @@ div
         img(class='img-fluid mb-4' src='../assets/img/logo_text.svg')
 
       nav(class='nav flex-column nav-pills')
-        router-link(v-for='navbarItem in navbarItems' :to='navbarItem.route' class='nav-item nav-link')
-          | {{ navbarItem.label }}
+        template(v-for='navbarItem in navbarItems')
+          div(v-if='navbarItem.divider')
+            hr(class="my-1")
+          router-link(v-else :to='navbarItem.route' class='nav-item nav-link')
+            | {{ navbarItem.label }}
 
       div(class='sidebar-datepicker')
         input(type='hidden' ref='sidebar-datepicker')

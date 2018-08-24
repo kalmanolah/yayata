@@ -454,6 +454,24 @@ const getters = {
             }
         },
         {
+            divider: true
+        },
+        {
+            label: 'This week',
+            route: {
+                name: 'calendar_week_redirect'
+            }
+        },
+        {
+            label: 'This month',
+            route: {
+                name: 'calendar_month_redirect'
+            }
+        },
+        {
+            divider: true
+        },
+        {
             label: 'Timesheets',
             route: {
                 name: 'timesheets'
@@ -469,12 +487,6 @@ const getters = {
             label: 'Colleagues',
             route: {
                 name: 'colleagues_redirect'
-            }
-        },
-        {
-            label: 'Calendar',
-            route: {
-                name: 'calendar_redirect'
             }
         },
         {
