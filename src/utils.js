@@ -202,6 +202,17 @@ const stringToColour = function(str) {
     return sequenceColours[res]
 }
 
+// Time of day options
+const getTimeOptions = () => {
+    let res = [];
+    [...Array(24).keys()].forEach(h => {
+        [0, 15, 30, 45].forEach(m => {
+            res.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`)
+        })
+    })
+    return res
+}
+
 
 export default {
     sortByKey,
@@ -209,4 +220,5 @@ export default {
     transformDuration,
     stringToColour,
     ColorSequencer,
+    getTimeOptions,
 }

@@ -148,8 +148,9 @@ div
 
             //- Standby performance
             li(
-              class='list-group-item p-2'
+              class='list-group-item list-group-item-action p-2 cursor-pointer'
               v-for='performance in dayDetails.standby_performances'
+              v-on:click.prevent='getTimesheetForDay(date) ? editStandby(date) : null'
             )
               div(class='d-flex justify-content-between')
                 div {{ performance.contract.display_label }}

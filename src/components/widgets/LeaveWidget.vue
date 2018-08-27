@@ -33,6 +33,7 @@ import VueFormGenerator from 'vue-form-generator';
 import toastr from 'toastr';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import utils from '../../utils';
 
 var model = {
   id: null,
@@ -309,29 +310,21 @@ export default {
             styleClasses: ['third-width-md', 'single-day-input']
           },
           {
-            type: "input",
-            inputType: "time",
+            type: "select",
             label: "From",
             model: "from_time",
-            step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            // visible: function(model) {
-            //   return !model.multiple_days
-            // },
+            values: utils.getTimeOptions().map(x => { return {id: x, name: x} }),
             styleClasses: ['third-width-md', 'single-day-input']
           },
           {
-            type: "input",
-            inputType: "time",
+            type: "select",
             label: "Until",
             model: "until_time",
-            step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
-            // visible: function(model) {
-            //   return !model.multiple_days
-            // },
+            values: utils.getTimeOptions().map(x => { return {id: x, name: x} }),
             styleClasses: ['third-width-md', 'single-day-input']
           },
           {

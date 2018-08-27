@@ -233,23 +233,21 @@ export default {
             styleClasses: ['third-width-md']
           },
           {
-            type: "input",
-            inputType: "time",
+            type: "select",
             label: "From",
             model: "start_time",
-            step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
+            values: utils.getTimeOptions().map(x => { return {id: x, name: x} }),
             styleClasses: ['third-width-md']
           },
           {
-            type: "input",
-            inputType: "time",
+            type: "select",
             label: "Until",
             model: "end_time",
-            step: 300,
             required: true,
             validator: VueFormGenerator.validators.time,
+            values: utils.getTimeOptions().map(x => { return {id: x, name: x} }),
             styleClasses: ['third-width-md']
           },
           {
