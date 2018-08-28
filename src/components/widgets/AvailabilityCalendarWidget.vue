@@ -14,7 +14,9 @@ div(v-if='availability')
       div(class='row no-gutters')
         div(v-for='n in startDayOffset' class='col')
         template(v-for='(tags, day, idx) in sortByKey(availability)')
-          div(class='col')
+          div(v-if='(getDayOfWeek(day) == 1) && (idx)' class='w-100')
+            hr(class='my-0')
+          div(class='col calendar-day')
             span(v-bind:class='{"font-weight-bold text-primary": isToday(day)}') {{ day | moment('DD') }}
             br
             template(v-if='tags.includes("no_work")')
@@ -29,7 +31,6 @@ div(v-if='availability')
               span(title='Sickness') 😷
             template(v-else v-if='tags.includes("sickness_pending")')
               span(title='Sickness (pending)') ❓😷️
-          div(v-if='getDayOfWeek(day) == 0' class='w-100')
         div(v-for='n in endDayOffset' class='col')
 </template>
 

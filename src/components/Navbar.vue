@@ -18,6 +18,7 @@ div(class='navbar navbar-light bg-light navbar-expand')
   div(class='navbar-collapse collapse' id='navbarSupportedContent')
     ul(class='navbar-nav ml-auto')
       b-nav-item-dropdown(v-if='user' :text='user.display_label' right)
+        b-dropdown-item(:to='{ name: "colleague", params: { userId: user.id } }') Profile
         b-dropdown-item(:to='{ name: "auth.logout" }') Logout
 </template>
 
