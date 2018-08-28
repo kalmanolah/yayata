@@ -9,7 +9,7 @@ div(class='card card-top-blue mb-3')
   ul(class='list-group list-group-flush')
     router-link(
       v-for='(user, index) in birthdays'
-      :to='{ name: "colleagues", params: { userId: user.id }}'
+      :to='{ name: "colleague", params: { userId: user.id }}'
       class='list-group-item'
     ) {{ user.display_label }}
   div(class='card-body text-center' v-if='!birthdays.length') Nothing to see here. 😞

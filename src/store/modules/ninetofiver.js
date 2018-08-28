@@ -486,7 +486,7 @@ const getters = {
         {
             label: 'Colleagues',
             route: {
-                name: 'colleagues_redirect'
+                name: 'colleagues'
             }
         },
         {

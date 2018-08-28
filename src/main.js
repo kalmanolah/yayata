@@ -49,6 +49,7 @@ import Week from './components/Week.vue'
 import Leave from './components/Leave.vue'
 import Timesheets from './components/Timesheets.vue'
 import Colleagues from './components/Colleagues.vue'
+import Colleague from './components/Colleague.vue'
 import Availability from './components/Availability.vue'
 import Import from './components/Import.vue'
 import FAQ from './components/FAQ.vue'
@@ -112,14 +113,14 @@ export const router = new VueRouter({
                     component: Week,
                 },
                 {
-                    name: 'colleagues_redirect',
+                    name: 'colleagues',
                     path: '/colleagues',
-                    redirect: '/colleagues/all'
+                    component: Colleagues,
                 },
                 {
-                    name: 'colleagues',
+                    name: 'colleague',
                     path: '/colleagues/:userId',
-                    component: Colleagues,
+                    component: Colleague,
                 },
                 {
                     name: 'leave',

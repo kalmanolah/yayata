@@ -1,3 +1,5 @@
+import MD5 from 'md5.js'
+
 // Return a copy of the given object where values are sorted by key
 const sortByKey = (obj) => {
     let res = {}
@@ -213,6 +215,11 @@ const getTimeOptions = () => {
     return res
 }
 
+const getGravatarUrl = (email, def = 'identicon', size = '250') => {
+    let emailHash = new MD5().update(email).digest('hex')
+    return `//www.gravatar.com/avatar/${emailHash}?d=${def}&s=${size}`
+}
+
 
 export default {
     sortByKey,
@@ -221,4 +228,5 @@ export default {
     stringToColour,
     ColorSequencer,
     getTimeOptions,
+    getGravatarUrl,
 }

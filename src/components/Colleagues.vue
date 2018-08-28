@@ -6,6 +6,10 @@ div(class='row')
 
     div(v-if='tableData')
       v-client-table(:columns="tableColumns" :data="tableData" :options="tableOptions")
+        template(slot='display_label' slot-scope='props')
+          router-link(:to='{ name: "colleague", params: { userId: props.row.id }}')
+            | {{ props.row.display_label }}
+
         template(slot='birth_date' slot-scope='props')
           span(v-if='props.row.userinfo && props.row.userinfo.birth_date') {{ props.row.userinfo.birth_date | moment('YYYY-MM-DD') }}
 
@@ -51,7 +55,7 @@ export default {
           is: 'fa-sort'
         },
         orderBy: {
-          column: 'display_label',
+          column: 'join_date',
           ascending: true
         },
         customSorting: {
@@ -147,10 +151,6 @@ export default {
   },
 
   computed: {
-    userId: function() {
-      return this.$route.params.userId
-    },
-
     tableData: function() {
       if (store.getters.users) {
         let users = store.getters.users.slice(0)
@@ -163,18 +163,9 @@ export default {
           })
         }
 
-        if (this.userId != 'all') {
-          users = users.filter(user => {
-            return user.id == this.userId
-          })
-        }
-
         return users
       }
     },
-  },
-
-  methods: {
   }
 }
 </script>

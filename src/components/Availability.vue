@@ -95,7 +95,7 @@ div
       tbody
         tr(v-for='user in users')
           td
-            router-link(:to='{ name: "colleagues", params: { userId: user.id }}')
+            router-link(:to='{ name: "colleague", params: { userId: user.id }}')
               | {{ user.display_label }}
               small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
           td(v-for='day in daysInMonth' v-bind:class='determineCellColor(day, user)' v-bind:style='determineCellStyle(day, user)') &nbsp;

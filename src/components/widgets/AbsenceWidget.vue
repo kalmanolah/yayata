@@ -11,7 +11,7 @@ div(class='card card-top-blue mb-3')
     tbody
       tr(v-for="(leave, index) in leaves" v-bind:key="leave.id")
         td
-          router-link(:to='{ name: "colleagues", params: { userId: leave.user.id }}') {{ leave.user.display_label }}
+          router-link(:to='{ name: "colleague", params: { userId: leave.user.id }}') {{ leave.user.display_label }}
         td(class='text-right') {{ leave.leave_type.display_label }}
 
   table(class='table my-0' v-if='holidays.length')
