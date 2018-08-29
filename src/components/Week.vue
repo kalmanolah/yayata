@@ -248,7 +248,7 @@ export default {
 
     new Promise((resolve, reject) => {
       if (!store.getters.my_open_timesheets) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS).then(() => resolve())
+        store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS).then(() => resolve())
       } else{
         resolve()
       }

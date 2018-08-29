@@ -95,8 +95,9 @@ const state = {
     my_contract_users: null,
     my_current_timesheet: null,
     my_current_month_info: null,
-    my_open_timesheets: null,
     my_timesheets: null,
+    my_open_timesheets: null,
+    my_closed_timesheets: null,
     my_importable_performances: null,
     my_current_work_schedule: null,
     locations: null,
@@ -224,6 +225,9 @@ const mutations = {
     },
     [types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS](state, { my_open_timesheets }) {
         state.my_open_timesheets = my_open_timesheets;
+    },
+    [types.NINETOFIVER_SET_MY_CLOSED_TIMESHEETS](state, { my_closed_timesheets }) {
+        state.my_closed_timesheets = my_closed_timesheets;
     },
     [types.NINETOFIVER_SET_MY_IMPORTABLE_PERFORMANCES](state, { my_importable_performances }) {
         state.my_importable_performances = my_importable_performances;
@@ -512,8 +516,9 @@ const getters = {
     my_contract_users: state => state.my_contract_users,
     my_current_timesheet: state => state.my_current_timesheet,
     my_current_month_info: state => state.my_current_month_info,
-    my_open_timesheets: state => state.my_open_timesheets,
     my_timesheets: state => state.my_timesheets,
+    my_open_timesheets: state => state.my_open_timesheets,
+    my_closed_timesheets: state => state.my_closed_timesheets,
     my_importable_performances: state => state.my_importable_performances,
     my_current_work_schedule: state => state.my_current_work_schedule,
     locations: state => state.locations,
@@ -1439,25 +1444,21 @@ const actions = {
     async [types.NINETOFIVER_RELOAD_MY_TIMESHEETS](store, options = {}) {
         options.path = '/my_timesheets/'
         options.params = {}
-        options.params['order_by'] = '-year,month'
+        options.params['order_by'] = 'year,month'
 
         let res = await store.dispatch(types.NINETOFIVER_API_REQUEST, options)
+        let timesheets = res.data.results
+        let open_timesheets = timesheets.filter(ts => ts.status !== 'closed')
+        let closed_timesheets = timesheets.filter(ts => ts.status === 'closed')
+
         store.commit(types.NINETOFIVER_SET_MY_TIMESHEETS, {
-            my_timesheets: res.data.results
+            my_timesheets: timesheets
         })
-    },
-
-    async [types.NINETOFIVER_RELOAD_MY_OPEN_TIMESHEETS](store, options = {}) {
-        if (!store.state.my_timesheets) {
-            await store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
-        }
-
-        let open_timesheets = store.state.my_timesheets.filter(ts => {
-            return ts.status !== 'closed';
-        })
-
         store.commit(types.NINETOFIVER_SET_MY_OPEN_TIMESHEETS, {
             my_open_timesheets: open_timesheets
+        })
+        store.commit(types.NINETOFIVER_SET_MY_CLOSED_TIMESHEETS, {
+            my_closed_timesheets: closed_timesheets
         })
     },
 
