@@ -7,7 +7,6 @@ div
     b-card(
       no-body
       class='mb-1'
-      v-for='item in items'
     )
       b-card-header(
         header-tag='header'
@@ -17,19 +16,98 @@ div
         b-btn(
           block
           href='#'
-          v-b-toggle='item.id'
+          v-b-toggle='"ical-feed"'
           variant='info'
           class='white-space-normal'
-        )
-          | {{ item.title }}
+        ) How do I access leave or whereabouts as an iCal feed for use in Thunderbird, Google Calendar, Zimbra, etc.?
       b-collapse(
-        v-bind:id='item.id'
-        :visible='item.visible'
+        v-bind:id='"ical-feed"'
         accordion='faq-accordion'
         role='tabpanel'
       )
         b-card-body
-          vue-markdown(class='rendered-markdown' :source='item.description')
+          div
+            | In most applications, you can add an external calendar from a URL.<br>
+            | To generate a feed URL which external applications can access, you will need an API key. You can generate one by visiting <a :href="`${baseUrl}/accounts/api_keys/create/`">this page</a>.<br>
+            | Use one of the URLs below (depending on your use case) to access a feed, <strong>making sure to replace "<code>XXXXXXXX</code>" with your API key</strong>.<br>
+            | <br>
+            | Leave:<br>
+            ul
+              li Your own leave:
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/leave/me.ics?api_key=XXXXXXXX
+              li All leave:
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/leave.ics?api_key=XXXXXXXX
+              li  A specific user's leave (replace <code>USERNAME</code> with their username):
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/leave/user/USERNAME.ics?api_key=XXXXXXXX
+
+            | Whereabouts:<br>
+            ul
+              li Your own whereabouts:
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts/me.ics?api_key=XXXXXXXX
+              li All whereabouts:
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts.ics?api_key=XXXXXXXX
+              li A specific user's whereabouts (replace <code>USERNAME</code> with their username):
+                pre
+                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts/user/USERNAME.ics?api_key=XXXXXXXX
+
+    b-card(
+      no-body
+      class='mb-1'
+    )
+      b-card-header(
+        header-tag='header'
+        class='p-2'
+        role='tab'
+      )
+        b-btn(
+          block
+          href='#'
+          v-b-toggle='"open-source"'
+          variant='info'
+          class='white-space-normal'
+        ) I've heard YAYATA is open source software. Where can I get involved?
+      b-collapse(
+        v-bind:id='"open-source"'
+        accordion='faq-accordion'
+        role='tabpanel'
+      )
+        b-card-body
+          div
+            | Both YAYATA (the front-end) and 925r (the back-end + API) are released under the GPLv3, and their sources are available on github.<br>
+            | The source for YAYATA can be found <a href="https://github.com/kalmanolah/yayata">here</a>, whereas the source for 925r can be found <a href="https://github.com/kalmanolah/925r">here</a>.<br>
+            | Pull requests, issues and other contributions are encouraged and welcome.<br>
+
+    b-card(
+      no-body
+      class='mb-1'
+    )
+      b-card-header(
+        header-tag='header'
+        class='p-2'
+        role='tab'
+      )
+        b-btn(
+          block
+          href='#'
+          v-b-toggle='"other-questions"'
+          variant='info'
+          class='white-space-normal'
+        ) I have a question that isn't answered here. What should I do?
+      b-collapse(
+        v-bind:id='"other-questions"'
+        accordion='faq-accordion'
+        role='tabpanel'
+      )
+        b-card-body
+          div
+            | Consider contacting your friendly neighbourhood YAYATA administrator. Chances are they'll know what to do.<br>
+            | Alternately, you can also open a <a href="https://github.com/kalmanolah/yayata/issues/new?labels=question">new issue</a> over at the github repository.<br>
+            | Once your question has been answered, you can ask for it to be considered for addition to the FAQ.<br>
 </template>
 
 <script>
@@ -45,7 +123,6 @@ export default {
 
   data: function() {
     return {
-      items: [],
     }
   },
 
@@ -54,75 +131,6 @@ export default {
   },
 
   created: function() {
-    this.items = [
-      {
-        title: 'How do I access leave or whereabouts as an iCal feed for use in Thunderbird, Google Calendar, Zimbra, etc.?',
-        id: 'ical-feed',
-        description: `
-In most applications, you can add an external calendar from a URL.
-To generate a feed URL which external applications can access, you will need an API key. You can generate one by visiting [this page](${this.baseUrl}/accounts/api_keys/create/).
-Use one of the URLs below (depending on your use case) to access a feed, **making sure to replace "\`XXXXXXXX\`" with your API key**.
-
-* Leave:
-
-  * Your own leave:
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/leave/me.ics?api_key=XXXXXXXX
-    \`\`\`
-
-  * All leave:
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/leave.ics?api_key=XXXXXXXX
-    \`\`\`
-
-  * A specific user's leave (replace \`USERNAME\` with their username):
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/leave/user/USERNAME.ics?api_key=XXXXXXXX
-    \`\`\`
-
-* Whereabouts:
-
-  * Your own whereabouts:
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/whereabouts/me.ics?api_key=XXXXXXXX
-    \`\`\`
-
-  * All whereabouts:
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/whereabouts.ics?api_key=XXXXXXXX
-    \`\`\`
-
-  * A specific user's whereabouts (replace \`USERNAME\` with their username):
-
-    \`\`\`
-    ${this.baseUrl}/api/v1/services/feeds/whereabouts/user/USERNAME.ics?api_key=XXXXXXXX
-    \`\`\`
-        `,
-      },
-      {
-        id: 'open-source',
-        title: 'I\'ve heard YAYATA is open source software. Where can I get involved?',
-        description: `
-Both YAYATA (the front-end) and 925r (the back-end + API) are released under the GPLv3, and their sources are available on github.
-The source for YAYATA can be found [here](https://github.com/kalmanolah/yayata), whereas the source for 925r can be found [here](https://github.com/kalmanolah/925r).
-Pull requests, issues and other contributions are encouraged and welcome.
-        `
-      },
-      {
-        id: 'other-questions',
-        title: 'I have a question that isn\'t answered here. What should I do?',
-        description: `
-Consider contacting your friendly neighbourhood YAYATA administrator. Chances are they'll know what to do.
-Alternately, you can also open a [new issue](https://github.com/kalmanolah/yayata/issues/new?labels=question) over at the github repository.
-Once your question has been answered, you can ask for it to be considered for addition to the FAQ.
-        `
-      }
-    ]
   }
 }
 </script>
