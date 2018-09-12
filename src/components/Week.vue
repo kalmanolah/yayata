@@ -111,7 +111,10 @@ div
                     small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
                   div(v-if='leave.description' class='text-muted')
                     small {{ leave.description }}
-                div(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)') 📎
+                div
+                  span(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)')
+                    small(v-if='leave.attachments.length') {{ leave.attachments.length }}
+                    | 📎
 
             //- Pending leave, fetched separately
             template(v-for='leave in pendingLeave' v-if='pendingLeave')
@@ -129,7 +132,10 @@ div
                         small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
                       div(v-if='leave.description' class='text-muted')
                         small {{ leave.description }}
-                    div(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)') 📎
+                    div
+                      span(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)')
+                        small(v-if='leave.attachments.length') {{ leave.attachments.length }}
+                        | 📎
 
             //- Whereabouts
             template(v-for='whereabout in whereabouts' v-if='whereabouts')
@@ -477,9 +483,9 @@ export default {
     },
 
     onAttachmentModified: function() {
-      this.$refs.attachmentModal.hide()
-      this.selectedLeave = null
-      // this.reloadData()
+      // this.$refs.attachmentModal.hide()
+      // this.selectedLeave = null
+      this.reloadData()
     },
   },
 

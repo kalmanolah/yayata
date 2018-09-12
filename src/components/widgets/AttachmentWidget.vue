@@ -90,8 +90,10 @@ export default {
         method: 'DELETE'
       }).then(res => {
         toastr.success('Attachment deleted.')
-      }).catch(() => {
+        this.$emit('success')
+      }).catch((error) => {
         toastr.error('Error deleting attachment.')
+        this.$emit('error', error)
       }).finally(() => {
         this.existingAttachments = this.existingAttachments.filter(x => x.id != attachment.id)
         this.loading = false
@@ -142,7 +144,7 @@ export default {
         }).then(() => {
           this.loading = false
           toastr.success('Attachments updated.')
-          // this.$emit('success')
+          this.$emit('success')
         })
       }).catch(error => {
         this.loading = false

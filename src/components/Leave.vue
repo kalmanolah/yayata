@@ -42,7 +42,9 @@ div
                   div(v-if='leave.description' class='text-muted')
                     small {{ leave.description }}
                 div
-                  div(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(leave)') 📎
+                  span(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(leave)')
+                    small(v-if='leave.attachments.length') {{ leave.attachments.length }}
+                    | 📎
         div(class='card-body' v-else)
           | You have requested no leave as of today. Only robots never take a break!
 </template>
@@ -138,8 +140,9 @@ export default {
     },
 
     onAttachmentModified: function() {
-      this.$refs.attachmentModal.hide()
-      this.selectedLeave = null
+      // this.$refs.attachmentModal.hide()
+      // this.selectedLeave = null
+      this.reloadData()
     },
   },
 }

@@ -17,7 +17,9 @@ div
 
       div(class='btn-group' role='group')
         button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active")' @click='submitTimesheet()') Submit
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='editAttachment()') Attachments
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='editAttachment()')
+          | Attachments
+          span(v-if='timesheet.attachments.length') &nbsp;({{ timesheet.attachments.length }})
         button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active") && rangeInfo' @click='bulkAdd()') Bulk add
   hr
 
@@ -241,7 +243,8 @@ export default {
     },
 
     onAttachmentModified: function() {
-      this.$refs.attachmentModal.hide()
+      // this.$refs.attachmentModal.hide()
+      store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
     }
   },
 
