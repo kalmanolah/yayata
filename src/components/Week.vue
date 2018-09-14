@@ -85,7 +85,7 @@ div
         div(class='card' :id='"calendar-day-" + date')
           div(class='card-header text-center') {{ date | moment('ddd, MMMM Do') }}
 
-          div(class='card-text text-muted text-center')
+          div(class='card-text text-muted text-center' v-bind:style='getCalendarDayProgressStyle(date)')
             small
               strong {{ dayDetails.total_hours | round }}
               | &nbsp;/ {{ dayDetails.work_hours | round }} hours
@@ -487,6 +487,18 @@ export default {
       // this.selectedLeave = null
       this.reloadData()
     },
+
+    getCalendarDayProgressStyle: function(date) {
+      let style = {}
+
+      if (this.rangeInfo && this.rangeInfo.details) {
+        let pct = (this.rangeInfo.details[date].total_hours / this.rangeInfo.details[date].work_hours) * 100
+        pct = pct > 100 ? 100 : pct
+        style['background'] = `linear-gradient(90deg, rgba(223, 255, 248, 0.75) 0%, rgba(223, 255, 248, 0.75) ${pct}%, rgba(255,255,255,0) ${pct}%, rgba(255,255,255,0) 100%)`
+      }
+
+      return style
+    }
   },
 
   filters: {
