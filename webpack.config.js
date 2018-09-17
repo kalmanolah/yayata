@@ -47,11 +47,19 @@ module.exports = (env, argv) => {
         description: 'Yet Another Timesheet Application... Yet Again',
         background_color: '#9de2d2',
         theme_color: '#50e3c2',
+        display: 'standalone',
+        orientation: 'portrait-primary',
         ios: true,
         icons: [
           {
             src: path.resolve('src/assets/img/logo_pwa.png'),
-            sizes: [96, 128, 192, 256, 384, 512]
+            sizes: [96, 128, 192, 256, 384, 512],
+            ios: true
+          },
+          {
+            src: path.resolve('src/assets/img/logo_pwa.png'),
+            sizes: [1024],
+            ios: 'startup',
           }
         ]
       }),
