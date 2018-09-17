@@ -94,6 +94,32 @@ div
         b-btn(
           block
           href='#'
+          v-b-toggle='"change-gravatar"'
+          variant='info'
+          class='white-space-normal'
+        ) How do I change the avatar on my profile page?
+      b-collapse(
+        v-bind:id='"change-gravatar"'
+        accordion='faq-accordion'
+        role='tabpanel'
+      )
+        b-card-body
+          div
+            | The profile picture used for a user of YAYATA is sourced from <a href="https://gravatar.com">Gravatar</a>.<br>
+            | Simply <a href="https://en.gravatar.com/connect/">upload an image</a> linked to the email address listed on your profile page (<code>{{ user.email }}</code>) and it will appear automatically.<br>
+
+    b-card(
+      no-body
+      class='mb-1'
+    )
+      b-card-header(
+        header-tag='header'
+        class='p-2'
+        role='tab'
+      )
+        b-btn(
+          block
+          href='#'
           v-b-toggle='"other-questions"'
           variant='info'
           class='white-space-normal'
@@ -127,7 +153,8 @@ export default {
   },
 
   computed: {
-    baseUrl: () => store.getters.oauth2.config.baseUrl
+    baseUrl: () => store.getters.oauth2.config.baseUrl,
+    user: () => store.getters.user,
   },
 
   created: function() {
