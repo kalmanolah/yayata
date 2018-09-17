@@ -363,15 +363,14 @@ tbody tr:last-child .cell-today {
   border-bottom: 2px solid @highlight;
 }
 tbody tr:hover td {
-  border-top: 2px solid @highlight;
-  border-bottom: 2px solid @highlight;
+  box-shadow: 0 2px 0 @highlight inset, 0 -2px 0 @highlight inset;
 
   &:first-child {
-    border-left: 2px solid @highlight;
+    box-shadow: 0 2px 0 @highlight inset, 2px 0 0 @highlight inset, 0 -2px 0 @highlight inset;
   }
 
   &:last-child {
-    border-right: 2px solid @highlight;
+    box-shadow: 0 2px 0 @highlight inset, -2px 0 0 @highlight inset, 0 -2px 0 @highlight inset;
   }
 }
 .cell-homework {
