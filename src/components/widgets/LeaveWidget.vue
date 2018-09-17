@@ -4,6 +4,13 @@ div(class='card card-top-blue mb-3')
     span(v-if='!model.id') Request leave
     span(v-else) Update leave
   div(class='card-body')
+    b-alert(
+      variant='warning'
+      :show='isPastLeave()'
+    )
+      h5(class='alert-heading') You are trying to request leave in the past!
+      | Please keep in mind that your request will receive additional review, since leave should only be requested for future dates under normal circumstances.
+
     div(class='text-center')
       toggle-button(
         @change='toggleMultipleDays()',
@@ -209,6 +216,10 @@ export default {
         toastr.error('Error deleting leave.')
         this.loading = false
       });
+    },
+
+    isPastLeave: function() {
+      return moment().isAfter(this.model.multiple_days ? this.model.start_date : this.model.date, 'day')
     },
   },
 
