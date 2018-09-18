@@ -69,6 +69,10 @@ export default {
 @background-color: #FFF;
 @primary-color: #0aa6c9;
 
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
 #app {
   overflow-x: hidden;
 }
