@@ -23,6 +23,7 @@ import toastr from 'toastr';
 import utils from '../../utils';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import preferences from '../../preferences';
 
 var model = {
   id: null,
@@ -96,11 +97,19 @@ export default {
         this.model.description = this.whereabout.description
       } else {
         this.model.id = null
+
+        // Attempt to set saved selected location as selected location
+        let location_field = this.schema.fields.find(f => f.model == 'location')
+        let location_ids = location_field.values.call(this).map(x => x.id)
+        let selected_location_id = preferences.get(preferences.key.WHEREABOUT_SELECTED_LOCATION_ID)
+        let location_id = selected_location_id && (location_ids.indexOf(selected_location_id) !== -1) ? selected_location_id : location_ids[0]
+        this.model.location = location_id
+        // location_field.set(this.model, location_id)
+
         this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
         this.model.date = (this.timesheet && this.day) ? moment().year(this.timesheet.year).month(this.timesheet.month - 1).date(this.day) : null
         this.model.start_time = '09:00'
         this.model.end_time = null
-        this.model.location = store.getters.locations[0].id
         this.model.description = null
 
         if (!this.model.end_time && this.model.date && this.model.start_time && store.getters.my_current_work_schedule) {
@@ -172,6 +181,9 @@ export default {
       body.ends_at = end_date.format(dt_format)
 
       if (!this.model.id) {
+        // Save last selected location ID so we can select it upon logging new whereabout
+        preferences.set(preferences.key.WHEREABOUT_SELECTED_LOCATION_ID, body.location)
+
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
             path: '/my_whereabouts/',
             method: 'POST',
