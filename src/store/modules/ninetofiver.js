@@ -546,12 +546,14 @@ const actions = {
             options.params = {}
         }
 
-        // if (!options.params.page_size) {
-        //     options.params.page_size = 250
-        // }
-
         if (options.full === undefined) {
             options.full = true
+        }
+
+        if (!options.params.page_size) {
+            if (options.full) {
+                options.params.page_size = 250
+            }
         }
 
         // If we are authenticated, add the correct authorization header
@@ -583,34 +585,25 @@ const actions = {
         }
 
         return new Promise((resolve, reject) => {
+            // Fetch the first page
             Vue.http(opts).then((response) => {
-                // If the results are paginated; get all pages.
-                var next = options.full && response.body.next;
-                var results = response.data.results;
+                // Calculate additional pages we need to fetch
+                let addnPages = opts.full && response.data.count && (response.data.count > opts.params.page_size) ?
+                    [...Array(Math.ceil(response.data.count / opts.params.page_size)).keys()].map(p => p + 1).slice(1) : []
 
-                function getNext(next) {
-                    return new Promise((resolve, reject) => {
-                        opts['url'] = next;
-                        Vue.http(opts).then(res => {
-                            res.body.results.forEach(el => results.push(el));
-                            if (res.body.next) {
-                                next = res.body.next;
-                                getNext(next).then(() => {
-                                    resolve()
-                                })
-                            } else {
-                                resolve();
-                            }
-                        });
-                    });
-                }
-                if (next) {
-                    getNext(next).then(() => {
-                        response.data['results'] = results;
+                if (addnPages.length) {
+                    let pagePromises = addnPages.map((page) => {
+                        let pageOpts = JSON.parse(JSON.stringify(opts))
+                        pageOpts.params.page = page
+                        return Vue.http(pageOpts)
+                    })
+
+                    Promise.all(pagePromises).then((responses) => {
+                        response.data.results = response.data.results.concat.apply(response.data.results, responses.map(r => r.data.results))
                         resolve(response)
-                    });
+                    })
                 } else {
-                    resolve(response);
+                    resolve(response)
                 }
             }, (response) => {
                 // If we get a 401, assume this is due an expired token which
