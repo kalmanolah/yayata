@@ -6,10 +6,11 @@ div(class='card card-top-blue mb-3')
   div(class='card-body')
     b-alert(
       variant='warning'
-      :show='isPastLeave()'
+      :show='!isFutureLeave()'
     )
-      h5(class='alert-heading') You are trying to request leave in the past!
-      | Please keep in mind that your request will receive additional review, since leave should only be requested for future dates under normal circumstances.
+      h5(class='alert-heading') You are not requested leave in the future!
+      | Please keep in mind that your request will receive additional review, since leave should only be requested for future dates under normal circumstances.<br>
+      | Adding a description is highly recommended.<br>
 
     div(class='text-center')
       toggle-button(
@@ -109,13 +110,15 @@ export default {
         this.model.from_time = moment(this.leave.leavedate_set[0].starts_at).format('HH:mm')
         this.model.until_time = moment(this.leave.leavedate_set[this.leave.leavedate_set.length - 1].ends_at).format('HH:mm')
       } else {
+        let date = this.date ? moment(this.date) : moment().add(1, 'days')
+
         this.model.id = null
         this.model.multiple_days = false
         this.model.leave_type = store.getters.leave_types[0].id
         this.model.description = null
-        this.model.start_date = moment(this.date)
-        this.model.end_date = moment(this.date)
-        this.model.date = moment(this.date)
+        this.model.start_date = moment(date)
+        this.model.end_date = moment(date)
+        this.model.date = moment(date)
         this.model.from_time = '09:00'
         this.model.until_time = null
 
@@ -218,8 +221,8 @@ export default {
       });
     },
 
-    isPastLeave: function() {
-      return moment().isAfter(this.model.multiple_days ? this.model.start_date : this.model.date, 'day')
+    isFutureLeave: function() {
+      return moment(this.model.multiple_days ? this.model.start_date : this.model.date).isAfter(moment(), 'day')
     },
   },
 
