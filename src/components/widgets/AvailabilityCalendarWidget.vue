@@ -52,6 +52,10 @@ export default {
     date: function(to, from) {
       this.reloadData()
     },
+
+    user: function(to, from) {
+      this.reloadData()
+    }
   },
 
   data () {
