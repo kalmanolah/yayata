@@ -85,6 +85,11 @@ export default {
   },
 
   computed: {
+    user: function() {
+      if (store.getters.user) {
+        return store.getters.user
+      }
+    }
   },
 
   created: function() {
@@ -107,7 +112,7 @@ export default {
       let end = moment().year(this.timesheet.year).month(this.timesheet.month - 1).endOf('month')
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/range_info/',
+        path: '/range_info/',
         params: {
           'from': start.format('YYYY-MM-DD'),
           'until': end.format('YYYY-MM-DD'),
@@ -120,7 +125,7 @@ export default {
 
     exportContractToPdf: function (contract) {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: `/services/my_timesheet_contract_pdf_export/${this.timesheet.id}/${contract.id}/`,
+        path: `/downloads/timesheet_contract_pdf/${this.timesheet.id}/${contract.id}/`,
         method: 'GET',
         responseType: 'arraybuffer'
       }).then((res) => {
@@ -128,7 +133,7 @@ export default {
           type: 'application/pdf;charset=utf-8',
           responseType: 'arraybuffer'
         });
-        var filename = `timesheet_${this.timesheet.user.display_label}_${this.timesheet.year}-${this.timesheet.month}_${contract.display_label}.pdf`
+        var filename = `timesheet_${this.user.display_label}_${this.timesheet.year}-${this.timesheet.month}_${contract.display_label}.pdf`
         filename = filename.replace(/[^a-z_0-9A-Z-\.]/, '')
         filename = filename.replace(' ', '_')
         FileSaver.saveAs(blob, filename);

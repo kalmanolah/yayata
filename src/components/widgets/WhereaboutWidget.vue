@@ -45,28 +45,13 @@ export default {
 
   props: [
     'whereabout',
-    'timesheet',
-    'day',
+    'date',
   ],
 
   created: function() {
     submit = this.submit
 
     Promise.all([
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_current_timesheet) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
-        } else {
-          resolve()
-        }
-      }),
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_current_work_schedule) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_WORK_SCHEDULE).then(() => resolve())
-        } else {
-          resolve()
-        }
-      }),
       new Promise((resolve, reject) => {
         if (!store.getters.locations) {
           store.dispatch(types.NINETOFIVER_RELOAD_LOCATIONS).then(() => resolve())
@@ -89,7 +74,6 @@ export default {
     resetForm: function() {
       if (this.whereabout) {
         this.model.id = this.whereabout.id
-        this.model.timesheet = this.whereabout.timesheet
         this.model.date = moment(this.whereabout.starts_at)
         this.model.start_time = moment(this.whereabout.starts_at).format('HH:mm')
         this.model.end_time = moment(this.whereabout.ends_at).format('HH:mm')
@@ -106,26 +90,10 @@ export default {
         this.model.location = location_id
         // location_field.set(this.model, location_id)
 
-        this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
-        this.model.date = (this.timesheet && this.day) ? moment().year(this.timesheet.year).month(this.timesheet.month - 1).date(this.day) : null
+        this.model.date = this.date ? moment(this.date) : null
         this.model.start_time = '09:00'
-        this.model.end_time = null
+        this.model.end_time = '17:00'
         this.model.description = null
-
-        if (!this.model.end_time && this.model.date && this.model.start_time && store.getters.my_current_work_schedule) {
-          let dow_prop = this.model.date.format('dddd').toLowerCase()
-          let dow_work = store.getters.my_current_work_schedule[dow_prop]
-
-          let hours = Math.floor(dow_work)
-          let minutes = Math.round((dow_work % 1) * 60)
-
-          let start_time = moment(this.model.start_time, 'HH:mm')
-          let end_time =  moment(start_time).hour(Number(start_time.format('HH')) + hours).minute(Number(start_time.format('mm')) + minutes)
-
-          this.model.end_time = end_time.format('HH:mm')
-        } else {
-          this.model.end_time = '17:00'
-        }
       }
 
       dateSet = false
@@ -136,7 +104,7 @@ export default {
       this.loading = true
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: `/my_whereabouts/${this.model.id}/`,
+          path: `/whereabouts/${this.model.id}/`,
           method: 'DELETE',
       }).then((response) => {
         this.$emit('success', response)
@@ -163,7 +131,6 @@ export default {
       this.loading = true
 
       let body = {
-        timesheet: this.model.timesheet,
         description: this.model.description,
         location: this.model.location
       };
@@ -185,7 +152,7 @@ export default {
         preferences.set(preferences.key.WHEREABOUT_SELECTED_LOCATION_ID, body.location)
 
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/my_whereabouts/',
+            path: '/whereabouts/',
             method: 'POST',
             body: body,
         }).then((response) => {
@@ -200,7 +167,7 @@ export default {
         });
       } else {
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: `/my_whereabouts/${this.model.id}/`,
+            path: `/whereabouts/${this.model.id}/`,
             method: 'PUT',
             body: body,
         }).then((response) => {

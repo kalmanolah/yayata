@@ -101,7 +101,7 @@ export default {
       let now = moment()
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
+        path: '/leave/',
         params: {
           'status!': 'draft',
         }

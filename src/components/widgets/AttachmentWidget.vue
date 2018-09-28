@@ -74,7 +74,7 @@ export default {
       }
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_attachments/',
+        path: '/attachments/',
         params: params
       }).then(res => {
         this.existingAttachments = res.data.results
@@ -86,7 +86,7 @@ export default {
       this.loading = true
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: `/my_attachments/${attachment.id}/`,
+        path: `/attachments/${attachment.id}/`,
         method: 'DELETE'
       }).then(res => {
         toastr.success('Attachment deleted.')
@@ -111,7 +111,7 @@ export default {
         form.append('file', attachment)
 
         return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/my_attachments/',
+          path: '/attachments/',
           method: 'POST',
           body: form
         })
@@ -129,9 +129,9 @@ export default {
         // Update timesheet/leave with attachment IDs
         let resourceUrl = null
         if (this.timesheet) {
-          resourceUrl = `/my_timesheets/${this.timesheet.id}/`
+          resourceUrl = `/timesheets/${this.timesheet.id}/`
         } else if (this.leave) {
-          resourceUrl = `/my_leaves/${this.leave.id}/`
+          resourceUrl = `/leave/${this.leave.id}/`
         }
         let attachmentIds = this.existingAttachments.map(x => x.id)
 

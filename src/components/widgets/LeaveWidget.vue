@@ -8,7 +8,7 @@ div(class='card card-top-blue mb-3')
       variant='warning'
       :show='!isFutureLeave()'
     )
-      h5(class='alert-heading') You are not requested leave in the future!
+      h5(class='alert-heading') You are not requesting leave in the future!
       | Please keep in mind that your request will receive additional review, since leave should only be requested for future dates under normal circumstances.<br>
       | Adding a description is highly recommended.<br>
 
@@ -52,7 +52,8 @@ var model = {
   date: moment(),
   from_time: '09:00',
   until_time: null,
-  multiple_days: false
+  multiple_days: false,
+  status: 'draft'
 }
 var submit = null
 var dateSet = false
@@ -75,19 +76,12 @@ export default {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        if (!store.getters.performance_types) {
+        if (!store.getters.leave_types) {
           store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES).then(() => resolve())
         } else{
           resolve()
         }
       }),
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_current_work_schedule) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_WORK_SCHEDULE).then(() => resolve())
-        } else{
-          resolve()
-        }
-      })
     ]).then(() => {
       this.resetForm()
     })
@@ -120,22 +114,7 @@ export default {
         this.model.end_date = moment(date)
         this.model.date = moment(date)
         this.model.from_time = '09:00'
-        this.model.until_time = null
-
-        if (!this.model.until_time && this.model.date && this.model.from_time && store.getters.my_current_work_schedule) {
-          let dow_prop = this.model.date.format('dddd').toLowerCase()
-          let dow_work = store.getters.my_current_work_schedule[dow_prop]
-
-          let hours = Math.floor(dow_work)
-          let minutes = Math.round((dow_work % 1) * 60)
-
-          let from_time = moment(this.model.from_time, 'HH:mm')
-          let until_time =  moment(from_time).hour(Number(from_time.format('HH')) + hours).minute(Number(from_time.format('mm')) + minutes)
-
-          this.model.until_time = until_time.format('HH:mm')
-        } else {
-          this.model.until_time = '17:00'
-        }
+        this.model.until_time = '17:00'
       }
 
       dateSet = false
@@ -150,6 +129,7 @@ export default {
       let body = {
         leave_type: this.model.leave_type,
         description: this.model.description,
+        status: this.model.status
       };
       let dt_format = 'YYYY-MM-DDTHH:mm:00ZZ'
       let timezone = moment.tz.guess()
@@ -173,13 +153,9 @@ export default {
         body.ends_at = end_date.format(dt_format)
       }
 
-      if (this.model.id) {
-        body.leave = this.model.id
-      }
-
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/services/leave_request/',
-          method: 'POST',
+          path: this.model.id ? `/leave/${this.model.id}/` : '/leave/',
+          method: this.model.id ? 'PUT' : 'POST',
           body: body,
       }).then((response) => {
         this.$emit('success', response)
@@ -207,7 +183,7 @@ export default {
       this.loading = true
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: `/my_leaves/${this.model.id}/`,
+          path: `/leave/${this.model.id}/`,
           method: 'DELETE',
       }).then((response) => {
         this.$emit('success', response)

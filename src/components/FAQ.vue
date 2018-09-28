@@ -35,25 +35,25 @@ div
             ul
               li Your own leave:
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/leave/me.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/leave/me.ics?api_key=XXXXXXXX
               li All leave:
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/leave.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/leave/all.ics?api_key=XXXXXXXX
               li  A specific user's leave (replace <code>USERNAME</code> with their username):
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/leave/user/USERNAME.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/leave/USERNAME.ics?api_key=XXXXXXXX
 
             | Whereabouts:<br>
             ul
               li Your own whereabouts:
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts/me.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/whereabouts/me.ics?api_key=XXXXXXXX
               li All whereabouts:
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/whereabouts/all.ics?api_key=XXXXXXXX
               li A specific user's whereabouts (replace <code>USERNAME</code> with their username):
                 pre
-                  code {{ baseUrl }}/api/v1/services/feeds/whereabouts/user/USERNAME.ics?api_key=XXXXXXXX
+                  code {{ baseUrl }}/api/v2/feeds/whereabouts/USERNAME.ics?api_key=XXXXXXXX
 
     b-card(
       no-body

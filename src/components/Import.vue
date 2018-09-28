@@ -159,16 +159,16 @@ export default {
 
     reloadPerformances: function() {
       let from = moment([this.timesheet.year, this.timesheet.month - 1])
-      let to = moment(from).endOf('month')
+      let until = moment(from).endOf('month')
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/performance_import/',
+        path: '/imports/performances/',
         params: {
           from: from.format('YYYY-MM-DD'),
-          to: to.format('YYYY-MM-DD')
+          until: until.format('YYYY-MM-DD')
         }
       }).then((res) => {
-        let performances = res.data
+        let performances = res.data.results
 
         performances.forEach(performance => {
           performance.performance_type = this.contracts[performance.contract].performance_types[0].id
@@ -189,17 +189,17 @@ export default {
         }
 
         promises.push(store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: '/my_performances/activity/',
+          path: '/performances/',
           method: 'POST',
           body: {
-            'timesheet': this.timesheet.id,
             'contract': performance.contract,
             'description': performance.description,
-            'day': moment(performance.date).format('DD'),
+            'date': performance.date,
             'duration': performance.duration,
             'performance_type': performance.performance_type,
             'contract_role': performance.contract_role,
-            'redmine_id': performance.redmine_id
+            'redmine_id': performance.redmine_id,
+            'type': 'ActivityPerformance',
           }
         }))
       })

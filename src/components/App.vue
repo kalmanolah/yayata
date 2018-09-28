@@ -31,18 +31,18 @@ export default {
     //Initialize constants
     if (!store.getters.user)
       store.dispatch(types.NINETOFIVER_RELOAD_USER).then(() => {
-        if (!store.getters.leave_types)
-          store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
-        if (!store.getters.performance_types)
-          store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES);
-        if (!store.getters.contract_groups)
-          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
-        if(!store.getters.contract_roles)
-          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
-        if(!store.getters.user_groups)
-          store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
-        if (!store.getters.employment_contract_types)
-          store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
+        // if (!store.getters.leave_types)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_LEAVE_TYPES);
+        // if (!store.getters.performance_types)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES);
+        // if (!store.getters.contract_groups)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_GROUPS);
+        // if(!store.getters.contract_roles)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_ROLES);
+        // if(!store.getters.user_groups)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_USER_GROUPS);
+        // if (!store.getters.employment_contract_types)
+        //   store.dispatch(types.NINETOFIVER_RELOAD_EMPLOYMENT_CONTRACT_TYPES);
         date: moment()
       });
   },

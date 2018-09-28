@@ -34,8 +34,7 @@ div
   b-modal(ref='performanceModal' hide-header=true hide-footer=true lazy=true size='lg')
     PerformanceWidget(
       :performance='selectedPerformance'
-      :day='selectedDay'
-      :timesheet='selectedTimesheet'
+      :date='selectedDate'
       :duration='selectedDuration'
       v-on:success='onPerformanceModified()'
     )
@@ -55,16 +54,14 @@ div
 
   b-modal(ref='standbyModal' hide-header=true hide-footer=true lazy=true size='lg')
     StandbyWidget(
-      :day='selectedDay'
-      :timesheet='selectedTimesheet'
+      :date='selectedDate'
       :performances='selectedStandby'
       v-on:success='onStandbyModified()'
     )
 
   b-modal(ref='whereaboutModal' hide-header=true hide-footer=true lazy=true size='lg')
     WhereaboutWidget(
-      :day='selectedDay'
-      :timesheet='selectedTimesheet'
+      :date='selectedDate'
       :whereabout='selectedWhereabout'
       v-on:success='onWhereaboutModified()'
     )
@@ -332,7 +329,7 @@ export default {
 
       // Reload range info
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/range_info/',
+        path: '/range_info/',
         params: {
           'from': start.format('YYYY-MM-DD'),
           'until': end.format('YYYY-MM-DD'),
@@ -345,9 +342,9 @@ export default {
 
       // Reload pending leave
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_leaves/',
+        path: '/leave/',
         params: {
-          'leavedate__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`,
+          'date__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`,
           'status': 'pending'
         }
       }).then(res => {
@@ -356,7 +353,7 @@ export default {
 
       // Reload whereabouts
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/my_whereabouts/',
+        path: '/whereabouts/',
         params: {
           'starts_at__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`
         }

@@ -250,17 +250,17 @@ export default {
           }
 
           let body = {
-            timesheet: this.timesheet.id,
-            day: moment(performance.date).format('DD'),
+            date: moment(performance.date).format('YYYY-MM-DD'),
             duration: duration,
             description: this.model.description,
             performance_type: this.model.performance_type,
             contract: this.model.contract,
-            contract_role: this.model.contract_role
+            contract_role: this.model.contract_role,
+            type: 'ActivityPerformance'
           };
 
           return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/my_performances/activity/',
+            path: '/performances/',
             method: 'POST',
             body: body,
           })
