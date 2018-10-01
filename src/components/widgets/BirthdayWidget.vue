@@ -30,14 +30,14 @@ export default {
   },
 
   created: function() {
+    this.selectedDay = moment()
+
     new Promise((resolve, reject) => {
       if (!store.getters.users) {
         store.dispatch(types.NINETOFIVER_RELOAD_USERS).then(() => resolve())
       } else{
         resolve()
       }
-    }).then(() => {
-      this.selectedDay = moment()
     })
   },
 
