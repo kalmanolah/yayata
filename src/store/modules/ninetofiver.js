@@ -528,7 +528,7 @@ const getters = {
 const actions = {
     [types.NINETOFIVER_API_REQUEST](store, options = {}) {
         var oauth2State = store.rootState.oauth2
-        var url = `${oauth2State.config.baseUrl}/api/v1${options.path}`
+        var url = `${oauth2State.config.baseUrl}/api/v2${options.path}`
         var opts = {
             url: url,
             headers: {},
@@ -652,7 +652,7 @@ const actions = {
         })
     },
     [types.NINETOFIVER_RELOAD_USER](store, options = {}) {
-        options.path = '/services/my_user/';
+        options.path = '/me/';
 
         return new Promise((resolve, reject) => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
@@ -1368,7 +1368,7 @@ const actions = {
 
     // ng
     [types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS](store, options = {}) {
-        options.path = '/my_contracts/'
+        options.path = '/contracts/'
         options.params = {}
         options.params['active'] = true
 
@@ -1385,7 +1385,7 @@ const actions = {
     },
 
     [types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS](store, options = {}) {
-        options.path = '/my_contract_users/';
+        options.path = '/contract_users/';
 
         return new Promise((resolve, reject) => {
             store.dispatch(types.NINETOFIVER_API_REQUEST, options).then((res) => {
@@ -1435,7 +1435,7 @@ const actions = {
     },
 
     async [types.NINETOFIVER_RELOAD_MY_TIMESHEETS](store, options = {}) {
-        options.path = '/my_timesheets/'
+        options.path = '/timesheets/'
         options.params = {}
         options.params['order_by'] = 'year,month'
 

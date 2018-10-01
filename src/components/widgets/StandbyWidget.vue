@@ -20,7 +20,7 @@ import * as types from '../../store/mutation-types';
 import store from '../../store';
 
 var model = {
-  day: null,
+  date: null,
   contracts: null,
   timesheet: null,
   performances: null
@@ -34,8 +34,7 @@ export default {
   ],
 
   props: [
-    'day',
-    'timesheet',
+    'date',
     'performances'
   ],
 
@@ -49,13 +48,6 @@ export default {
         } else{
           resolve()
         }
-      }),
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_current_timesheet) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
-        } else{
-          resolve()
-        }
       })
     ]).then(() => {
       this.resetForm()
@@ -65,17 +57,16 @@ export default {
   methods: {
     resetForm: function() {
       new Promise((resolve, reject) => {
-        this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
-        this.model.day = this.day ? this.day : moment().date()
+        this.model.date = this.date ? moment(this.date).format('YYYY-MM-DD') : moment().format('YYYY-MM-DD')
 
         if (this.performances) {
           resolve(this.performances)
         } else {
           store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/my_performances/standby/',
+            path: '/performances/',
             params: {
-              timesheet: this.model.timesheet,
-              day: this.model.day,
+              date: this.model.date,
+              type: 'StandbyPerformance'
             }
           }).then(res => {
             resolve(res.data.results)
@@ -97,12 +88,11 @@ export default {
       let contracts = this.model.contracts.slice(0)
       let contractsWithPerformances = this.model.performances.map(performance => performance.contract.id)
 
-
       // Every performance not belonging to a selected contract is deleted
       let performancesToDelete = this.model.performances.filter(performance => !contracts.includes(performance.contract.id))
       Promise.all(performancesToDelete.map(performance => {
         return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: `/my_performances/standby/${performance.id}/`,
+          path: `/performances/${performance.id}/`,
           method: 'DELETE',
         })
       })).then(() => {
@@ -110,13 +100,13 @@ export default {
         let contractsRequiringPerformances = contracts.filter(contractId => !contractsWithPerformances.includes(contractId))
         Promise.all(contractsRequiringPerformances.map(contractId => {
           let body = {
-            timesheet: this.model.timesheet,
-            day: this.model.day,
-            contract: contractId
+            date: this.model.date,
+            contract: contractId,
+            type: 'StandbyPerformance'
           }
 
           return store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/my_performances/standby/',
+            path: '/performances/',
             method: 'POST',
             body: body,
           })

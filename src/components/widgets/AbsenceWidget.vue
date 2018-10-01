@@ -7,12 +7,11 @@ div(class='card card-top-blue mb-3')
     span(title='Go to next day')
       i(class='fa fa-chevron-right chevron' @click='dayLater')
 
-  table(class='table my-0' v-if='leaves.length')
+  table(class='table my-0' v-if='absentUsers')
     tbody
-      tr(v-for="(leave, index) in leaves" v-bind:key="leave.id")
+      tr(v-for="(user, index) in absentUsers" v-bind:key="user.id")
         td
-          router-link(:to='{ name: "colleague", params: { userId: leave.user.id }}') {{ leave.user.display_label }}
-        td(class='text-right') {{ leave.leave_type.display_label }}
+          router-link(:to='{ name: "colleague", params: { userId: user.id }}') {{ user.display_label }}
 
   table(class='table my-0' v-if='holidays.length')
     tbody
@@ -20,7 +19,7 @@ div(class='card card-top-blue mb-3')
         td 🌐 {{ holiday.display_label }}
         td(class='text-right') {{ holiday.country }}
 
-  div(class='card-body text-center' v-if='!holidays.length && !leaves.length') Everyone's present! 🙂
+  div(class='card-body text-center' v-if='!holidays.length && !absentUsers.length') Everyone's present! 🙂
 </template>
 
 <script>
@@ -34,13 +33,21 @@ export default {
   data () {
     return {
       selectedDay: null,
-      leaves: [],
+      absentUsers: [],
       holidays: []
     }
   },
 
   created: function() {
-    this.selectedDay = moment()
+    new Promise((resolve, reject) => {
+      if (!store.getters.users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_USERS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    }).then(() => {
+      this.selectedDay = moment()
+    })
   },
 
   methods: {
@@ -62,13 +69,15 @@ export default {
   watch: {
     selectedDay: function() {
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/leaves/',
+        path: '/range_availability/',
         params: {
-          status: 'approved',
-          leavedate__range: this.selectedDay.format('YYYY-MM-DDT00:00:00') + ',' + this.selectedDay.format('YYYY-MM-DDT23:59:59')
+          from: this.selectedDay.format('YYYY-MM-DD'),
+          until: this.selectedDay.format('YYYY-MM-DD')
         }
       }).then((res) => {
-        this.leaves = res.data.results
+        this.absentUsers = store.getters.users.filter(user => {
+          return res.data[user.id][this.selectedDay.format('YYYY-MM-DD')].filter(x => -1 !== ['leave_pending', 'leave', 'sickness', 'sickness_pending'].indexOf(x)).length
+        })
       });
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {

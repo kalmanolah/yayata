@@ -172,7 +172,7 @@ export default {
       let end = moment(this.date).endOf('month')
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/services/range_info/',
+        path: '/range_info/',
         params: {
           'from': start.format('YYYY-MM-DD'),
           'until': end.format('YYYY-MM-DD'),

@@ -37,7 +37,6 @@ export default {
   methods: {
     submit: function() {
       if (this.loading) return
-
       this.loading = true
 
       let body = {
@@ -45,7 +44,7 @@ export default {
       }
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: `/my_timesheets/${this.timesheet.id}/`,
+        path: `/timesheets/${this.timesheet.id}/`,
         method: 'PATCH',
         body: body,
       }).then((response) => {

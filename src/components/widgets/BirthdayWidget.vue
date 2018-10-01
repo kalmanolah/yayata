@@ -6,13 +6,13 @@ div(class='card card-top-blue mb-3')
     | 🎂 Birthdays for {{ selectedDay | moment('ddd, MMMM Do') }}
     span(title='Go to next day')
       i(class='fa fa-chevron-right chevron' @click='dayLater')
-  ul(class='list-group list-group-flush')
+  ul(class='list-group list-group-flush' v-if='birthdayUsers && birthdayUsers.length')
     router-link(
-      v-for='(user, index) in birthdays'
+      v-for='(user, index) in birthdayUsers'
       :to='{ name: "colleague", params: { userId: user.id }}'
       class='list-group-item'
     ) {{ user.display_label }}
-  div(class='card-body text-center' v-if='!birthdays.length') Nothing to see here. 😞
+  div(class='card-body text-center' v-else) Nothing to see here. 😞
 </template>
 
 <script>
@@ -26,12 +26,29 @@ export default {
   data () {
     return {
       selectedDay: null,
-      birthdays: [],
     }
   },
 
   created: function() {
-    this.selectedDay = moment()
+    new Promise((resolve, reject) => {
+      if (!store.getters.users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_USERS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    }).then(() => {
+      this.selectedDay = moment()
+    })
+  },
+
+  computed: {
+    birthdayUsers: function() {
+      if (store.getters.users) {
+        return store.getters.users.filter(user => {
+          return user.userinfo && user.userinfo.birth_date && (user.userinfo.birth_date.substr(5) === this.selectedDay.format('MM-DD'))
+        })
+      }
+    }
   },
 
   methods: {
@@ -49,20 +66,6 @@ export default {
       this.selectedDay = orig
     },
   },
-
-  watch: {
-    selectedDay: function() {
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/users/',
-        params: {
-          userinfo__birth_date__month: this.selectedDay.format('MM'),
-          userinfo__birth_date__day: this.selectedDay.format('DD')
-        }
-      }).then((res) => {
-        this.birthdays = res.data.results
-      });
-    }
-  }
 }
 </script>
 

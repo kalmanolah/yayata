@@ -3,7 +3,7 @@ div(class='card card-top-blue mb-3' v-on:keyup.enter='submit')
   div(class='card-header text-center') ⏳&nbsp;
     span(v-if='!model.id') Log performance
     span(v-else) Update performance
-    span(v-if='date') &nbsp;for {{ date | moment('ddd, MMMM Do') }}
+    span(v-if='model.date') &nbsp;for {{ model.date | moment('ddd, MMMM Do') }}
 
   div(class='card-body')
     vue-form-generator(:schema="schema" :model="model" :options="formOptions" ref='form')
@@ -27,11 +27,10 @@ import preferences from '../../preferences';
 
 var model = {
   id: null,
-  day: null,
+  date: null,
   contract: null,
   contract_role: null,
   performance_type: null,
-  timesheet: null,
   duration: null,
   description: null,
 };
@@ -45,8 +44,7 @@ export default {
 
   props: [
     'performance',
-    'day',
-    'timesheet',
+    'date',
     'duration',
   ],
 
@@ -75,13 +73,6 @@ export default {
           resolve()
         }
       }),
-      new Promise((resolve, reject) => {
-        if (!store.getters.my_current_timesheet) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
-        } else{
-          resolve()
-        }
-      })
     ]).then(() => {
       this.resetForm()
     })
@@ -103,8 +94,7 @@ export default {
         this.model.performance_type = this.performance.performance_type.id
         this.model.contract_role = this.performance.contract_role.id
         this.model.contract = this.performance.contract.id
-        this.model.timesheet = this.performance.timesheet
-        this.model.day = this.performance.day
+        this.model.date = this.performance.date
         this.model.duration = this.performance.duration
         this.model.description = this.performance.description
       } else {
@@ -116,14 +106,12 @@ export default {
         let contractId = selectedContractId && (contractIds.indexOf(selectedContractId) !== -1) ? selectedContractId : contractIds[0]
         contract_field.set(this.model, contractId)
 
-        this.model.timesheet = this.timesheet ? this.timesheet.id : store.getters.my_current_timesheet.id
-        this.model.day = this.day ? this.day : moment().date()
+        this.model.date = this.date ? this.date : moment().format('YYYY-MM-DD')
         this.model.duration = this.duration ? this.duration : 1
         this.model.description = null
       }
 
       this.model.duration = (Math.round(this.model.duration * 100) / 100).toString()
-      this.date = this.timesheet ? moment().year(this.timesheet.year).month(this.timesheet.month - 1).date(this.model.day) : null
     },
 
     remove: function() {
@@ -131,7 +119,7 @@ export default {
       this.loading = true
 
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
-          path: `/my_performances/activity/${this.model.id}/`,
+          path: `/performances/${this.model.id}/`,
           method: 'DELETE',
       }).then((response) => {
         this.$emit('success', response)
@@ -162,13 +150,13 @@ export default {
       this.loading = true
 
       let body = {
-        timesheet: this.model.timesheet,
-        day: this.model.day,
+        date: this.model.date,
         duration: utils.transformDuration(this.model.duration),
         description: this.model.description,
         performance_type: this.model.performance_type,
         contract: this.model.contract,
-        contract_role: this.model.contract_role
+        contract_role: this.model.contract_role,
+        type: 'ActivityPerformance'
       };
 
       if (!this.model.id) {
@@ -176,7 +164,7 @@ export default {
         preferences.set(preferences.key.PERFORMANCE_SELECTED_CONTRACT_ID, body.contract)
 
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: '/my_performances/activity/',
+            path: '/performances/',
             method: 'POST',
             body: body,
         }).then((response) => {
@@ -191,7 +179,7 @@ export default {
         });
       } else {
         store.dispatch(types.NINETOFIVER_API_REQUEST, {
-            path: `/my_performances/activity/${this.model.id}/`,
+            path: `/performances/${this.model.id}/`,
             method: 'PUT',
             body: body,
         }).then((response) => {
@@ -210,7 +198,6 @@ export default {
   data: () => {
     return {
       loading: false,
-      date: null,
 
       model: model,
 
