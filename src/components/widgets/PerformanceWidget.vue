@@ -150,7 +150,7 @@ export default {
       this.loading = true
 
       let body = {
-        date: this.model.date,
+        date: moment(this.model.date).format('YYYY-MM-DD'),
         duration: utils.transformDuration(this.model.duration),
         description: this.model.description,
         performance_type: this.model.performance_type,
