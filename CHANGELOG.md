@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Render "changelog" contents by ourselves, instead of allowing the GitHub API
+  to do so.
+
 ## [1.0.0] - 2018-10-03
 
 ### Added

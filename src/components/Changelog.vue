@@ -1,11 +1,8 @@
 <template lang="pug">
 div
-  h3 Changelog
-  p(class='subtitle') The most recent changes made to YAYATA
-
-  div(v-if='changelogHtml')
+  div(v-if='changelogContent')
     b-card
-      div(v-html='changelogHtml') {{ changelogHtml }}
+      vue-markdown(class='rendered-markdown' :source='changelogContent')
 </template>
 
 <script>
@@ -22,7 +19,7 @@ export default {
 
   data: function() {
     return {
-      changelogHtml: null
+      changelogContent: null
     }
   },
 
@@ -34,10 +31,10 @@ export default {
       method: 'GET',
       url: `https://api.github.com/repos/kalmanolah/yayata/contents/CHANGELOG.md?t=${(new Date().getTime())}`,
       headers: {
-        Accept: 'application/vnd.github.v3.html+json',
+        Accept: 'application/vnd.github.v3.full+json',
       },
     }).then((res) => {
-      this.changelogHtml = res.body
+      this.changelogContent = atob(res.data.content)
     })
   }
 }
