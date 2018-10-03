@@ -106,7 +106,7 @@ export default {
         let contractId = selectedContractId && (contractIds.indexOf(selectedContractId) !== -1) ? selectedContractId : contractIds[0]
         contract_field.set(this.model, contractId)
 
-        this.model.date = this.date ? this.date : moment().format('YYYY-MM-DD')
+        this.model.date = this.date ? moment(this.date) : moment().format('YYYY-MM-DD')
         this.model.duration = this.duration ? this.duration : 1
         this.model.description = null
       }

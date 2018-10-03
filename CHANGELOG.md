@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2018-10-03
+
+### Fixed
+
+- Fix being unable to create performance due to broken date formatting.
+
 ### Changed
 
 - Render "changelog" contents by ourselves, instead of allowing the GitHub API
