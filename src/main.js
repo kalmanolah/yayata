@@ -4,6 +4,7 @@ import VueResource from 'vue-resource'
 import { sync } from 'vuex-router-sync'
 import store from './store'
 import * as types from './store/mutation-types'
+import preferences from './preferences'
 import VueFormGenerator from 'vue-form-generator'
 import VueMarkdown from 'vue-markdown'
 import VueProgressBar from 'vue-progressbar'
@@ -53,6 +54,7 @@ import Colleague from './components/Colleague.vue'
 import Availability from './components/Availability.vue'
 import Import from './components/Import.vue'
 import FAQ from './components/FAQ.vue'
+import Changelog from './components/Changelog.vue'
 
 
 // Vue.use(Vuex)
@@ -157,6 +159,11 @@ export const router = new VueRouter({
                     path: '/faq',
                     component: FAQ,
                 },
+                {
+                    name: 'changelog',
+                    path: '/changelog',
+                    component: Changelog,
+                },
             ],
         },
         {
@@ -236,6 +243,7 @@ if ('serviceWorker' in navigator) {
       extendedTimeOut: 0,
       closeButton: true,
       onclick: function() {
+        preferences.set(preferences.key.SHOW_UPDATED_NOTIFICATION, true)
         worker.postMessage({ cmd: 'skipWaiting' })
       }
     })
@@ -277,5 +285,17 @@ if ('serviceWorker' in navigator) {
         reg.update()
       }, 60 * 60 * 1000)
     })
+
+    if (preferences.get(preferences.key.SHOW_UPDATED_NOTIFICATION, false)) {
+      preferences.set(preferences.key.SHOW_UPDATED_NOTIFICATION, false)
+      toastr.success('YAYATA has been updated. Click here to show the most recent changes!', 'Updated', {
+        timeOut: 0,
+        extendedTimeOut: 0,
+        closeButton: true,
+        onclick: function() {
+          router.push({ name: 'changelog' })
+        }
+      })
+    }
   })
 }
