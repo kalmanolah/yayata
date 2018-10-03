@@ -274,7 +274,7 @@ if ('serviceWorker' in navigator) {
       })
 
       setInterval(() => {
-          reg.update()
+        reg.update()
       }, 60 * 60 * 1000)
     })
   })
