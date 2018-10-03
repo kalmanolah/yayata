@@ -272,6 +272,10 @@ if ('serviceWorker' in navigator) {
       reg.addEventListener('updatefound', function() {
         _trackInstalling(reg.installing)
       })
+
+      setInterval(() => {
+          reg.update()
+      }, 60 * 60 * 1000)
     })
   })
 }
