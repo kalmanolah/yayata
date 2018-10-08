@@ -250,16 +250,16 @@ export default {
     this.reloadData()
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_open_timesheets) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS).then(() => resolve())
+      if (!store.getters.open_timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS).then(() => resolve())
       } else{
         resolve()
       }
     })
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_active_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
+      if (!store.getters.active_contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS).then(() => resolve())
       } else{
         resolve()
       }
@@ -270,8 +270,8 @@ export default {
     showNoWork: () => preferences.get(preferences.key.CALENDAR_SHOW_NO_WORK, true),
 
     supportContracts: function() {
-      if (store.getters.my_active_contracts) {
-        return store.getters.my_active_contracts.filter(contract => {
+      if (store.getters.active_contracts) {
+        return store.getters.active_contracts.filter(contract => {
           return contract.type == 'SupportContract'
         })
       }
@@ -393,8 +393,8 @@ export default {
     },
 
     getTimesheetForDay: function(date) {
-      if (store.getters.my_open_timesheets) {
-        return store.getters.my_open_timesheets.filter(timesheet => {
+      if (store.getters.open_timesheets) {
+        return store.getters.open_timesheets.filter(timesheet => {
           return (timesheet.status == 'active') && (timesheet.year == moment(date).format('YYYY')) && (timesheet.month == moment(date).format('MM'))
         })[0]
       }

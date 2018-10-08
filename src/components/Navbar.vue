@@ -32,19 +32,19 @@ export default {
   computed: {
     user: function() {
       if (store.getters.user) {
-          return store.getters.user
+        return store.getters.user
       }
     },
 
     navbarItems: function() {
         if (store.getters.navbar_items) {
-            return store.getters.navbar_items
+          return store.getters.navbar_items
         }
     }
   },
   methods: {
     hideModal() {
-        this.$refs.modalio.hide()
+      this.$refs.modalio.hide()
     }
   },
 

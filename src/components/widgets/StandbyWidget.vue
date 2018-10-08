@@ -43,8 +43,8 @@ export default {
 
     Promise.all([
       new Promise((resolve, reject) => {
-        if (!store.getters.my_active_contracts) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
+        if (!store.getters.active_contracts) {
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS).then(() => resolve())
         } else{
           resolve()
         }
@@ -148,8 +148,8 @@ export default {
               hideSelected: true,
             },
             values: () => {
-              if (store.getters.my_active_contracts) {
-                return store.getters.my_active_contracts.filter(contract => {
+              if (store.getters.active_contracts) {
+                return store.getters.active_contracts.filter(contract => {
                   return contract.type == 'SupportContract'
                 })
               }
@@ -157,8 +157,8 @@ export default {
               return []
             },
             get: function() {
-              if (store.getters.my_active_contracts && model.contracts) {
-                return store.getters.my_active_contracts.filter(contract => model.contracts.includes(contract.id))
+              if (store.getters.active_contracts && model.contracts) {
+                return store.getters.active_contracts.filter(contract => model.contracts.includes(contract.id))
               }
             },
             set: function(model, value) {

@@ -119,8 +119,8 @@ export default {
     this.reloadData()
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_timesheets) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS).then(() => resolve())
+      if (!store.getters.timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS).then(() => resolve())
       } else{
         resolve()
       }
@@ -235,7 +235,7 @@ export default {
 
     onTimesheetSubmitted: function() {
       this.$refs.timesheetSubmissionModal.hide()
-      store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS)
     },
 
     editAttachment: function() {
@@ -244,7 +244,7 @@ export default {
 
     onAttachmentModified: function() {
       // this.$refs.attachmentModal.hide()
-      store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS)
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS)
     }
   },
 
@@ -270,8 +270,8 @@ export default {
     },
 
     timesheet: function() {
-      if (store.getters.my_timesheets) {
-        return store.getters.my_timesheets.filter(timesheet => {
+      if (store.getters.timesheets) {
+        return store.getters.timesheets.filter(timesheet => {
           return (timesheet.year == moment(this.date).format('YYYY')) && (timesheet.month == moment(this.date).format('MM'))
         })[0]
       }

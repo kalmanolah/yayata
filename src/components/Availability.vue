@@ -76,7 +76,7 @@ div
 
       div(class='btn-toolbar justify-content-center')
         div(class='input-group input-group-sm mr-2')
-          b-form-input(:type='text' :placeholder='"Filter (eg. " + user.username + ")"' v-model="filterQuery")
+          b-form-input(:type='"text"' :placeholder='"Filter (eg. " + user.username + ")"' v-model="filterQuery")
 
         div(class='btn-group btn-group-sm' role='group')
           b-dropdown(variant='outline-dark' size='sm' right :text='filterCountry ? filterCountry : "Country"')
