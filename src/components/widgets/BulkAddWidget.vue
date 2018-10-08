@@ -73,8 +73,8 @@ export default {
               allowEmpty: false
             },
             values: function() {
-              if (store.getters.my_active_contracts) {
-                return store.getters.my_active_contracts
+              if (store.getters.active_contracts) {
+                return store.getters.active_contracts
               }
 
               return []
@@ -82,8 +82,8 @@ export default {
             validator: VueFormGenerator.validators.required,
             // styleClasses: ['half-width'],
             get: function() {
-              if (store.getters.my_active_contracts) {
-                return store.getters.my_active_contracts.find(contract => contract.id == model.contract)
+              if (store.getters.active_contracts) {
+                return store.getters.active_contracts.find(contract => contract.id == model.contract)
               }
             },
             set: function(model, value) {
@@ -102,8 +102,8 @@ export default {
               name: "display_label"
             },
             values: function() {
-              if (store.getters.my_active_contracts && store.getters.performance_types && this.model.contract) {
-                let contract = store.getters.my_active_contracts.find(contract => contract.id == this.model.contract)
+              if (store.getters.active_contracts && store.getters.performance_types && this.model.contract) {
+                let contract = store.getters.active_contracts.find(contract => contract.id == this.model.contract)
 
                 if (contract) {
                   if (contract.performance_types && contract.performance_types.length) {
@@ -129,8 +129,8 @@ export default {
               name: "display_label"
             },
             values: function() {
-              if (store.getters.my_contract_users && this.model.contract) {
-                return store.getters.my_contract_users
+              if (store.getters.contract_users && this.model.contract) {
+                return store.getters.contract_users
                   .filter(contract_user => contract_user.contract.id == this.model.contract)
                   .map(contract_user => contract_user.contract_role)
               }
@@ -178,15 +178,15 @@ export default {
         }
       }),
       new Promise((resolve, reject) => {
-        if (!store.getters.my_contract_users) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS).then(() => resolve())
+        if (!store.getters.contract_users) {
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS).then(() => resolve())
         } else{
           resolve()
         }
       }),
       new Promise((resolve, reject) => {
-        if (!store.getters.my_active_contracts) {
-          store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
+        if (!store.getters.active_contracts) {
+          store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS).then(() => resolve())
         } else{
           resolve()
         }

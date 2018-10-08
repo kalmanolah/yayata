@@ -7,7 +7,7 @@ div
   div(class='row')
     div(class='col-xl-6')
       PerformanceWidget(v-if='timesheet' :timesheet='timesheet')
-      TimesheetWidget(v-if='timesheet' :timesheet='timesheet' v-on:submit='reloadCurrentTimesheet')
+      TimesheetWidget(v-if='timesheet' :timesheet='timesheet' v-on:submit='reloadTimesheets')
 
     div(class='col-xl-6')
       AbsenceWidget
@@ -30,8 +30,18 @@ import LeaveWidget from './widgets/LeaveWidget.vue';
 export default {
   name: 'dashboard',
 
+  created: function() {
+    new Promise((resolve, reject) => {
+      if (!store.getters.current_timesheet) {
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS).then(() => resolve())
+      } else{
+        resolve()
+      }
+    })
+  },
+
   computed: {
-    timesheet: () => store.getters.my_current_timesheet
+    timesheet: () => store.getters.current_timesheet
   },
 
   components: {
@@ -44,8 +54,8 @@ export default {
   },
 
   methods: {
-    reloadCurrentTimesheet: () => {
-      store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET)
+    reloadTimesheets: () => {
+      store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS)
     }
   }
 }

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2018-10-08
+
+### Removed
+
+- All references to V1 API removed, leaving only V2 API code. Guesstimates
+  indicate that over half of vuex code was removed.
+
 ## [1.0.1] - 2018-10-03
 
 ### Fixed

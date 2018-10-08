@@ -74,48 +74,48 @@ export default {
 
   created: function() {
     new Promise((resolve, reject) => {
-      if (!store.getters.my_active_contracts) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_ACTIVE_CONTRACTS).then(() => resolve())
+      if (!store.getters.active_contracts) {
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACTS).then(() => resolve())
       } else {
         resolve()
       }
     })
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_contract_users) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CONTRACT_USERS).then(() => resolve())
+      if (!store.getters.contract_users) {
+        store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS).then(() => resolve())
       } else {
         resolve()
       }
     })
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_open_timesheets) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_TIMESHEETS).then(() => resolve())
+      if (!store.getters.open_timesheets) {
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS).then(() => resolve())
       } else {
         resolve()
       }
     }).then(() => {
-      if (store.getters.my_open_timesheets.length) {
-        this.timesheet = store.getters.my_open_timesheets[0]
+      if (store.getters.open_timesheets.length) {
+        this.timesheet = store.getters.open_timesheets[0]
       }
     })
   },
 
   computed: {
     timesheets: function() {
-      if (store.getters.my_open_timesheets) {
-        return store.getters.my_open_timesheets.filter(timesheet => {
+      if (store.getters.open_timesheets) {
+        return store.getters.open_timesheets.filter(timesheet => {
           return timesheet.status == 'active'
         })
       }
     },
 
     contracts: function() {
-      if (store.getters.my_active_contracts) {
+      if (store.getters.active_contracts) {
         let contracts = {}
 
-        store.getters.my_active_contracts.forEach(contract => {
+        store.getters.active_contracts.forEach(contract => {
           contracts[contract.id] = contract
         })
 
@@ -124,10 +124,10 @@ export default {
     },
 
     contractUsers: function() {
-      if (store.getters.my_contract_users) {
+      if (store.getters.contract_users) {
         let contractUsers = []
 
-        store.getters.my_contract_users.forEach(contractUser => {
+        store.getters.contract_users.forEach(contractUser => {
           if (!contractUsers[contractUser.contract.id]) {
             contractUsers[contractUser.contract.id] = []
           }

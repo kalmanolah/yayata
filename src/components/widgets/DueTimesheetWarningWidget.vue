@@ -22,8 +22,8 @@ export default {
     this.selectedDay = moment()
 
     new Promise((resolve, reject) => {
-      if (!store.getters.my_current_timesheet) {
-        store.dispatch(types.NINETOFIVER_RELOAD_MY_CURRENT_TIMESHEET).then(() => resolve())
+      if (!store.getters.current_timesheet) {
+        store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS).then(() => resolve())
       } else{
         resolve()
       }
@@ -35,11 +35,11 @@ export default {
       // Show warning if:
       // * timesheet is not yet submitted
       // * it is after the 25th
-      if (store.getters.my_current_timesheet) {
+      if (store.getters.current_timesheet) {
         let required_day = 25
         let today = moment();
 
-        return (today.date() >=required_day) && (store.getters.my_current_timesheet.status == 'active')
+        return (today.date() >=required_day) && (store.getters.current_timesheet.status == 'active')
       }
 
       return false
