@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  cypress:
+    build:
+      context: ./../../
+      dockerfile: tests/docker/cypress.Dockerfile
+    depends_on:
+      - yayata
+    environment:
+      - CYPRESS_baseUrl=http://yayata:8080/#/
+    volumes:
+      - ./../../cypress:/code/cypress
+      - ./../../cypress.json:/code/cypress.json
+      - ./../../cypress.env.json:/code/cypress.env.json
+    entrypoint:
+      - /bin/bash
+      - -c
+      - export CYPRESS_baseUrl="http://$$(getent hosts yayata | awk '{ print $$1 }'):8080/#/" && env && /bin/sleep 20 && ./node_modules/.bin/cypress run
+    tty: true
+    stdin_open: true
+
+  yayata:
+    build:
+      context: ./../../
+      dockerfile: tests/docker/yayata.Dockerfile
+    volumes:
+      - ./yayata.config.json:/code/src/static/cfg/config.json
+    ports:
+      - 8080
