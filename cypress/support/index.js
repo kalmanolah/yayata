@@ -21,4 +21,9 @@ import './commands'
 
 Cypress.on("window:before:load", win => {
   win.fetch = null;
+
+  const promise = new Promise(function(resolve) {});
+  win.navigator.serviceWorker.register = function() {
+    return promise;
+  }
 });
