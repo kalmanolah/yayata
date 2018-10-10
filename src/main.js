@@ -79,118 +79,126 @@ toastr.options = {
 export const cfg_file_path = '/cfg/config.json'
 
 export const router = new VueRouter({
-    routes: [{
-            name: 'home',
-            path: '/',
-            component: App,
-            redirect: '/dashboard',
-            children: [{
-                    name: 'dashboard',
-                    path: '/dashboard',
-                    component: Dashboard,
-                },
-                {
-                    name: 'calendar_redirect',
-                    path: '/calendar',
-                    redirect: '/calendar/month'
-                },
-                {
-                    name: 'calendar_month_redirect',
-                    path: '/calendar/month',
-                    redirect: `/calendar/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
-                },
-                {
-                    name: 'calendar_month',
-                    path: '/calendar/month/:year/:month',
-                    component: Month,
-                },
-                {
-                    name: 'calendar_week_redirect',
-                    path: '/calendar/week',
-                    redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
-                },
-                {
-                    name: 'calendar_week',
-                    path: '/calendar/week/:year/:week',
-                    component: Week,
-                },
-                {
-                    name: 'colleagues',
-                    path: '/colleagues',
-                    component: Colleagues,
-                },
-                {
-                    name: 'colleague',
-                    path: '/colleagues/:userId',
-                    component: Colleague,
-                },
-                {
-                    name: 'leave',
-                    path: '/leave',
-                    component: Leave,
-                },
-                {
-                    name: 'availability_redirect',
-                    path: '/availability',
-                    redirect: `/availability/month`,
-                },
-                {
-                    name: 'availability_month_redirect',
-                    path: '/availability/month',
-                    redirect: `/availability/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
-                },
-                {
-                    name: 'availability_month',
-                    path: '/availability/month/:year/:month',
-                    component: Availability,
-                },
-                {
-                    name: 'timesheets',
-                    path: '/timesheets',
-                    component: Timesheets,
-                },
-                {
-                    name: 'import',
-                    path: '/import',
-                    component: Import,
-                },
-                {
-                    name: 'faq',
-                    path: '/faq',
-                    component: FAQ,
-                },
-                {
-                    name: 'changelog',
-                    path: '/changelog',
-                    component: Changelog,
-                },
-            ],
+  routes: [
+    {
+      name: 'home',
+      path: '/',
+      component: App,
+      redirect: '/dashboard',
+      children: [
+        {
+          name: 'dashboard',
+          path: '/dashboard',
+          component: Dashboard,
         },
         {
-            name: 'auth',
-            path: '/auth',
-            component: Auth,
-            redirect: 'login',
-            children: [{
-                    name: 'auth.login',
-                    path: 'login',
-                    component: AuthLogin,
-                    meta: {
-                        anonymous: true
-                    },
-                },
-                {
-                    name: 'auth.logout',
-                    path: 'logout',
-                    component: AuthLogout,
-                    meta: {
-                        anonymous: true
-                    },
-                },
-            ]
+          name: 'calendar_redirect',
+          path: '/calendar',
+          redirect: '/calendar/month'
         },
-        { path: '*', redirect: { name: 'home' } }
-    ]
+        {
+          name: 'calendar_month_redirect',
+          path: '/calendar/month',
+          redirect: `/calendar/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+        },
+        {
+          name: 'calendar_month',
+          path: '/calendar/month/:year/:month',
+          component: Month,
+        },
+        {
+          name: 'calendar_week_redirect',
+          path: '/calendar/week',
+          redirect: `/calendar/week/${(new Date()).getFullYear()}/${moment().isoWeek()}`,
+        },
+        {
+          name: 'calendar_week',
+          path: '/calendar/week/:year/:week',
+          component: Week,
+        },
+        {
+          name: 'colleagues',
+          path: '/colleagues',
+          component: Colleagues,
+        },
+        {
+          name: 'colleague',
+          path: '/colleagues/:userId',
+          component: Colleague,
+        },
+        {
+          name: 'leave',
+          path: '/leave',
+          component: Leave,
+        },
+        {
+          name: 'availability_redirect',
+          path: '/availability',
+          redirect: `/availability/month`,
+        },
+        {
+          name: 'availability_month_redirect',
+          path: '/availability/month',
+          redirect: `/availability/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+        },
+        {
+          name: 'availability_month',
+          path: '/availability/month/:year/:month',
+          component: Availability,
+        },
+        {
+          name: 'timesheets',
+          path: '/timesheets',
+          component: Timesheets,
+        },
+        {
+          name: 'import',
+          path: '/import',
+          component: Import,
+        },
+        {
+          name: 'faq',
+          path: '/faq',
+          component: FAQ,
+        },
+        {
+          name: 'changelog',
+          path: '/changelog',
+          component: Changelog,
+        },
+      ],
+    },
+    {
+      name: 'auth',
+      path: '/auth',
+      component: Auth,
+      redirect: 'login',
+      children: [
+        {
+          name: 'auth.login',
+          path: 'login',
+          component: AuthLogin,
+          meta: {
+            anonymous: true
+          },
+        },
+        {
+          name: 'auth.logout',
+          path: 'logout',
+          component: AuthLogout,
+          meta: {
+            anonymous: true
+          },
+        },
+      ]
+    },
+    {
+      path: '*',
+      redirect: {
+        name: 'home'
+      }
+    }
+  ]
 })
 
 // Sync store with router
@@ -199,11 +207,11 @@ sync(store, router)
 // If the user is navigating to a secured route,
 // verify authentication or redirect to login screen
 router.beforeEach((to, from, next) => {
-    if (!to.meta.anonymous && !store.state.oauth2.authenticated) {
-        next({ name: 'auth.login' })
-    } else {
-        next()
-    }
+  if (!to.meta.anonymous && !store.state.oauth2.authenticated) {
+    next({ name: 'auth.login' })
+  } else {
+    next()
+  }
 })
 
 // Add a HTTP interceptor for showing/hiding progress bars
@@ -223,16 +231,16 @@ Vue.http.interceptors.push((request, next) => {
 // Load configuration file and initialize Vue
 console.debug(`Loading configuration file at ${cfg_file_path}`)
 Vue.http.get(cfg_file_path).then((response) => {
-    console.debug('Configuration loaded', response.data)
-    store.commit(types.OAUTH2_CONFIGURE, response.data.oauth2.config)
+  console.debug('Configuration loaded', response.data)
+  store.commit(types.OAUTH2_CONFIGURE, response.data.oauth2.config)
 
-    new Vue({
-        el: '#app',
-        router,
-        store
-    })
+  new Vue({
+    el: '#app',
+    router,
+    store
+  })
 }, (error) => {
-    console.error(`Could not load configuration file!`)
+  console.error(`Could not load configuration file!`)
 })
 
 // Install service worker
@@ -263,7 +271,6 @@ if ('serviceWorker' in navigator) {
     })
 
     if ('webpackHotUpdate' in window) {
-      console.log('hotupdate')
     } else {
       navigator.serviceWorker.register('/service-worker.js').then((reg) => {
         if (!navigator.serviceWorker.controller) {
