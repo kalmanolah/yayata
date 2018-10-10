@@ -262,29 +262,33 @@ if ('serviceWorker' in navigator) {
       window.location.reload()
     })
 
-    navigator.serviceWorker.register('/service-worker.js').then((reg) => {
-      if (!navigator.serviceWorker.controller) {
-        return
-      }
+    if ('webpackHotUpdate' in window) {
+      console.log('hotupdate')
+    } else {
+      navigator.serviceWorker.register('/service-worker.js').then((reg) => {
+        if (!navigator.serviceWorker.controller) {
+          return
+        }
 
-      if (reg.waiting) {
-        _updateReady(reg.waiting)
-        return
-      }
+        if (reg.waiting) {
+          _updateReady(reg.waiting)
+          return
+        }
 
-      if (reg.installing) {
-        _trackInstalling(reg.installing)
-        return
-      }
+        if (reg.installing) {
+          _trackInstalling(reg.installing)
+          return
+        }
 
-      reg.addEventListener('updatefound', function() {
-        _trackInstalling(reg.installing)
+        reg.addEventListener('updatefound', function() {
+          _trackInstalling(reg.installing)
+        })
+
+        setInterval(() => {
+          reg.update()
+        }, 60 * 60 * 1000)
       })
-
-      setInterval(() => {
-        reg.update()
-      }, 60 * 60 * 1000)
-    })
+    }
 
     if (preferences.get(preferences.key.SHOW_UPDATED_NOTIFICATION, false)) {
       preferences.set(preferences.key.SHOW_UPDATED_NOTIFICATION, false)
