@@ -1,4 +1,9 @@
-# yayata
+YAYATA
+======
+
+[![Build Status](https://travis-ci.org/kalmanolah/yayata.svg?branch=master)](https://travis-ci.org/kalmanolah/yayata)
+[![GitHub issues](https://img.shields.io/github/issues/kalmanolah/yayata.svg)](https://shields.io)
+[![License](https://img.shields.io/github/license/kalmanolah/yayata.svg)](https://shields.io)
 
 ![yayata](https://cdn.rawgit.com/kalmanolah/yayata/master/src/assets/img/logo_text.svg)
 
@@ -31,9 +36,6 @@ npm run dev
 # build for production with minification
 npm run build
 ```
-
-For detailed explanation on how things work, consult the
-[docs for vue-loader](http://vuejs.github.io/vue-loader).
 
 ## License
 

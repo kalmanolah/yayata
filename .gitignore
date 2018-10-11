@@ -6,3 +6,4 @@ config.json
 cypress.env.json
 cypress/videos/
 cypress/screenshots/
+cypress/.Trash-0/

@@ -1,8 +1,8 @@
 {
     "oauth2": {
         "config": {
-            "baseUrl": "http://172.18.0.1:8000",
-            "clientId": "Foo"
+            "baseUrl": "http://ninetofiver:8000",
+            "clientId": "generated_client_id"
         }
     }
 }

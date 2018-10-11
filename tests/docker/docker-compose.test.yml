@@ -7,16 +7,25 @@ services:
       dockerfile: tests/docker/cypress.Dockerfile
     depends_on:
       - yayata
-    environment:
-      - CYPRESS_baseUrl=http://yayata:8080/#/
+      - ninetofiver
     volumes:
       - ./../../cypress:/code/cypress
       - ./../../cypress.json:/code/cypress.json
-      - ./../../cypress.env.json:/code/cypress.env.json
+    environment:
+      - CYPRESS_username=admin
+      - CYPRESS_password=password123
     entrypoint:
       - /bin/bash
       - -c
-      - export CYPRESS_baseUrl="http://$$(getent hosts yayata | awk '{ print $$1 }'):8080/#/" && env && /bin/sleep 20 && ./node_modules/.bin/cypress run
+      - >
+        export NINETOFIVER_HOST=$$(getent hosts ninetofiver | awk '{ print $$1 }'):8000 &&
+        export NINETOFIVER_BASE_URL="http://$$NINETOFIVER_HOST" &&
+        ./wait-for-it.sh $$NINETOFIVER_HOST:8000 -- echo '925r is up' &&
+        export YAYATA_HOST=$$(getent hosts yayata | awk '{ print $$1 }'):8080 &&
+        export YAYATA_BASE_URL="http://$$YAYATA_HOST" &&
+        ./wait-for-it.sh $$YAYATA_HOST -- echo 'YAYATA is up' &&
+        export CYPRESS_baseUrl="$$YAYATA_BASE_URL/#/" &&
+        ./node_modules/.bin/cypress run
     tty: true
     stdin_open: true
 
@@ -26,5 +35,8 @@ services:
       dockerfile: tests/docker/yayata.Dockerfile
     volumes:
       - ./yayata.config.json:/code/src/static/cfg/config.json
-    ports:
-      - 8080
+
+  ninetofiver:
+    build:
+      context: ./../../
+      dockerfile: tests/docker/ninetofiver.Dockerfile
