@@ -1,4 +1,4 @@
 {
     "chromeWebSecurity": false,
-    "baseUrl": "http://localhost:8080/#/"
+    "baseUrl": "http://172.18.0.2:8080/#/"
 }

@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+
+language: node_js
+
+install:
+  - npm install
+
+script:
+  - docker-compose -f tests/docker/docker-compose.test.yml run cypress --rm
