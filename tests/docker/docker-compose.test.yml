@@ -11,7 +11,9 @@ services:
     volumes:
       - ./../../cypress:/code/cypress
       - ./../../cypress.json:/code/cypress.json
-      - ./../../cypress.env.json:/code/cypress.env.json
+    environment:
+      - CYPRESS_username=admin
+      - CYPRESS_password=password123
     entrypoint:
       - /bin/bash
       - -c
