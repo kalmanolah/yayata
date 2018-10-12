@@ -26,7 +26,10 @@ node_js:
 
 install:
   - npm install
-  - docker-compose -f tests/docker/docker-compose.test.yml build >/dev/null
+  - docker-compose -f tests/docker/docker-compose.test.yml build yayata >/dev/null
+  - docker-compose -f tests/docker/docker-compose.test.yml build ninetofiver >/dev/null
+  - docker-compose -f tests/docker/docker-compose.test.yml build cypress >/dev/null
+
 
 script:
   - docker-compose -f tests/docker/docker-compose.test.yml run cypress
