@@ -1,10 +1,11 @@
-FROM python:3.6
+FROM python:3.6-alpine
 
 RUN mkdir /code
 WORKDIR /code
 
 RUN pip install pipenv
-RUN apt-get update && apt-get install -y unzip python-dev libldap2-dev libsasl2-dev libssl-dev
+
+RUN apk add curl gcc musl-dev mariadb-connector-c-dev openldap-dev
 
 RUN curl -OL 'https://github.com/kalmanolah/925r/archive/develop.zip' && \
     unzip develop.zip && \
