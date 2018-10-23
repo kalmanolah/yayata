@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2018-10-23
+
+### Changed
+
+- When importing performance linked to a contract without explicitly defined
+  performance types, we now fall back to allowing all performance types
+  instead of not allowing the import.
+
 ## [1.0.3] - 2018-10-11
 
 ### Added
