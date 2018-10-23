@@ -36,7 +36,7 @@ div
           td
             select(class='form-control form-control-sm col' v-model='performance.performance_type')
               option(
-                v-for='performance_type in contracts[performance.contract].performance_types'
+                v-for='performance_type in ((contracts[performance.contract].performance_types && contracts[performance.contract].performance_types.length) ? contracts[performance.contract].performance_types : performanceTypes)'
                 :value='performance_type.id'
               ) {{ performance_type.display_label }}
           td
@@ -84,6 +84,14 @@ export default {
     new Promise((resolve, reject) => {
       if (!store.getters.contract_users) {
         store.dispatch(types.NINETOFIVER_RELOAD_CONTRACT_USERS).then(() => resolve())
+      } else {
+        resolve()
+      }
+    })
+
+    new Promise((resolve, reject) => {
+      if (!store.getters.performance_types) {
+        store.dispatch(types.NINETOFIVER_RELOAD_PERFORMANCE_TYPES).then(() => resolve())
       } else {
         resolve()
       }
@@ -138,6 +146,12 @@ export default {
         return contractUsers
       }
     },
+
+    performanceTypes: function() {
+      if (store.getters.performance_types) {
+        return store.getters.performance_types
+      }
+    }
   },
 
   watch: {
@@ -171,7 +185,7 @@ export default {
         let performances = res.data.results
 
         performances.forEach(performance => {
-          performance.performance_type = this.contracts[performance.contract].performance_types[0].id
+          performance.performance_type = ((this.contracts[performance.contract].performance_types && this.contracts[performance.contract].performance_types.length) ? this.contracts[performance.contract].performance_types : this.performanceTypes)[0].id
           performance.contract_role = this.contractUsers[performance.contract][0].contract_role.id
         })
 
