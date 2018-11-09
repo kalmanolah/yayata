@@ -87,9 +87,9 @@ export default {
               }
             },
             set: function(model, value) {
-              this.model.contract = value.id ? value.id : value
-              this.model.performance_type = this.schema.fields.find(f => f.model == 'performance_type').values.call(this)[0].id
-              this.model.contract_role = this.schema.fields.find(f => f.model == 'contract_role').values.call(this)[0].id
+              this.model.contract = (value && value.id) ? value.id : value
+              this.model.performance_type = this.model.contract ? this.schema.fields.find(f => f.model == 'performance_type').values.call(this)[0].id : null
+              this.model.contract_role = this.model.contract ? this.schema.fields.find(f => f.model == 'contract_role').values.call(this)[0].id : null
             }
           },
           {
@@ -216,7 +216,8 @@ export default {
       let contract_field = this.schema.fields.find(f => f.model == 'contract')
       contract_field.set = contract_field.set.bind(this)
 
-      contract_field.set(this.model, contract_field.values.call(this)[0].id)
+      // contract_field.set(this.model, contract_field.values.call(this)[0].id)
+      contract_field.set(null)
       this.model.description = null
     },
 

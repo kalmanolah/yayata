@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2018-11-09
+
+### Changed
+
+- When bulk adding a contract is no longer be selected by default. This should
+  prevent people from accidentally adding 20-ish performances to the wrong
+  contract.
+
 ## [1.0.4] - 2018-10-23
 
 ### Changed
