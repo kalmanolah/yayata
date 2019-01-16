@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2019-01-16
+
+### Fixed
+
+- When your access token expires and multiple requests are pending, multiple
+  refreshes will no longer be attempted. Previously this would cause all but
+  the first refresh to fail, causing you to be logged out.
+
 ## [1.0.5] - 2018-11-09
 
 ### Changed
