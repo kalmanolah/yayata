@@ -94,35 +94,17 @@ div
                 div {{ holiday.display_label }}
                 div 🌐
 
-            //- Approved leave for range info details
-            li(
-              class='list-group-item p-2'
-              v-for='leave in dayDetails.leaves'
-            )
-              div(class='d-flex justify-content-between')
-                div {{ leave.leave_type.display_label }}
-                div 🏖️
-              div(class='d-flex justify-content-between')
-                div
-                  div(v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)' class='text-muted')
-                    small {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
-                  div(v-if='leave.description' class='text-muted')
-                    small {{ leave.description }}
-                div
-                  span(class='cursor-pointer' v-b-tooltip title='Attachments' v-on:click.stop='editAttachment(date, leave)')
-                    small(v-if='leave.attachments.length') {{ leave.attachments.length }}
-                    | 📎
-
-            //- Pending leave, fetched separately
-            template(v-for='leave in pendingLeave' v-if='pendingLeave')
+            //- Leave
+            template(v-for='leave in dayDetails.leaves' v-if='dayDetails.leaves')
               template(v-for='leave_date in leave.leavedate_set' v-if='isSameDay(leave_date.starts_at, date)')
                 li(
                   class='list-group-item list-group-item-action cursor-pointer p-2'
-                  v-on:click.prevent='getTimesheetForDay(date) ? editLeave(date, leave) : null'
+                  v-on:click.prevent='((leave.status != "approved") && getTimesheetForDay(date)) ? editLeave(date, leave) : null'
                 )
                   div(class='d-flex justify-content-between')
                     div {{ leave.leave_type.display_label }}
-                    div(v-b-tooltip title='Pending approval') ❓🏖️
+                    div(v-if='leave.status != "approved"' v-b-tooltip title='Pending leave') ❓🏖️
+                    div(v-else v-b-tooltip title='Leave') 🏖️
                   div(class='d-flex justify-content-between')
                     div
                       div(class='text-muted')
@@ -225,7 +207,6 @@ export default {
       date: null,
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
       rangeInfo: null,
-      pendingLeave: null,
       whereabouts: null,
       selectedPerformance: null,
       selectedStandby: null,
@@ -338,17 +319,6 @@ export default {
         }
       }).then(res => {
         this.rangeInfo = res.data
-      })
-
-      // Reload pending leave
-      store.dispatch(types.NINETOFIVER_API_REQUEST, {
-        path: '/leave/',
-        params: {
-          'date__range': `${start.format('YYYY-MM-DDTHH:mm:ssZZ')},${end.format('YYYY-MM-DDTHH:mm:ssZZ')}`,
-          'status': 'pending'
-        }
-      }).then(res => {
-        this.pendingLeave = res.data.results
       })
 
       // Reload whereabouts

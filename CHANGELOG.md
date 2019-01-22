@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2019-01-22
+
+### Added
+
+- On the month view, pending leave is now shown.
+
+- Hours worked on the month view can now be expanded to show a breakdown of
+  hours worked per contract, leave taken, etc.
+
 ## [1.0.6] - 2019-01-16
 
 ### Fixed

@@ -92,6 +92,12 @@ export default {
     }
   },
 
+  watch: {
+    timesheet: function (oldVal, newVal) {
+      this.reloadData()
+    }
+  },
+
   created: function() {
     this.reloadData()
   },

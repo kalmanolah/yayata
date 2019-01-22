@@ -16,12 +16,14 @@ div
       hr(class='d-lg-none')
 
       div(class='btn-group' role='group')
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active")' @click='submitTimesheet()') Submit
+        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='showTimesheetWidget = !showTimesheetWidget')
+          i(class='fa' :class='{"fa-chevron-circle-up": showTimesheetWidget, "fa-chevron-circle-down": !showTimesheetWidget}') &nbsp;
+          strong Total:&nbsp;
+          | {{ rangeInfo.total_hours | round }} / {{ rangeInfo.work_hours | round }} hours
         button(class='btn btn-outline-dark btn-sm' v-if='timesheet' @click='editAttachment()')
           | Attachments
           span(v-if='timesheet.attachments.length') &nbsp;({{ timesheet.attachments.length }})
         button(class='btn btn-outline-dark btn-sm' v-if='timesheet && (timesheet.status === "active") && rangeInfo' @click='bulkAdd()') Bulk add
-  hr
 
   b-modal(ref='bulkAddModal' hide-header=true hide-footer=true lazy=true size='lg')
     BulkAddWidget(
@@ -42,11 +44,11 @@ div
       v-on:success='onAttachmentModified()'
     )
 
-  div(v-if='rangeInfo')
-    div
-      strong Total:&nbsp;
-      | {{ rangeInfo.total_hours | round }} / {{ rangeInfo.work_hours | round }} hours
+  div(v-if='timesheet && showTimesheetWidget')
+    hr
+    TimesheetWidget(:timesheet='timesheet')
 
+  div(v-if='rangeInfo')
     hr
 
     div(class='weekdays calendar-row row')
@@ -68,6 +70,7 @@ div
                   span(class='col-auto')
                     small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
                     small(v-if='dayDetails.leave_hours' v-b-tooltip title="Leave") 🏖️
+                    small(v-if='dayDetails.pending_leave_hours' v-b-tooltip title="Pending leave") ❓🏖
 
                 div(class='card-text text-right')
                   small
@@ -83,6 +86,7 @@ import * as types from '../store/mutation-types';
 import store from '../store';
 import moment from 'moment';
 import _ from 'lodash';
+import TimesheetWidget from './widgets/TimesheetWidget.vue';
 import BulkAddWidget from './widgets/BulkAddWidget.vue';
 import TimesheetSubmissionWidget from './widgets/TimesheetSubmissionWidget.vue';
 import AttachmentWidget from './widgets/AttachmentWidget.vue';
@@ -97,11 +101,13 @@ export default {
     return {
       date: null,
       rangeInfo: null,
+      showTimesheetWidget: false,
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
     }
   },
 
   components: {
+    TimesheetWidget,
     BulkAddWidget,
     TimesheetSubmissionWidget,
     AttachmentWidget,
