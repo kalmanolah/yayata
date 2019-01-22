@@ -65,7 +65,8 @@ div
             div(class='card' :id='"calendar-day-" + date')
               div(class='card-body')
                 h5(class='card-title row justify-content-between')
-                  span(class='col') {{ date | moment('D') }}
+                  span(class='col d-none d-md-flex') {{ date | moment('D') }}
+                  span(class='col d-md-none') {{ date | moment('ddd D') }}
 
                   span(class='col-auto')
                     small(v-if='dayDetails.holiday_hours' v-b-tooltip title="Holiday") 🌐
