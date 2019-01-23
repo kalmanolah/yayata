@@ -16,12 +16,6 @@ div(class='card card-top-blue mb-3')
       class='col-auto p-1'
     )
 
-  table(class='table my-0')
-    tbody
-      tr
-        td 🌐 KalDAy
-        td(class='text-right') BE
-
   table(class='table my-0' v-if='holidays.length')
     tbody
       tr(v-for='holiday in holidays')
