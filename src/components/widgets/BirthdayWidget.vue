@@ -6,12 +6,14 @@ div(class='card card-top-blue mb-3')
     | 🎂 Birthdays for {{ selectedDay | moment('ddd, MMMM Do') }}
     span(title='Go to next day')
       i(class='fa fa-chevron-right chevron' @click='dayLater')
-  ul(class='list-group list-group-flush' v-if='birthdayUsers && birthdayUsers.length')
-    router-link(
+  div(class='row justify-content-center m-0 p-1' v-if='birthdayUsers && birthdayUsers.length')
+    ColleagueAvatarWidget(
       v-for='(user, index) in birthdayUsers'
-      :to='{ name: "colleague", params: { userId: user.id }}'
-      class='list-group-item'
-    ) {{ user.display_label }}
+      v-bind:key='user.id'
+      :user='user'
+      size='64'
+      class='col-auto p-1'
+    )
   div(class='card-body text-center' v-else) Nothing to see here. 😞
 </template>
 
@@ -19,9 +21,14 @@ div(class='card card-top-blue mb-3')
 import moment from 'moment';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import ColleagueAvatarWidget from './ColleagueAvatarWidget.vue';
 
 export default {
   name: 'BirthdayWidget',
+
+  components: {
+    ColleagueAvatarWidget,
+  },
 
   data () {
     return {

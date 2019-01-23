@@ -7,11 +7,20 @@ div(class='card card-top-blue mb-3')
     span(title='Go to next day')
       i(class='fa fa-chevron-right chevron' @click='dayLater')
 
-  table(class='table my-0' v-if='absentUsers')
+  div(class='row justify-content-center m-0 p-1' v-if='absentUsers.length')
+    ColleagueAvatarWidget(
+      v-for='(user, index) in absentUsers'
+      v-bind:key='user.id'
+      :user='user'
+      size='64'
+      class='col-auto p-1'
+    )
+
+  table(class='table my-0')
     tbody
-      tr(v-for="(user, index) in absentUsers" v-bind:key="user.id")
-        td
-          router-link(:to='{ name: "colleague", params: { userId: user.id }}') {{ user.display_label }}
+      tr
+        td 🌐 KalDAy
+        td(class='text-right') BE
 
   table(class='table my-0' v-if='holidays.length')
     tbody
@@ -26,9 +35,14 @@ div(class='card card-top-blue mb-3')
 import moment from 'moment';
 import * as types from '../../store/mutation-types';
 import store from '../../store';
+import ColleagueAvatarWidget from './ColleagueAvatarWidget.vue';
 
 export default {
   name: 'AbsenceWidget',
+
+  components: {
+    ColleagueAvatarWidget
+  },
 
   data () {
     return {

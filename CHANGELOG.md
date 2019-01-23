@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2019-01-23
+
+### Changed
+
+- Instead of identicons, use avatars based on user initials as defaults for
+  avatars if gravatars are not found.
+
+- The absence and birthday widgets now show lists of avatars instead of lists
+  of plain names.
+
 ## [1.0.7] - 2019-01-22
 
 ### Added

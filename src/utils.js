@@ -215,9 +215,10 @@ const getTimeOptions = () => {
     return res
 }
 
-const getGravatarUrl = (email, def = 'identicon', size = '250') => {
-    let emailHash = new MD5().update(email).digest('hex')
-    return `//www.gravatar.com/avatar/${emailHash}?d=${def}&s=${size}`
+const getAvatarUrl = (user, size = '250') => {
+    let emailHash = new MD5().update(user.email).digest('hex')
+    let defaultUrl = `https://ui-avatars.com/api/${encodeURIComponent(user.display_label)}/${size}`
+    return `https://www.gravatar.com/avatar/${emailHash}?d=${encodeURI(defaultUrl)}&s=${size}`
 }
 
 
@@ -228,5 +229,5 @@ export default {
     stringToColour,
     ColorSequencer,
     getTimeOptions,
-    getGravatarUrl,
+    getAvatarUrl,
 }

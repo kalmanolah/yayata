@@ -4,7 +4,7 @@ div(v-if='user')
     div(class='card-header user-card-header' style='background-image: url("https://source.unsplash.com/featured/?landscape");')
       div(class='row')
         div(class='col-lg-6 d-flex justify-content-center')
-          img(class='my-4 m-lg-5 img-thumbnail img-fluid' :src='getGravatarUrl(user.email)')
+          img(class='my-4 m-lg-5 img-thumbnail img-fluid' :src='getAvatarUrl(user)')
         div(class='col-lg-6 align-self-center')
           div(class='user-header-text text-white text-center text-lg-left')
             h1 {{ user.display_label }}
@@ -86,7 +86,7 @@ export default {
   },
 
   methods: {
-    getGravatarUrl: utils.getGravatarUrl,
+    getAvatarUrl: utils.getAvatarUrl,
   }
 }
 </script>
