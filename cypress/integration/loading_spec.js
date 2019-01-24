@@ -53,7 +53,7 @@ describe('Loading Test', function() {
 
   it('Visits availability', function() {
     cy.visit('/availability')
-    cy.wait('@locations').its('status').should('eq', 200)
+    // cy.wait('@locations').its('status').should('eq', 200)
     cy.wait('@users').its('status').should('eq', 200)
     cy.wait('@range_availability').its('status').should('eq', 200)
   })
