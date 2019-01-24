@@ -30,7 +30,7 @@ div(class='card card-top-blue mb-3')
       tr(v-if='rangeInfo' v-for='performance in rangeInfo.summary.performances')
         td {{ performance.contract.display_label }}
         td
-          button(class='btn-default btn btn-sm fa fa-print' @click='exportContractToPdf(performance.contract)')
+          button(class='btn-outline-secondary btn btn-sm fa fa-print' @click='exportContractToPdf(performance.contract)')
         td(class='text-right') {{ performance.duration | round }} hours
 
       tr(v-if='rangeInfo')

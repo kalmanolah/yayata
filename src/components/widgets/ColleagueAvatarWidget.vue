@@ -1,10 +1,10 @@
 <template lang="pug">
-div(v-if='user')
+div(v-if='user' class='d-flex')
   router-link(
     :to='{ name: "colleague", params: { userId: user.id }}'
     class='avatar-container'
-    v-b-tooltip
     :title='user.display_label'
+    v-b-tooltip="{boundary: 'window'}"
   )
     span(class='avatar-label') {{ user.display_label }}
     img(

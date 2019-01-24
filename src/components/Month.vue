@@ -16,7 +16,7 @@ div
       hr(class='d-lg-none')
 
       div(class='btn-group' role='group')
-        button(class='btn btn-outline-dark btn-sm' v-if='timesheet && rangeInfo' @click='showTimesheetWidget = !showTimesheetWidget')
+        b-button(size='sm' variant='outline-dark' v-if='timesheet && rangeInfo' :pressed='showTimesheetWidget' v-on:click='toggleShowTimesheetWidget()')
           i(class='fa' :class='{"fa-chevron-circle-up": showTimesheetWidget, "fa-chevron-circle-down": !showTimesheetWidget}') &nbsp;
           strong Total:&nbsp;
           | {{ rangeInfo.total_hours | round }} / {{ rangeInfo.work_hours | round }} hours
@@ -85,6 +85,7 @@ div
 <script>
 import * as types from '../store/mutation-types';
 import store from '../store';
+import preferences from '../preferences';
 import moment from 'moment';
 import _ from 'lodash';
 import TimesheetWidget from './widgets/TimesheetWidget.vue';
@@ -102,7 +103,6 @@ export default {
     return {
       date: null,
       rangeInfo: null,
-      showTimesheetWidget: false,
       weekDays: _.range(7).map(x => moment().day(x + 1).format('dddd')),
     }
   },
@@ -252,10 +252,16 @@ export default {
     onAttachmentModified: function() {
       // this.$refs.attachmentModal.hide()
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS)
+    },
+
+    toggleShowTimesheetWidget: function() {
+      preferences.set(preferences.key.CALENDAR_SHOW_TIMESHEET_WIDGET, !this.showTimesheetWidget)
     }
   },
 
   computed: {
+    showTimesheetWidget: () => preferences.get(preferences.key.CALENDAR_SHOW_TIMESHEET_WIDGET, false),
+
     startDayOffset: function() {
       let dow = moment(this.date).date(1).day()
 

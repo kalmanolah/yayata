@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2019-01-24
+
+### Changed
+
+- Buttons for printing timesheet PDFs now actually look like buttons.
+
+- The display state of the timesheet details on the month view is now saved
+  as a user preference. This means that whether or not the details are shown
+  will be remembered across tabs/page reloads/etc.
+
+- Restructured the availability view.
+
 ## [1.0.8] - 2019-01-23
 
 ### Changed

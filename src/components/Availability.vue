@@ -3,12 +3,12 @@ div
   div(class='row justify-content-between align-items-center')
     div(class='col-lg-auto text-center')
       div(class='btn-group' role='group')
-        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousMonth()')
+        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectPreviousPeriod()')
           i(class='fa fa-angle-double-left')
           | &nbsp;Previous
         button(class='btn btn-sm btn-outline-dark disabled' type='button')
-          | {{ date | moment('MMMM YYYY') }}
-        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextMonth()')
+          | {{ days[0] | moment('YYYY-MM-DD') }} - {{ days[days.length - 1] | moment('YYYY-MM-DD') }}
+        button(class='btn btn-sm btn-outline-dark' type='button' v-on:click.prevent='selectNextPeriod()')
           | Next&nbsp;
           i(class='fa fa-angle-double-right')
 
@@ -25,7 +25,7 @@ div
           checked: 'Sickness',
           unchecked: 'Sickness'
         },
-        :width='75'
+        :width='80'
       )
       toggle-button(
         class='my-0'
@@ -53,22 +53,27 @@ div
       )
       toggle-button(
         class='my-0'
+        @change='showWhereabout = !showWhereabout',
+        :value='showWhereabout',
+        color='#FBB829',
+        :sync='true',
+        :labels={
+          checked: 'Whereabout',
+          unchecked: 'Whereabout'
+        },
+        :width='90'
+      )
+      toggle-button(
+        class='my-0'
         @change='showNoWork = !showNoWork',
         :value='showNoWork',
         color='#9e9d9d',
         :sync='true',
         :labels={
-          checked: 'Non working day',
-          unchecked: 'Non working day'
+          checked: 'Not working',
+          unchecked: 'Not working'
         },
-        :width='115'
-      )
-      b-form-checkbox-group(
-        v-if='locations'
-        v-model='shownLocations'
-        :options='locations'
-        text-field='display_label',
-        value-field='tag'
+        :width='90'
       )
 
     div(class='col-lg-auto')
@@ -86,20 +91,35 @@ div
   hr
 
   div(class='table-responsive')
-    table(class='table table-bordered table-sm' v-if='daysInMonth')
+    table(class='table table-bordered table-sm' v-if='days')
       thead
         tr
-          th Name
-          th(class='cell text-center' v-for='day in daysInMonth' v-bind:class='determineCellColor(day)') {{ day }}
-          th(class='cell cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
+          th(class='text-center') User
+          th(class='text-center' v-for='day in days') {{ day | moment('ddd, MMM Do') }}
       tbody
         tr(v-for='user in users')
-          td
-            router-link(:to='{ name: "colleague", params: { userId: user.id }}')
-              | {{ user.display_label }}
-              small(class='d-none d-xl-inline') &nbsp;({{ user.username }})
-          td(v-for='day in daysInMonth' v-bind:class='determineCellColor(day, user)' v-bind:style='determineCellStyle(day, user)') &nbsp;
-          td(class='cell-na' v-if='(daysInMonth < 31)' v-for='day in (31 - daysInMonth)')
+          td(class='cell')
+            div(class='row justify-content-center')
+              ColleagueAvatarWidget(class='col-auto' :user='user' size='30')
+          td(v-for='day in days' :class='determineCellColor(day, user)' class='cell')
+            div(v-if='availability && availability[user.id] && availability[user.id][day]')
+              div(v-if='showHoliday' v-for='holiday in availability[user.id][day].holidays')
+                div(class='cell-holiday badge')
+                  | 🌐 {{ holiday.name }}
+
+              div(v-if='showLeave' v-for='leave_date in availability[user.id][day].leave')
+                div(class='cell-leave badge')
+                  | 🏖️ {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+
+              div(v-if='showSickness' v-for='leave_date in availability[user.id][day].sickness')
+                div(class='cell-sickness badge')
+                  | 😷 {{ leave_date.starts_at | moment('HH:mm') }} - {{ leave_date.ends_at | moment('HH:mm') }}
+
+              div(v-if='showWhereabout' v-for='whereabout in availability[user.id][day].whereabouts')
+                div(class='cell-whereabout badge text-left')
+                  | 📍 {{ whereabout.location.display_label }}
+                  br
+                  | &mdash;&nbsp;{{ whereabout.starts_at | moment('HH:mm') }} - {{ whereabout.ends_at | moment('HH:mm') }}
 </template>
 
 <script>
@@ -108,9 +128,14 @@ import store from '../store';
 import * as types from '../store/mutation-types';
 import utils from '../utils';
 import moment from 'moment';
+import ColleagueAvatarWidget from './widgets/ColleagueAvatarWidget.vue';
 
 export default {
   name: 'Availability',
+
+  components: {
+    ColleagueAvatarWidget,
+  },
 
   watch: {
     '$route': function(to, from) {
@@ -127,10 +152,11 @@ export default {
       showLeave: true,
       showNoWork: true,
       showSickness: true,
-      shownLocations: [],
+      showWhereabout: true,
       countries: [],
-      date: null,
       today: moment(),
+      date: null,
+      daysShown: 10,
       availability: null
     }
   },
@@ -138,16 +164,6 @@ export default {
  created: function() {
     this.setDate()
     this.reloadAvailability()
-
-    new Promise((resolve, reject) => {
-      if (!store.getters.locations) {
-        store.dispatch(types.NINETOFIVER_RELOAD_LOCATIONS).then(() => resolve())
-      } else{
-        resolve()
-      }
-    }).then(() => {
-      this.shownLocations = store.getters.locations.map(location => `whereabout_${location.name.toLowerCase().replace(/ /g, '_')}`)
-    })
 
     new Promise((resolve, reject) => {
       if (!store.getters.users) {
@@ -169,25 +185,6 @@ export default {
   computed: {
     user: () => store.getters.user,
 
-    locations: function() {
-      if (store.getters.locations) {
-        let colours = new utils.ColorSequencer()
-
-        return store.getters.locations.map(location => {
-          let colour = utils.stringToColour(location.display_label)
-          let display_label = `<span class="badge" style="background:${colour}">${location.display_label}</span>`
-          let tag = `whereabout_${location.name.toLowerCase().replace(/ /g, '_')}`
-
-          return {
-            'display_label': display_label,
-            'name': location.name,
-            'colour': colour,
-            'tag': tag,
-          }
-        })
-      }
-    },
-
     users: function() {
       if (store.getters.users) {
         let users = store.getters.users.slice(0)
@@ -203,6 +200,7 @@ export default {
           users = users.filter(user => {
             return (user.username.toLowerCase().indexOf(query) > -1)
               || (user.display_label.toLowerCase().indexOf(query) > -1)
+              || (user.email.toLowerCase().indexOf(query) > -1)
           })
         }
 
@@ -210,34 +208,38 @@ export default {
       }
     },
 
-    daysInMonth: function() {
+    days: function() {
       if (this.date) {
-        return parseInt(moment(this.date).endOf('month').format('DD'))
+        return [...Array(this.daysShown).keys()].map(i => {
+          return moment(this.date).add(i, 'days').format('YYYY-MM-DD')
+        })
       }
-    },
+    }
   },
 
   methods: {
-    selectNextMonth: function() {
-      let new_date = moment(this.date).add(1, 'month')
+    selectNextPeriod: function() {
+      let new_date = moment(this.date).add(this.daysShown, 'days')
 
       this.$router.push({
-        name: 'availability_month',
+        name: 'availability_week',
         params: {
           month: new_date.format('MM'),
-          year: new_date.format('YYYY')
+          year: new_date.format('YYYY'),
+          date: new_date.format('DD')
         }
       })
     },
 
-    selectPreviousMonth: function() {
-      let new_date = moment(this.date).subtract(1, 'month')
+    selectPreviousPeriod: function() {
+      let new_date = moment(this.date).subtract(this.daysShown, 'days')
 
       this.$router.push({
-        name: 'availability_month',
+        name: 'availability_week',
         params: {
           month: new_date.format('MM'),
-          year: new_date.format('YYYY')
+          year: new_date.format('YYYY'),
+          date: new_date.format('DD')
         }
       })
     },
@@ -245,19 +247,17 @@ export default {
     setDate: function() {
       this.date = moment({
         year: this.$route.params.year,
-        month: this.$route.params.month - 1
-      }).startOf('month');
+        month: this.$route.params.month - 1,
+        date: this.$route.params.date,
+      })
     },
 
     reloadAvailability: function() {
-      let start = moment(this.date).startOf('month')
-      let end = moment(this.date).endOf('month')
-
       store.dispatch(types.NINETOFIVER_API_REQUEST, {
         path: '/range_availability/',
         params: {
-          from: start.format('YYYY-MM-DD'),
-          until: end.format('YYYY-MM-DD')
+          from: this.days[0],
+          until: this.days[this.days.length - 1]
         }
       }).then(res => {
         this.availability = res.data
@@ -268,55 +268,16 @@ export default {
       this.filterCountry = country
     },
 
-    determineCellStyle: function(day, user) {
-      let date = moment(this.date).date(day).format('YYYY-MM-DD')
-      let style = {
-        background: null,
-      }
-
-      if (user && this.availability && this.availability[user.id][date]) {
-        let tags = this.availability[user.id][date]
-
-        this.shownLocations.forEach(tag => {
-          if (tags.includes(tag)) {
-            let location = this.locations.find(x => x.tag == tag)
-            style.background = location.colour
-          }
-        })
-      }
-
-      return style
-    },
-
-    determineCellColor: function(day, user) {
-      let date = moment(this.date).date(day).format('YYYY-MM-DD')
+    determineCellColor: function(date, user) {
       let cls = []
 
       if (date == this.today.format('YYYY-MM-DD')) {
         cls.push('cell-today')
       }
 
-      if (user && this.availability && this.availability[user.id][date]) {
-        let tags = this.availability[user.id][date]
-
-        if (this.showSickness && tags.includes('sickness')) {
-          cls.push('cell-sickness')
-        } else if (this.showSickness && tags.includes('sickness_pending')) {
-          cls.push('cell-sickness-pending')
-        } else if (this.showLeave && tags.includes('leave')) {
-          cls.push('cell-leave')
-        } else if (this.showLeave && tags.includes('leave_pending')) {
-          cls.push('cell-leave-pending')
-        } else if (this.showHoliday && tags.includes('holiday')) {
-          cls.push('cell-holiday')
-        } else if (this.showNoWork && tags.includes('no_work')) {
+      if (this.availability && this.availability[user.id] && this.availability[user.id][date]) {
+        if (this.showNoWork && !this.availability[user.id][date].work_hours) {
           cls.push('cell-nowork')
-        } else {
-          this.shownLocations.forEach(tag => {
-            if (tags.includes(tag)) {
-              cls.push(`cell-${tag}`)
-            }
-          })
         }
       }
 
@@ -334,47 +295,22 @@ export default {
 @leavePending: #48f490;
 @holiday: #59b8e6;
 @nowork: #9e9d9d;
-@homework: #ffbb33;
+@whereabout: #FBB829;
 
 .cell {
-  width: 2.5%;
-
-  &:nth-child(-n+10) {
-    &:before {
-      content: '0';
-      color: rgba(0, 0, 0, 0.1);
-    }
-  }
+  vertical-align: middle;
 }
 .cell-today {
-  border-left: 2px solid @highlight;
-  border-right: 2px solid @highlight;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 215, 0, 0.25),
+    rgba(0, 215, 0, 0.25) 10px,
+    rgba(0, 215, 0, 0.1) 10px,
+    rgba(0, 215, 0, 0.1) 20px
+  );
 }
-thead tr .cell-today {
-  border-top: 2px solid @highlight;
-  border-bottom: 2px solid @highlight;
-  background-color: @highlight;
-  color: #f9f9f9;
-}
-thead th {
-  border-bottom-width: 1px;
-}
-tbody tr:last-child .cell-today {
-  border-bottom: 2px solid @highlight;
-}
-tbody tr:hover td {
-  box-shadow: 0 2px 0 @highlight inset, 0 -2px 0 @highlight inset;
-
-  &:first-child {
-    box-shadow: 0 2px 0 @highlight inset, 2px 0 0 @highlight inset, 0 -2px 0 @highlight inset;
-  }
-
-  &:last-child {
-    box-shadow: 0 2px 0 @highlight inset, -2px 0 0 @highlight inset, 0 -2px 0 @highlight inset;
-  }
-}
-.cell-homework {
-  background-color: @homework;
+.cell-whereabout {
+  background-color: @whereabout;
 }
 .cell-holiday {
   background-color: @holiday;
@@ -393,16 +329,5 @@ tbody tr:hover td {
 }
 .cell-nowork {
   background-color: @nowork;
-}
-[class^='cell-whereabout_']:before, div[class*=' cell-whereabout_']:before {
-}
-.cell-na {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(0, 0, 0, 0.2),
-    rgba(0, 0, 0, 0.2) 10px,
-    rgba(0, 0, 0, 0.1) 10px,
-    rgba(0, 0, 0, 0.1) 20px
-  );
 }
 </style>

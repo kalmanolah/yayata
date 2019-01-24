@@ -13,24 +13,20 @@ div(v-if='availability')
           strong {{ weekDay }}
       div(class='row no-gutters')
         div(v-for='n in startDayOffset' class='col')
-        template(v-for='(tags, day, idx) in sortByKey(availability)')
+        template(v-for='(day_data, day, idx) in sortByKey(availability)')
           div(v-if='(getDayOfWeek(day) == 1) && (idx)' class='w-100')
             hr(class='my-0')
           div(class='col calendar-day')
             span(v-bind:class='{"font-weight-bold text-primary": isToday(day)}') {{ day | moment('DD') }}
             br
-            template(v-if='tags.includes("no_work")')
+            template(v-if='!day_data.work_hours')
               span(title='Not working') 💤
-            template(v-else v-if='tags.includes("holiday")')
+            template(v-else v-if='day_data.holidays.length')
               span(title='Holiday') 🌐
-            template(v-else v-if='tags.includes("leave")')
+            template(v-else v-if='day_data.leave.length')
               span(title='Leave') 🏖️
-            template(v-else v-if='tags.includes("leave_pending")')
-              span(title='Leave (pending)') ❓🏖️
-            template(v-else v-if='tags.includes("sickness")')
+            template(v-else v-if='day_data.sickness.length')
               span(title='Sickness') 😷
-            template(v-else v-if='tags.includes("sickness_pending")')
-              span(title='Sickness (pending)') ❓😷️
         div(v-for='n in endDayOffset' class='col')
 </template>
 

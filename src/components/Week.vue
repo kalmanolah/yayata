@@ -161,18 +161,19 @@ div
           div(class='card-footer' v-if='getTimesheetForDay(date)')
             div(class='text-center')
               div(class='btn-group')
-                button(class='btn btn-outline-dark btn-sm' @click='addPerformance(date)' v-b-tooltip title='Log performance')
+                button(class='btn btn-outline-dark btn-sm' @click='addPerformance(date)' v-b-tooltip="{boundary: 'window'}" title='Log performance')
                   | ⏳
                 button(
                   v-if='supportContracts && supportContracts.length'
                   class='btn btn-outline-dark btn-sm'
-                  v-b-tooltip title='Standby / On-call'
+                  v-b-tooltip="{boundary: 'window'}"
+                  title='Standby / On-call'
                   @click='editStandby(date)'
                 )
                   | 💤
-                button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip title='Log whereabout')
+                button(class='btn btn-outline-dark btn-sm' @click='addWhereabout(date)' v-b-tooltip="{boundary: 'window'}" title='Log whereabout')
                   | 📍
-                button(class='btn btn-outline-dark btn-sm' @click='addLeave(date)' v-b-tooltip title='Request leave')
+                button(class='btn btn-outline-dark btn-sm' @click='addLeave(date)' v-b-tooltip="{boundary: 'window'}" title='Request leave')
                   | 🏖️
 </template>
 

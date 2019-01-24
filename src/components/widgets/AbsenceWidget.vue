@@ -84,7 +84,7 @@ export default {
         }
       }).then((res) => {
         this.absentUsers = store.getters.users.filter(user => {
-          return res.data[user.id][this.selectedDay.format('YYYY-MM-DD')].filter(x => -1 !== ['leave_pending', 'leave', 'sickness', 'sickness_pending'].indexOf(x)).length
+          return (res.data[user.id][this.selectedDay.format('YYYY-MM-DD')]['sickness'].length > 0) || (res.data[user.id][this.selectedDay.format('YYYY-MM-DD')]['leave'].length > 0)
         })
       });
 

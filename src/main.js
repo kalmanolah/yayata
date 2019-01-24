@@ -134,16 +134,16 @@ export const router = new VueRouter({
         {
           name: 'availability_redirect',
           path: '/availability',
-          redirect: `/availability/month`,
+          redirect: `/availability/week`,
         },
         {
-          name: 'availability_month_redirect',
-          path: '/availability/month',
-          redirect: `/availability/month/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}`,
+          name: 'availability_week_redirect',
+          path: '/availability/week',
+          redirect: `/availability/week/${(new Date()).getFullYear()}/${(new Date()).getMonth() + 1}/${(new Date()).getDate()}`,
         },
         {
-          name: 'availability_month',
-          path: '/availability/month/:year/:month',
+          name: 'availability_week',
+          path: '/availability/week/:year/:month/:date',
           component: Availability,
         },
         {
