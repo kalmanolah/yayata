@@ -64,6 +64,7 @@ module.exports = (env, argv) => {
         ]
       }),
       new WorkboxPlugin.InjectManifest({
+        importWorkboxFrom: 'local',
         swSrc: path.resolve('src/service-worker.js'),
         swDest: 'service-worker.js',
         exclude: [/\.map$/]
