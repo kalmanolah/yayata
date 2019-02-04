@@ -32,12 +32,6 @@ div
       v-on:success='onBulkAdded()'
     )
 
-  b-modal(ref='timesheetSubmissionModal' hide-header=true hide-footer=true lazy=true size='lg')
-    TimesheetSubmissionWidget(
-      :timesheet='timesheet'
-      v-on:success='onTimesheetSubmitted()'
-    )
-
   b-modal(ref='attachmentModal' hide-header=true hide-footer=true lazy=true size='lg')
     AttachmentWidget(
       :timesheet='timesheet'
@@ -46,7 +40,7 @@ div
 
   div(v-if='timesheet && showTimesheetWidget')
     hr
-    TimesheetWidget(:timesheet='timesheet')
+    TimesheetWidget(:timesheet='timesheet' v-on:submit='onTimesheetSubmitted()')
 
   div(v-if='rangeInfo')
     hr
@@ -90,7 +84,6 @@ import moment from 'moment';
 import _ from 'lodash';
 import TimesheetWidget from './widgets/TimesheetWidget.vue';
 import BulkAddWidget from './widgets/BulkAddWidget.vue';
-import TimesheetSubmissionWidget from './widgets/TimesheetSubmissionWidget.vue';
 import AttachmentWidget from './widgets/AttachmentWidget.vue';
 
 export default {
@@ -110,7 +103,6 @@ export default {
   components: {
     TimesheetWidget,
     BulkAddWidget,
-    TimesheetSubmissionWidget,
     AttachmentWidget,
   },
 
@@ -236,12 +228,7 @@ export default {
       this.reloadData()
     },
 
-    submitTimesheet: function() {
-      this.$refs.timesheetSubmissionModal.show()
-    },
-
     onTimesheetSubmitted: function() {
-      this.$refs.timesheetSubmissionModal.hide()
       store.dispatch(types.NINETOFIVER_RELOAD_TIMESHEETS)
     },
 
